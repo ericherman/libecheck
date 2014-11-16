@@ -26,7 +26,12 @@ SRC=test-$(LIB_NAME).c
 OBJ=test-$(LIB_NAME).o
 OUT=test-$(LIB_NAME)
 
-CFLAGS += -Werror -Wall -Wextra -pedantic
+CSTD_CFLAGS=-std=c89
+#DEBUG_CFLAGS=-ggdb -O0
+DEBUG_CFLAGS=-Os
+NOISY_CFLAGS=-Werror -Wall -Wextra -pedantic
+
+CFLAGS += $(CSTD_CFLAGS) $(DEBUG_CFLAGS) $(NOISY_CFLAGS)
 LDFLAGS += -L. -l$(LIB_NAME)
 CC=gcc
 
