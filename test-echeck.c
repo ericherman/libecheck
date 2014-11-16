@@ -11,11 +11,15 @@ int err_contains(const char *filename, char *expected[], size_t str_count)
 	unsigned int msg_found;
 
 	capture = fopen(filename, "r");
+	msg_found = 0;
 	if (capture) {
-		msg_found = 0;
 		len = 0;
 		while (fgets(buffer + len, (sizeof buffer) - len, capture)) {
-			len = strnlen(buffer, sizeof buffer);
+			len = strlen(buffer);
+			if (len >= (sizeof buffer)) {
+				len = (sizeof buffer);
+				buffer[len-1] = '\0';
+			}
 		}
 		if (len) {
 			for (i = 0; i < str_count; i++) {
