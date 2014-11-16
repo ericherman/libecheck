@@ -3,14 +3,36 @@
 #include <stdlib.h>
 #include <string.h>
 
+unsigned int ECHECK_GLOBAL_EXIT_ON_FAIL = 0;
+FILE *ECHECK_STDERR;
+
+unsigned int set_echeck_global_exit_on_fail(unsigned int new_val)
+{
+	unsigned int previous = ECHECK_GLOBAL_EXIT_ON_FAIL;
+	ECHECK_GLOBAL_EXIT_ON_FAIL = new_val;
+	return previous;
+}
+
+FILE *set_echeck_stderr(FILE * new_err)
+{
+	FILE *previous = ECHECK_STDERR;
+	ECHECK_STDERR = new_err;
+	return previous;
+}
+
+FILE *echeck_err(void)
+{
+	return (ECHECK_STDERR == NULL) ? stderr : ECHECK_STDERR;
+}
+
 int check_char_m(char actual, char expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
 	}
-	fprintf(stderr, "FAIL: %s Expected '%c' but was '%c'\n",
+	fprintf(echeck_err(), "FAIL: %s Expected '%c' but was '%c'\n",
 		msg, expected, actual);
-	if (GLOBAL_EXIT_ON_FAIL) {
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
 		exit(1);
 	}
 	return 1;
@@ -28,9 +50,9 @@ int check_unsigned_int_m(unsigned int actual, unsigned int expected,
 	if (expected == actual) {
 		return 0;
 	}
-	fprintf(stderr, "FAIL: %s Expected %d but was %d\n",
+	fprintf(echeck_err(), "FAIL: %s Expected %d but was %d\n",
 		msg, expected, actual);
-	if (GLOBAL_EXIT_ON_FAIL) {
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
 		exit(1);
 	}
 	return 1;
@@ -46,9 +68,9 @@ int check_int_m(int actual, int expected, const char *msg)
 	if (expected == actual) {
 		return 0;
 	}
-	fprintf(stderr, "FAIL: %s Expected %d but was %d\n",
+	fprintf(echeck_err(), "FAIL: %s Expected %d but was %d\n",
 		msg, expected, actual);
-	if (GLOBAL_EXIT_ON_FAIL) {
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
 		exit(1);
 	}
 	return 1;
@@ -64,9 +86,9 @@ int check_str_m(const char *actual, const char *expected, const char *msg)
 	if (strcmp(expected, actual) == 0) {
 		return 0;
 	}
-	fprintf(stderr, "FAIL: %s Expected '%s' but was '%s'\n",
+	fprintf(echeck_err(), "FAIL: %s Expected '%s' but was '%s'\n",
 		msg, expected, actual);
-	if (GLOBAL_EXIT_ON_FAIL) {
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
 		exit(1);
 	}
 	return 1;
@@ -85,27 +107,28 @@ int check_byte_array_m(unsigned char *actual, size_t actual_len,
 	unsigned int i;
 
 	if (actual_len != expected_len) {
-		fprintf(stderr, "actual/expected length mis-match %d != %d\n",
+		fprintf(echeck_err(),
+			"actual/expected length mis-match %d != %d\n",
 			actual_len, expected_len);
 		goto fail;
 	}
 	for (i = 0; i < actual_len; i++) {
 		if (actual[i] != expected[i]) {
-			fprintf(stderr, "buffers differ at %d\n", i);
+			fprintf(echeck_err(), "buffers differ at %d\n", i);
 			goto fail;
 		}
 	}
 	return 0;
 
       fail:
-	fprintf(stderr, "FAIL: %s\n", name);
+	fprintf(echeck_err(), "FAIL: %s\n", name);
 	for (i = 0; i < actual_len; i++) {
-		fprintf(stderr, "actual[%d]=%02x\n", i, actual[i]);
+		fprintf(echeck_err(), "actual[%d]=%02x\n", i, actual[i]);
 	}
 	for (i = 0; i < expected_len; i++) {
-		fprintf(stderr, "expected[%d]=%02x\n", i, expected[i]);
+		fprintf(echeck_err(), "expected[%d]=%02x\n", i, expected[i]);
 	}
-	if (GLOBAL_EXIT_ON_FAIL) {
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
 		exit(1);
 	}
 	return 1;
@@ -124,9 +147,9 @@ int check_ptr_m(const void *actual, const void *expected, const char *msg)
 	if (expected == actual) {
 		return 0;
 	}
-	fprintf(stderr, "FAIL: %s Expected '%p' but was '%p'\n",
+	fprintf(echeck_err(), "FAIL: %s Expected '%p' but was '%p'\n",
 		msg, expected, actual);
-	if (GLOBAL_EXIT_ON_FAIL) {
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
 		exit(1);
 	}
 	return 1;

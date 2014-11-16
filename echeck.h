@@ -3,8 +3,7 @@
 #define _ECHECK_H_
 
 #include <stdlib.h>		/* for size_t */
-
-unsigned GLOBAL_EXIT_ON_FAIL = 0;
+#include <stdio.h>		/* for FILE */
 
 int check_char_m(char actual, char expected, const char *msg);
 int check_char(char actual, char expected);
@@ -27,5 +26,9 @@ int check_byte_array_m(unsigned char *actual, size_t actual_len,
 		       const char *msg);
 int check_byte_array(unsigned char *actual, size_t actual_len,
 		     unsigned char *expected, size_t expected_len);
+
+/* these are for setting global variables */
+unsigned int set_echeck_global_exit_on_fail(unsigned int new_val);
+FILE *set_echeck_stderr(FILE * new_err);
 
 #endif /* _ECHECK_H_ */
