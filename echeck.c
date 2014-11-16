@@ -77,8 +77,8 @@ int check_str(const char *actual, const char *expected)
 	return check_str_m(actual, expected, "");
 }
 
-int check_byte_array_m(unsigned char *actual, unsigned int actual_len,
-		       unsigned char *expected, unsigned int expected_len,
+int check_byte_array_m(unsigned char *actual, size_t actual_len,
+		       unsigned char *expected, size_t expected_len,
 		       const char *name)
 {
 
@@ -111,8 +111,8 @@ int check_byte_array_m(unsigned char *actual, unsigned int actual_len,
 	return 1;
 }
 
-int check_byte_array(unsigned char *expected, unsigned int expected_len,
-		     unsigned char *actual, unsigned int actual_len)
+int check_byte_array(unsigned char *expected, size_t expected_len,
+		     unsigned char *actual, size_t actual_len)
 {
 
 	return check_byte_array_m(actual, actual_len, expected, expected_len,
