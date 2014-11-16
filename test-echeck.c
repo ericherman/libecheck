@@ -18,7 +18,7 @@ int err_contains(const char *filename, char *expected[], size_t str_count)
 			len = strlen(buffer);
 			if (len >= (sizeof buffer)) {
 				len = (sizeof buffer);
-				buffer[len-1] = '\0';
+				buffer[len - 1] = '\0';
 			}
 		}
 		if (len) {
@@ -202,14 +202,14 @@ int check_check_unsigned_int(const char *filename)
 	char *strs[2];
 	int failures = 0;
 
-	strs[0] = "5";
-	strs[1] = "-5";
+	strs[0] = "1";
+	strs[1] = "4294967295";
 
 	failures += check_unsigned_int(5, 5);
 
 	capture = fopen(filename, "w");
 	orig = set_echeck_stderr(capture);
-	if (0 == check_unsigned_int(5, -5)) {
+	if (0 == check_unsigned_int(1, -1)) {
 		failures++;
 	}
 	set_echeck_stderr(orig);
@@ -246,6 +246,115 @@ int check_check_unsigned_int_m(const char *filename)
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
 		fprintf(stderr, "%d failures in check_check_unsigned_int_m\n",
+			failures);
+	}
+	return failures;
+}
+
+int check_check_long(const char *filename)
+{
+	FILE *orig, *capture;
+	char *strs[2];
+	int failures = 0;
+
+	strs[0] = "5";
+	strs[1] = "-5";
+
+	failures += check_long(5L, 5L);
+
+	capture = fopen(filename, "w");
+	orig = set_echeck_stderr(capture);
+	if (0 == check_long(5L, -5L)) {
+		failures++;
+	}
+	set_echeck_stderr(orig);
+	fclose(capture);
+
+	failures += err_contains(filename, strs, 2);
+	if (failures) {
+		fprintf(stderr, "%d failures in check_check_long\n", failures);
+	}
+	return failures;
+}
+
+int check_check_long_m(const char *filename)
+{
+	FILE *orig, *capture;
+	char *strs[3];
+	int failures = 0;
+
+	strs[0] = "5";
+	strs[1] = "-5";
+	strs[2] = "contextual info";
+
+	failures += check_long_m(5L, 5L, "contextual info");
+
+	capture = fopen(filename, "w");
+	orig = set_echeck_stderr(capture);
+	if (0 == check_long_m(5L, -5L, "contextual info")) {
+		failures++;
+	}
+	set_echeck_stderr(orig);
+	fclose(capture);
+
+	failures += err_contains(filename, strs, 3);
+	if (failures) {
+		fprintf(stderr, "%d failures in check_check_long_m\n",
+			failures);
+	}
+	return failures;
+}
+
+int check_check_unsigned_long(const char *filename)
+{
+	FILE *orig, *capture;
+	char *strs[2];
+	int failures = 0;
+
+	strs[0] = "1";
+	strs[1] = "4294967295";
+
+	failures += check_unsigned_long(5L, 5L);
+
+	capture = fopen(filename, "w");
+	orig = set_echeck_stderr(capture);
+	if (0 == check_unsigned_long(1L, -1L)) {
+		failures++;
+	}
+	set_echeck_stderr(orig);
+	fclose(capture);
+
+	failures += err_contains(filename, strs, 2);
+	if (failures) {
+		fprintf(stderr, "%d failures in check_check_unsigned_long\n",
+			failures);
+	}
+	return failures;
+}
+
+int check_check_unsigned_long_m(const char *filename)
+{
+	FILE *orig, *capture;
+	char *strs[3];
+	int failures = 0;
+
+	strs[0] = "5";
+	strs[1] = "6";
+	strs[2] = "contextual info";
+
+	failures += check_unsigned_long_m(5L, 5L, "contextual info");
+
+	capture = fopen(filename, "w");
+	orig = set_echeck_stderr(capture);
+	if (0 == check_unsigned_long_m(5L, 6L, "contextual info")) {
+		failures++;
+	}
+	set_echeck_stderr(orig);
+	fclose(capture);
+
+	failures += err_contains(filename, strs, 3);
+	if (failures) {
+		fprintf(stderr, "%d failures in check_check_unsigned_long_m\n",
 			failures);
 	}
 	return failures;
@@ -382,10 +491,17 @@ int main(int argc, char *argv[])
 	failures += check_check_str_m(filename);
 	failures += check_check_char(filename);
 	failures += check_check_char_m(filename);
+
 	failures += check_check_int(filename);
 	failures += check_check_int_m(filename);
 	failures += check_check_unsigned_int(filename);
 	failures += check_check_unsigned_int_m(filename);
+
+	failures += check_check_long(filename);
+	failures += check_check_long_m(filename);
+	failures += check_check_unsigned_long(filename);
+	failures += check_check_unsigned_long_m(filename);
+
 	failures += check_check_ptr(filename);
 	failures += check_check_ptr_m(filename);
 	failures += check_check_byte_array(filename);

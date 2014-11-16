@@ -43,13 +43,32 @@ int check_char(char actual, char expected)
 	return check_char_m(actual, expected, "");
 }
 
+int check_unsigned_long_m(unsigned long actual, unsigned long expected,
+			  const char *msg)
+{
+	if (expected == actual) {
+		return 0;
+	}
+	fprintf(echeck_err(), "FAIL: %s Expected %lu but was %lu\n",
+		msg, expected, actual);
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
+}
+
+int check_unsigned_long(unsigned long actual, unsigned long expected)
+{
+	return check_unsigned_long_m(actual, expected, "");
+}
+
 int check_unsigned_int_m(unsigned int actual, unsigned int expected,
 			 const char *msg)
 {
 	if (expected == actual) {
 		return 0;
 	}
-	fprintf(echeck_err(), "FAIL: %s Expected %d but was %d\n",
+	fprintf(echeck_err(), "FAIL: %s Expected %u but was %u\n",
 		msg, expected, actual);
 	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
 		exit(1);
@@ -77,7 +96,25 @@ int check_int_m(int actual, int expected, const char *msg)
 
 int check_int(int actual, int expected)
 {
-	return check_unsigned_int_m(actual, expected, "");
+	return check_int_m(actual, expected, "");
+}
+
+int check_long_m(long actual, long expected, const char *msg)
+{
+	if (expected == actual) {
+		return 0;
+	}
+	fprintf(echeck_err(), "FAIL: %s Expected %ld but was %ld\n",
+		msg, expected, actual);
+	if (ECHECK_GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
+}
+
+int check_long(long actual, long expected)
+{
+	return check_long_m(actual, expected, "");
 }
 
 int check_str_m(const char *actual, const char *expected, const char *msg)
