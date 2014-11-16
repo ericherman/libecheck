@@ -3,69 +3,81 @@
 #include <stdlib.h>
 #include <string.h>
 
-void check_chars(char actual, char expected, const char *msg)
+int check_char_m(char actual, char expected, const char *msg)
 {
 	if (expected == actual) {
-		return;
+		return 0;
 	}
 	fprintf(stderr, "FAIL: %s Expected '%c' but was '%c'\n",
 		msg, expected, actual);
-	exit(1);
+	if (GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
 }
 
-void check_char(char actual, char expected)
+int check_char(char actual, char expected)
 {
-	check_chars(actual, expected, "");
+	return check_char_m(actual, expected, "");
 }
 
-void check_unsigned_ints(unsigned int actual, unsigned int expected,
+int check_unsigned_int_m(unsigned int actual, unsigned int expected,
 			 const char *msg)
 {
 
 	if (expected == actual) {
-		return;
+		return 0;
 	}
 	fprintf(stderr, "FAIL: %s Expected %d but was %d\n",
 		msg, expected, actual);
-	exit(1);
+	if (GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
 }
 
-void check_unsigned_int(unsigned int actual, unsigned int expected)
+int check_unsigned_int(unsigned int actual, unsigned int expected)
 {
-	check_unsigned_ints(actual, expected, "");
+	return check_unsigned_int_m(actual, expected, "");
 }
 
-void check_ints(int actual, int expected, const char *msg)
+int check_int_m(int actual, int expected, const char *msg)
 {
 	if (expected == actual) {
-		return;
+		return 0;
 	}
 	fprintf(stderr, "FAIL: %s Expected %d but was %d\n",
 		msg, expected, actual);
-	exit(1);
+	if (GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
 }
 
-void check_int(int actual, int expected)
+int check_int(int actual, int expected)
 {
-	check_unsigned_ints(actual, expected, "");
+	return check_unsigned_int_m(actual, expected, "");
 }
 
-void check_strs(const char *actual, const char *expected, const char *msg)
+int check_str_m(const char *actual, const char *expected, const char *msg)
 {
 	if (strcmp(expected, actual) == 0) {
-		return;
+		return 0;
 	}
 	fprintf(stderr, "FAIL: %s Expected '%s' but was '%s'\n",
 		msg, expected, actual);
-	exit(1);
+	if (GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
 }
 
-void check_str(const char *actual, const char *expected)
+int check_str(const char *actual, const char *expected)
 {
-	check_strs(actual, expected, "");
+	return check_str_m(actual, expected, "");
 }
 
-void check_byte_arrays(unsigned char *actual, unsigned int actual_len,
+int check_byte_array_m(unsigned char *actual, unsigned int actual_len,
 		       unsigned char *expected, unsigned int expected_len,
 		       const char *name)
 {
@@ -83,9 +95,9 @@ void check_byte_arrays(unsigned char *actual, unsigned int actual_len,
 			goto fail;
 		}
 	}
-	return;
+	return 0;
 
-fail:
+      fail:
 	fprintf(stderr, "FAIL: %s\n", name);
 	for (i = 0; i < actual_len; i++) {
 		fprintf(stderr, "actual[%d]=%02x\n", i, actual[i]);
@@ -93,27 +105,34 @@ fail:
 	for (i = 0; i < expected_len; i++) {
 		fprintf(stderr, "expected[%d]=%02x\n", i, expected[i]);
 	}
-	exit(1);
+	if (GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
 }
 
-void check_byte_array(unsigned char *expected, unsigned int expected_len,
-		      unsigned char *actual, unsigned int actual_len)
+int check_byte_array(unsigned char *expected, unsigned int expected_len,
+		     unsigned char *actual, unsigned int actual_len)
 {
 
-	check_byte_arrays(actual, actual_len, expected, expected_len, "");
+	return check_byte_array_m(actual, actual_len, expected, expected_len,
+				  "");
 }
 
-void check_ptrs(const void *actual, const void *expected, const char *msg)
+int check_ptr_m(const void *actual, const void *expected, const char *msg)
 {
 	if (expected == actual) {
-		return;
+		return 0;
 	}
 	fprintf(stderr, "FAIL: %s Expected '%p' but was '%p'\n",
 		msg, expected, actual);
-	exit(1);
+	if (GLOBAL_EXIT_ON_FAIL) {
+		exit(1);
+	}
+	return 1;
 }
 
-void check_ptr(const void *actual, const void *expected)
+int check_ptr(const void *actual, const void *expected)
 {
-	check_ptrs(actual, expected, "");
+	return check_ptr_m(actual, expected, "");
 }
