@@ -46,7 +46,6 @@ int check_char(char actual, char expected)
 int check_unsigned_int_m(unsigned int actual, unsigned int expected,
 			 const char *msg)
 {
-
 	if (expected == actual) {
 		return 0;
 	}
