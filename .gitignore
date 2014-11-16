@@ -13,7 +13,10 @@ $*
 # Output files
 ################
 *.o
+*.so
+*.so.*
 *.a
 *.bin
 *.d
-
+test-*-dynamic
+test-*-static
