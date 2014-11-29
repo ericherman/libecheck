@@ -360,6 +360,66 @@ int check_check_unsigned_long_m(const char *filename)
 	return failures;
 }
 
+int check_check_size_t(const char *filename)
+{
+	FILE *orig, *capture;
+	char *strs[2];
+	int failures = 0;
+	size_t one = 1;
+	size_t big = -1;
+	size_t five = 5;
+
+	strs[0] = "1";
+	strs[1] = "4294967295";
+
+	failures += check_size_t(five, five);
+
+	capture = fopen(filename, "w");
+	orig = set_echeck_stderr(capture);
+	if (0 == check_size_t(one, big)) {
+		failures++;
+	}
+	set_echeck_stderr(orig);
+	fclose(capture);
+
+	failures += err_contains(filename, strs, 2);
+	if (failures) {
+		fprintf(stderr, "%d failures in check_check_size_t\n",
+			failures);
+	}
+	return failures;
+}
+
+int check_check_size_t_m(const char *filename)
+{
+	FILE *orig, *capture;
+	char *strs[3];
+	int failures = 0;
+	size_t five = 5;
+	size_t six = 6;
+
+	strs[0] = "5";
+	strs[1] = "6";
+	strs[2] = "contextual info";
+
+	failures += check_size_t_m(five, five, "contextual info");
+
+	capture = fopen(filename, "w");
+	orig = set_echeck_stderr(capture);
+	if (0 == check_size_t_m(five, six, "contextual info")) {
+		failures++;
+	}
+	set_echeck_stderr(orig);
+	fclose(capture);
+
+	failures += err_contains(filename, strs, 3);
+	if (failures) {
+		fprintf(stderr, "%d failures in check_check_size_t_m\n",
+			failures);
+	}
+	return failures;
+}
+
 int check_check_byte_array(const char *filename)
 {
 	FILE *orig, *capture;
@@ -501,6 +561,9 @@ int main(int argc, char *argv[])
 	failures += check_check_long_m(filename);
 	failures += check_check_unsigned_long(filename);
 	failures += check_check_unsigned_long_m(filename);
+
+	failures += check_check_size_t(filename);
+	failures += check_check_size_t_m(filename);
 
 	failures += check_check_ptr(filename);
 	failures += check_check_ptr_m(filename);

@@ -28,6 +28,9 @@ int check_unsigned_long_m(unsigned long actual, unsigned long expected,
 			  const char *msg);
 int check_unsigned_long(unsigned long actual, unsigned long expected);
 
+int check_size_t_m(size_t actual, size_t expected, const char *msg);
+int check_size_t(size_t actual, size_t expected);
+
 int check_byte_array_m(unsigned char *actual, size_t actual_len,
 		       unsigned char *expected, size_t expected_len,
 		       const char *msg);

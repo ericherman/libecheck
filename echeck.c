@@ -112,6 +112,17 @@ int check_long_m(long actual, long expected, const char *msg)
 	return 1;
 }
 
+int check_size_t_m(size_t actual, size_t expected, const char *msg)
+{
+	return check_unsigned_long_m((unsigned long)actual,
+				     (unsigned long)expected, msg);
+}
+
+int check_size_t(size_t actual, size_t expected)
+{
+	return check_size_t_m(actual, expected, "");
+}
+
 int check_long(long actual, long expected)
 {
 	return check_long_m(actual, expected, "");
