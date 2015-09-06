@@ -1,6 +1,6 @@
 /* echeck.h */
-#ifndef _ECHECK_H_
-#define _ECHECK_H_
+#ifndef ECHECK_H
+#define ECHECK_H
 
 #include <stdlib.h>		/* for size_t */
 #include <stdio.h>		/* for FILE */
@@ -41,4 +41,4 @@ int check_byte_array(unsigned char *actual, size_t actual_len,
 unsigned int set_echeck_global_exit_on_fail(unsigned int new_val);
 FILE *set_echeck_stderr(FILE * new_err);
 
-#endif /* _ECHECK_H_ */
+#endif /* ECHECK_H */
