@@ -48,7 +48,7 @@ int check_check_str(const char *filename)
 	failures += check_str("same", "same");
 
 	log = fopen(filename, "w");
-	if (0 == check_str_l("same", "different", log)) {
+	if (0 == fcheck_str(log, "same", "different")) {
 		failures++;
 	}
 	fclose(log);
@@ -73,7 +73,7 @@ int check_check_str_m(const char *filename)
 	failures += check_str_m("same", "same", "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_str_ml("weirdly", "different", "contextual info", log)) {
+	if (0 == fcheck_str_m(log, "weirdly", "different", "contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -97,7 +97,7 @@ int check_check_char(const char *filename)
 	failures += check_char('a', 'a');
 
 	log = fopen(filename, "w");
-	if (0 == check_char_l('a', 'b', log)) {
+	if (0 == fcheck_char(log, 'a', 'b')) {
 		failures++;
 	}
 	fclose(log);
@@ -122,7 +122,7 @@ int check_check_char_m(const char *filename)
 	failures += check_char_m('a', 'a', "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_char_ml('a', 'b', "contextual info", log)) {
+	if (0 == fcheck_char_m(log, 'a', 'b', "contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -147,7 +147,7 @@ int check_check_int(const char *filename)
 	failures += check_int(5, 5);
 
 	log = fopen(filename, "w");
-	if (0 == check_int_l(5, -5, log)) {
+	if (0 == fcheck_int(log, 5, -5)) {
 		failures++;
 	}
 	fclose(log);
@@ -172,7 +172,7 @@ int check_check_int_m(const char *filename)
 	failures += check_int_m(5, 5, "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_int_ml(5, -5, "contextual info", log)) {
+	if (0 == fcheck_int_m(log, 5, -5, "contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -196,7 +196,7 @@ int check_check_unsigned_int(const char *filename)
 	failures += check_unsigned_int(5, 5);
 
 	log = fopen(filename, "w");
-	if (0 == check_unsigned_int_l(1, -1, log)) {
+	if (0 == fcheck_unsigned_int(log, 1, -1)) {
 		failures++;
 	}
 	fclose(log);
@@ -222,7 +222,7 @@ int check_check_unsigned_int_m(const char *filename)
 	failures += check_unsigned_int_m(5, 5, "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_unsigned_int_ml(5, 6, "contextual info", log)) {
+	if (0 == fcheck_unsigned_int_m(log, 5, 6, "contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -247,7 +247,7 @@ int check_check_long(const char *filename)
 	failures += check_long(5L, 5L);
 
 	log = fopen(filename, "w");
-	if (0 == check_long_l(5L, -5L, log)) {
+	if (0 == fcheck_long(log, 5L, -5L)) {
 		failures++;
 	}
 	fclose(log);
@@ -272,7 +272,7 @@ int check_check_long_m(const char *filename)
 	failures += check_long_m(5L, 5L, "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_long_ml(5L, -5L, "contextual info", log)) {
+	if (0 == fcheck_long_m(log, 5L, -5L, "contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -297,7 +297,7 @@ int check_check_unsigned_long(const char *filename)
 	failures += check_unsigned_long(5L, 5L);
 
 	log = fopen(filename, "w");
-	if (0 == check_unsigned_long_l(1L, -1L, log)) {
+	if (0 == fcheck_unsigned_long(log, 1L, -1L)) {
 		failures++;
 	}
 	fclose(log);
@@ -323,7 +323,7 @@ int check_check_unsigned_long_m(const char *filename)
 	failures += check_unsigned_long_m(5L, 5L, "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_unsigned_long_ml(5L, 6L, "contextual info", log)) {
+	if (0 == fcheck_unsigned_long_m(log, 5L, 6L, "contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -351,7 +351,7 @@ int check_check_size_t(const char *filename)
 	failures += check_size_t(five, five);
 
 	log = fopen(filename, "w");
-	if (0 == check_size_t_l(one, big, log)) {
+	if (0 == fcheck_size_t(log, one, big)) {
 		failures++;
 	}
 	fclose(log);
@@ -379,7 +379,7 @@ int check_check_size_t_m(const char *filename)
 	failures += check_size_t_m(five, five, "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_size_t_ml(five, six, "contextual info", log)) {
+	if (0 == fcheck_size_t_m(log, five, six, "contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -408,7 +408,7 @@ int check_check_byte_array(const char *filename)
 	failures += check_byte_array(bytes_a, 2, bytes_b, 2);
 
 	log = fopen(filename, "w");
-	if (0 == check_byte_array_l(bytes_b, 2, bytes_c, 2, log)) {
+	if (0 == fcheck_byte_array(log, bytes_b, 2, bytes_c, 2)) {
 		failures++;
 	}
 	fclose(log);
@@ -440,8 +440,8 @@ int check_check_byte_array_m(const char *filename)
 
 	log = fopen(filename, "w");
 	if (0 ==
-	    check_byte_array_ml(bytes_b, 2, bytes_c, 2, "contextual info",
-				log)) {
+	    fcheck_byte_array_m(log, bytes_b, 2, bytes_c, 2,
+				"contextual info")) {
 		failures++;
 	}
 	fclose(log);
@@ -466,7 +466,7 @@ int check_check_ptr(const char *filename)
 	failures += check_ptr(strs[0], strs[0]);
 
 	log = fopen(filename, "w");
-	if (0 == check_ptr_l(strs[0], strs[1], log)) {
+	if (0 == fcheck_ptr(log, strs[0], strs[1])) {
 		failures++;
 	}
 	fclose(log);
@@ -490,7 +490,7 @@ int check_check_ptr_m(const char *filename)
 	failures += check_ptr_m(strs[0], strs[0], "contextual info");
 
 	log = fopen(filename, "w");
-	if (0 == check_ptr_ml(strs[0], strs[1], "contextual info", log)) {
+	if (0 == fcheck_ptr_m(log, strs[0], strs[1], "contextual info")) {
 		failures++;
 	}
 	fclose(log);

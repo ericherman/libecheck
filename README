@@ -1,6 +1,37 @@
 Boiler-plate to make simple testing easier, when I do not want
 a whole testing framework.
 
+The basic idea is that you get this kind of interface:
+
+  check_[TYPE](actual, expected);
+
+
+The function returns 0 on success, and error code (typically 1) on failure.
+for instance:
+
+  error_code = check_int(val, 42);
+  assert(error_code == 0);
+
+
+To send error messages to a FILE, use the "fcheck" form:
+
+ error_code = fcheck_char(log, val, 'a');
+
+
+To include a message for additional context, use the "_m" form:
+
+ error_code = check_size_t_m(size_of(foo), foo_len, "BAD MOJO!");
+
+
+And the forms can be combined:
+
+ error_code = fcheck_str_m(log, actual, "expected str", "BAD MOJO!")
+
+
+To check a byte[] buffer, additional length parameters are required:
+
+ error_code = check_byte_array(actual, actual_len, expected, expected_len);
+
 
 License
 -------

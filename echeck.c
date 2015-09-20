@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int check_char_efl(char actual, char expected, const char *msg, FILE *err,
-		   const char *file, int line)
+int echeck_char_m(FILE *err, const char *file, int line, char actual,
+		  char expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -16,9 +16,9 @@ int check_char_efl(char actual, char expected, const char *msg, FILE *err,
 	return 1;
 }
 
-int check_unsigned_long_efl(unsigned long actual, unsigned long expected,
-			    const char *msg, FILE *err, const char *file,
-			    int line)
+int echeck_unsigned_long_m(FILE *err, const char *file, int line,
+			   unsigned long actual, unsigned long expected,
+			   const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -29,9 +29,9 @@ int check_unsigned_long_efl(unsigned long actual, unsigned long expected,
 	return 1;
 }
 
-int check_unsigned_int_efl(unsigned int actual, unsigned int expected,
-			   const char *msg, FILE *err, const char *file,
-			   int line)
+int echeck_unsigned_int_m(FILE *err, const char *file, int line,
+			  unsigned int actual, unsigned int expected,
+			  const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -42,8 +42,8 @@ int check_unsigned_int_efl(unsigned int actual, unsigned int expected,
 	return 1;
 }
 
-int check_int_efl(int actual, int expected, const char *msg, FILE *err,
-		  const char *file, int line)
+int echeck_int_m(FILE *err, const char *file, int line, int actual,
+		 int expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -54,8 +54,8 @@ int check_int_efl(int actual, int expected, const char *msg, FILE *err,
 	return 1;
 }
 
-int check_long_efl(long actual, long expected, const char *msg, FILE *err,
-		   const char *file, int line)
+int echeck_long_m(FILE *err, const char *file, int line, long actual,
+		  long expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -66,16 +66,15 @@ int check_long_efl(long actual, long expected, const char *msg, FILE *err,
 	return 1;
 }
 
-int check_size_t_efl(size_t actual, size_t expected, const char *msg, FILE *err,
-		     const char *file, int line)
+int echeck_size_t_m(FILE *err, const char *file, int line, size_t actual,
+		    size_t expected, const char *msg)
 {
-	return check_unsigned_long_efl((unsigned long)actual,
-				       (unsigned long)expected, msg, err, file,
-				       line);
+	return echeck_unsigned_long_m(err, file, line, (unsigned long)actual,
+				      (unsigned long)expected, msg);
 }
 
-int check_str_efl(const char *actual, const char *expected, const char *msg,
-		  FILE *err, const char *file, int line)
+int echeck_str_m(FILE *err, const char *file, int line, const char *actual,
+		 const char *expected, const char *msg)
 {
 	if (strcmp(expected, actual) == 0) {
 		return 0;
@@ -87,10 +86,10 @@ int check_str_efl(const char *actual, const char *expected, const char *msg,
 	return 1;
 }
 
-int check_byte_array_efl(unsigned char *actual, size_t actual_len,
-			 unsigned char *expected, size_t expected_len,
-			 const char *name, FILE *err, const char *file,
-			 int line)
+int echeck_byte_array_m(FILE *err, const char *file, int line,
+			unsigned char *actual, size_t actual_len,
+			unsigned char *expected, size_t expected_len,
+			const char *msg)
 {
 
 	size_t i;
@@ -111,7 +110,8 @@ int check_byte_array_efl(unsigned char *actual, size_t actual_len,
 	return 0;
 
 fail:
-	fprintf(err, "FAIL: %s [File: %s Line: %d]\n", name, file, line);
+	fprintf(err, "FAIL: %s%s[File: %s Line: %d]\n",
+		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", file, line);
 	for (i = 0; i < actual_len; i++) {
 		fprintf(err, "actual[%d]=%02x\n", i, actual[i]);
 	}
@@ -121,8 +121,8 @@ fail:
 	return 1;
 }
 
-int check_ptr_efl(const void *actual, const void *expected, const char *msg,
-		  FILE *err, const char *file, int line)
+int echeck_ptr_m(FILE *err, const char *file, int line, const void *actual,
+		 const void *expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
