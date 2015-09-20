@@ -43,6 +43,9 @@ ifeq ("$(INCDIR)", "")
 INCDIR=/usr/local/include
 endif
 
+# extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
+LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
+
 default: $(OUT)
 
 .c.o:
@@ -64,13 +67,18 @@ $(OUT): $(SO_NAME) $(A_NAME)
 check: $(OUT)
 	./$(OUT)-static
 	LD_LIBRARY_PATH=. ./$(OUT)-dynamic
+tidy:
+	$(LINDENT) \
+                -T FILE \
+                -T size_t \
+                *.h *.c
 
 clean:
 	rm -f *.o *.a *.$(SHAREDEXT)  $(SO_NAME).* $(OUT)-static $(OUT)-dynamic
 
 install:
-	 @echo "Installing libraries in $(LIBDIR)"; \
-	 cp -pv $(A_NAME) $(LIBDIR)/;\
-	 cp -Rv $(SO_NAME)* $(LIBDIR)/;\
-	 echo "Installing headers in $(INCDIR)"; \
-	 cp -pv $(LIB_HDR) $(INCDIR)/;
+	 @echo "Installing libraries in $(LIBDIR)"
+	 cp -pv $(A_NAME) $(LIBDIR)/
+	 cp -Rv $(SO_NAME)* $(LIBDIR)/
+	 @echo "Installing headers in $(INCDIR)"
+	 cp -pv $(LIB_HDR) $(INCDIR)/

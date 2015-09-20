@@ -5,16 +5,16 @@
 
 int err_contains(const char *filename, char *expected[], size_t str_count)
 {
-	FILE *capture;
+	FILE *log;
 	char buffer[4096];
 	size_t i, len;
 	unsigned int msg_found;
 
-	capture = fopen(filename, "r");
+	log = fopen(filename, "r");
 	msg_found = 0;
-	if (capture) {
+	if (log) {
 		len = 0;
-		while (fgets(buffer + len, (sizeof buffer) - len, capture)) {
+		while (fgets(buffer + len, (sizeof buffer) - len, log)) {
 			len = strlen(buffer);
 			if (len >= (sizeof buffer)) {
 				len = (sizeof buffer);
@@ -31,14 +31,14 @@ int err_contains(const char *filename, char *expected[], size_t str_count)
 				}
 			}
 		}
-		fclose(capture);
+		fclose(log);
 	}
 	return str_count - msg_found;
 }
 
 int check_check_str(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -47,13 +47,11 @@ int check_check_str(const char *filename)
 
 	failures += check_str("same", "same");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_str("same", "different")) {
+	log = fopen(filename, "w");
+	if (0 == check_str_l("same", "different", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -64,7 +62,7 @@ int check_check_str(const char *filename)
 
 int check_check_str_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -74,13 +72,11 @@ int check_check_str_m(const char *filename)
 
 	failures += check_str_m("same", "same", "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_str_m("weirdly", "different", "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_str_ml("weirdly", "different", "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -91,7 +87,7 @@ int check_check_str_m(const char *filename)
 
 int check_check_char(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -100,13 +96,11 @@ int check_check_char(const char *filename)
 
 	failures += check_char('a', 'a');
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_char('a', 'b')) {
+	log = fopen(filename, "w");
+	if (0 == check_char_l('a', 'b', log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -117,7 +111,7 @@ int check_check_char(const char *filename)
 
 int check_check_char_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -127,13 +121,11 @@ int check_check_char_m(const char *filename)
 
 	failures += check_char_m('a', 'a', "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_char_m('a', 'b', "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_char_ml('a', 'b', "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -145,7 +137,7 @@ int check_check_char_m(const char *filename)
 
 int check_check_int(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -154,13 +146,11 @@ int check_check_int(const char *filename)
 
 	failures += check_int(5, 5);
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_int(5, -5)) {
+	log = fopen(filename, "w");
+	if (0 == check_int_l(5, -5, log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -171,7 +161,7 @@ int check_check_int(const char *filename)
 
 int check_check_int_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -181,13 +171,11 @@ int check_check_int_m(const char *filename)
 
 	failures += check_int_m(5, 5, "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_int_m(5, -5, "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_int_ml(5, -5, "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -198,7 +186,7 @@ int check_check_int_m(const char *filename)
 
 int check_check_unsigned_int(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -207,13 +195,11 @@ int check_check_unsigned_int(const char *filename)
 
 	failures += check_unsigned_int(5, 5);
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_unsigned_int(1, -1)) {
+	log = fopen(filename, "w");
+	if (0 == check_unsigned_int_l(1, -1, log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -225,7 +211,7 @@ int check_check_unsigned_int(const char *filename)
 
 int check_check_unsigned_int_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -235,13 +221,11 @@ int check_check_unsigned_int_m(const char *filename)
 
 	failures += check_unsigned_int_m(5, 5, "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_unsigned_int_m(5, 6, "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_unsigned_int_ml(5, 6, "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -253,7 +237,7 @@ int check_check_unsigned_int_m(const char *filename)
 
 int check_check_long(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -262,13 +246,11 @@ int check_check_long(const char *filename)
 
 	failures += check_long(5L, 5L);
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_long(5L, -5L)) {
+	log = fopen(filename, "w");
+	if (0 == check_long_l(5L, -5L, log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -279,7 +261,7 @@ int check_check_long(const char *filename)
 
 int check_check_long_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -289,13 +271,11 @@ int check_check_long_m(const char *filename)
 
 	failures += check_long_m(5L, 5L, "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_long_m(5L, -5L, "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_long_ml(5L, -5L, "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -307,7 +287,7 @@ int check_check_long_m(const char *filename)
 
 int check_check_unsigned_long(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -316,13 +296,11 @@ int check_check_unsigned_long(const char *filename)
 
 	failures += check_unsigned_long(5L, 5L);
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_unsigned_long(1L, -1L)) {
+	log = fopen(filename, "w");
+	if (0 == check_unsigned_long_l(1L, -1L, log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -334,7 +312,7 @@ int check_check_unsigned_long(const char *filename)
 
 int check_check_unsigned_long_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -344,13 +322,11 @@ int check_check_unsigned_long_m(const char *filename)
 
 	failures += check_unsigned_long_m(5L, 5L, "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_unsigned_long_m(5L, 6L, "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_unsigned_long_ml(5L, 6L, "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -362,7 +338,7 @@ int check_check_unsigned_long_m(const char *filename)
 
 int check_check_size_t(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 	size_t one = 1;
@@ -374,13 +350,11 @@ int check_check_size_t(const char *filename)
 
 	failures += check_size_t(five, five);
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_size_t(one, big)) {
+	log = fopen(filename, "w");
+	if (0 == check_size_t_l(one, big, log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -392,7 +366,7 @@ int check_check_size_t(const char *filename)
 
 int check_check_size_t_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 	size_t five = 5;
@@ -404,13 +378,11 @@ int check_check_size_t_m(const char *filename)
 
 	failures += check_size_t_m(five, five, "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_size_t_m(five, six, "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_size_t_ml(five, six, "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -422,7 +394,7 @@ int check_check_size_t_m(const char *filename)
 
 int check_check_byte_array(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -435,13 +407,11 @@ int check_check_byte_array(const char *filename)
 
 	failures += check_byte_array(bytes_a, 2, bytes_b, 2);
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_byte_array(bytes_b, 2, bytes_c, 2)) {
+	log = fopen(filename, "w");
+	if (0 == check_byte_array_l(bytes_b, 2, bytes_c, 2, log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -453,7 +423,7 @@ int check_check_byte_array(const char *filename)
 
 int check_check_byte_array_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -468,13 +438,13 @@ int check_check_byte_array_m(const char *filename)
 	failures +=
 	    check_byte_array_m(bytes_a, 2, bytes_b, 2, "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_byte_array_m(bytes_b, 2, bytes_c, 2, "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 ==
+	    check_byte_array_ml(bytes_b, 2, bytes_c, 2, "contextual info",
+				log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
@@ -486,7 +456,7 @@ int check_check_byte_array_m(const char *filename)
 
 int check_check_ptr(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[2];
 	int failures = 0;
 
@@ -495,13 +465,11 @@ int check_check_ptr(const char *filename)
 
 	failures += check_ptr(strs[0], strs[0]);
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_ptr(strs[0], strs[1])) {
+	log = fopen(filename, "w");
+	if (0 == check_ptr_l(strs[0], strs[1], log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
@@ -512,7 +480,7 @@ int check_check_ptr(const char *filename)
 
 int check_check_ptr_m(const char *filename)
 {
-	FILE *orig, *capture;
+	FILE *log;
 	char *strs[3];
 	int failures = 0;
 
@@ -521,13 +489,11 @@ int check_check_ptr_m(const char *filename)
 
 	failures += check_ptr_m(strs[0], strs[0], "contextual info");
 
-	capture = fopen(filename, "w");
-	orig = set_echeck_stderr(capture);
-	if (0 == check_ptr_m(strs[0], strs[1], "contextual info")) {
+	log = fopen(filename, "w");
+	if (0 == check_ptr_ml(strs[0], strs[1], "contextual info", log)) {
 		failures++;
 	}
-	set_echeck_stderr(orig);
-	fclose(capture);
+	fclose(log);
 
 	failures += err_contains(filename, strs, 1);
 	if (failures) {

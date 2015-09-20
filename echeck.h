@@ -2,43 +2,133 @@
 #ifndef ECHECK_H
 #define ECHECK_H
 
-#include <stdlib.h>		/* for size_t */
-#include <stdio.h>		/* for FILE */
+#include "echeck_impl.h"
 
-int check_char_m(char actual, char expected, const char *msg);
-int check_char(char actual, char expected);
+/*check char*/
+#define check_char_ml(actual, expected, msg, log)\
+	check_char_efl(actual, expected, msg, log, __FILE__, __LINE__)
 
-int check_int_m(int actual, int expected, const char *msg);
-int check_int(int actual, int expected);
+#define check_char_m(actual, expected, msg)\
+	check_char_efl(actual, expected, msg, stderr, __FILE__, __LINE__)
 
-int check_long_m(long actual, long expected, const char *msg);
-int check_long(long actual, long expected);
+#define check_char_l(actual, expected, log)\
+	check_char_efl(actual, expected, NULL, log, __FILE__, __LINE__)
 
-int check_str_m(const char *actual, const char *expected, const char *msg);
-int check_str(const char *actual, const char *expected);
+#define check_char(actual, expected)\
+	check_char_efl(actual, expected, NULL, stderr, __FILE__, __LINE__)
 
-int check_ptr_m(const void *actual, const void *expected, const char *msg);
-int check_ptr(const void *actual, const void *expected);
+/* check int */
+#define check_int_ml(actual, expected,  msg, log)\
+	check_int_efl(actual, expected, msg, log, __FILE__, __LINE__)
 
-int check_unsigned_int_m(unsigned int actual, unsigned int expected,
-			 const char *msg);
-int check_unsigned_int(unsigned int actual, unsigned int expected);
+#define check_int_m(actual, expected,  msg)\
+	check_int_efl(actual, expected, msg, stderr, __FILE__, __LINE__)
 
-int check_unsigned_long_m(unsigned long actual, unsigned long expected,
-			  const char *msg);
-int check_unsigned_long(unsigned long actual, unsigned long expected);
+#define check_int_l(actual, expected, log)\
+	check_int_efl(actual, expected, NULL, log, __FILE__, __LINE__)
 
-int check_size_t_m(size_t actual, size_t expected, const char *msg);
-int check_size_t(size_t actual, size_t expected);
+#define check_int(actual, expected)\
+	check_int_efl(actual, expected, NULL, stderr, __FILE__, __LINE__)
 
-int check_byte_array_m(unsigned char *actual, size_t actual_len,
-		       unsigned char *expected, size_t expected_len,
-		       const char *msg);
-int check_byte_array(unsigned char *actual, size_t actual_len,
-		     unsigned char *expected, size_t expected_len);
+/* check long */
+#define check_long_ml(actual, expected,  msg, log)\
+	check_long_efl(actual, expected, msg, log, __FILE__, __LINE__)
 
-/* these are for setting global variables */
-unsigned int set_echeck_global_exit_on_fail(unsigned int new_val);
-FILE *set_echeck_stderr(FILE * new_err);
+#define check_long_m(actual, expected,  msg)\
+	check_long_efl(actual, expected, msg, stderr, __FILE__, __LINE__)
+
+#define check_long_l(actual, expected, log)\
+	check_long_efl(actual, expected, NULL, log, __FILE__, __LINE__)
+
+#define check_long(actual, expected)\
+	check_long_efl(actual, expected, NULL, stderr, __FILE__, __LINE__)
+
+/* check str */
+#define check_str_ml(actual, expected,  msg, log)\
+	check_str_efl(actual, expected, msg, log, __FILE__, __LINE__)
+
+#define check_str_m(actual, expected,  msg)\
+	check_str_efl(actual, expected, msg, stderr, __FILE__, __LINE__)
+
+#define check_str_l(actual, expected, log)\
+	check_str_efl(actual, expected, NULL, log, __FILE__, __LINE__)
+
+#define check_str(actual, expected)\
+	check_str_efl(actual, expected, NULL, stderr, __FILE__, __LINE__)
+
+/* check ptr */
+#define check_ptr_ml(actual, expected,  msg, log)\
+	check_ptr_efl(actual, expected, msg, log, __FILE__, __LINE__)
+
+#define check_ptr_m(actual, expected,  msg)\
+	check_ptr_efl(actual, expected, msg, stderr, __FILE__, __LINE__)
+
+#define check_ptr_l(actual, expected, log)\
+	check_ptr_efl(actual, expected, NULL, log, __FILE__, __LINE__)
+
+#define check_ptr(actual, expected)\
+	check_ptr_efl(actual, expected, NULL, stderr, __FILE__, __LINE__)
+
+/* check unsigned int */
+#define check_unsigned_int_ml(actual, expected,  msg, log)\
+	check_unsigned_int_efl(actual, expected, msg, log, __FILE__, __LINE__)
+
+#define check_unsigned_int_m(actual, expected,  msg)\
+	check_unsigned_int_efl(actual, expected, msg, stderr, __FILE__,\
+	__LINE__)
+
+#define check_unsigned_int_l(actual, expected, log)\
+	check_unsigned_int_efl(actual, expected, NULL, log, __FILE__, __LINE__)
+
+#define check_unsigned_int(actual, expected)\
+	check_unsigned_int_efl(actual, expected, NULL, stderr, __FILE__,\
+	__LINE__)
+
+/* check unsigned long */
+#define check_unsigned_long_ml(actual, expected,  msg, log)\
+	check_unsigned_long_efl(actual, expected, msg, log, __FILE__, __LINE__)
+
+#define check_unsigned_long_m(actual, expected,  msg)\
+	check_unsigned_long_efl(actual, expected, msg, stderr, __FILE__,\
+	__LINE__)
+
+#define check_unsigned_long_l(actual, expected, log)\
+	check_unsigned_long_efl(actual, expected, NULL, log, __FILE__,\
+	__LINE__)
+
+#define check_unsigned_long(actual, expected)\
+	check_unsigned_long_efl(actual, expected, NULL, stderr, __FILE__,\
+	__LINE__)
+
+/* check size_t */
+#define check_size_t_ml(actual, expected,  msg, log)\
+	check_size_t_efl(actual, expected, msg, log, __FILE__, __LINE__)
+
+#define check_size_t_m(actual, expected,  msg)\
+	check_size_t_efl(actual, expected, msg, stderr, __FILE__, __LINE__)
+
+#define check_size_t_l(actual, expected, log)\
+	check_size_t_efl(actual, expected, NULL, log, __FILE__, __LINE__)
+
+#define check_size_t(actual, expected)\
+	check_size_t_efl(actual, expected, NULL, stderr, __FILE__, __LINE__)
+
+/* check byte_array */
+#define check_byte_array_ml(actual, actual_len, expected, expected_len, msg,\
+	log)\
+	check_byte_array_efl(actual, actual_len, expected, expected_len, msg,\
+	log, __FILE__, __LINE__)
+
+#define check_byte_array_m(actual, actual_len, expected, expected_len,  msg)\
+	check_byte_array_efl(actual, actual_len, expected, expected_len, msg,\
+	stderr, __FILE__, __LINE__)
+
+#define check_byte_array_l(actual, actual_len, expected, expected_len, log)\
+	check_byte_array_efl(actual, actual_len, expected, expected_len, NULL,\
+	log, __FILE__, __LINE__)
+
+#define check_byte_array(actual, actual_len, expected, expected_len)\
+	check_byte_array_efl(actual, actual_len, expected, expected_len, NULL,\
+	stderr, __FILE__, __LINE__)
 
 #endif /* ECHECK_H */
