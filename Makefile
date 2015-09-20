@@ -67,6 +67,7 @@ $(OUT): $(SO_NAME) $(A_NAME)
 check: $(OUT)
 	./$(OUT)-static
 	LD_LIBRARY_PATH=. ./$(OUT)-dynamic
+
 tidy:
 	$(LINDENT) \
                 -T FILE \
