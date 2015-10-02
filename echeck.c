@@ -69,8 +69,13 @@ int echeck_long_m(FILE *err, const char *file, int line, long actual,
 int echeck_size_t_m(FILE *err, const char *file, int line, size_t actual,
 		    size_t expected, const char *msg)
 {
-	return echeck_unsigned_long_m(err, file, line, (unsigned long)actual,
-				      (unsigned long)expected, msg);
+	if (expected == actual) {
+		return 0;
+	}
+	fprintf(err, "FAIL: %s%sExpected %lu but was %lu [File: %s Line: %d]\n",
+		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ",
+		(unsigned long)expected, (unsigned long)actual, file, line);
+	return 1;
 }
 
 int echeck_str_m(FILE *err, const char *file, int line, const char *actual,
