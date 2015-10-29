@@ -108,7 +108,8 @@ int echeck_byte_array_m(FILE *err, const char *file, int line,
 	}
 	for (i = 0; i < actual_len; i++) {
 		if (actual[i] != expected[i]) {
-			fprintf(err, "buffers differ at %d\n", i);
+			fprintf(err, "buffers differ at %lu\n",
+				(unsigned long)i);
 			goto fail;
 		}
 	}
@@ -118,10 +119,11 @@ fail:
 	fprintf(err, "FAIL: %s%s[File: %s Line: %d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", file, line);
 	for (i = 0; i < actual_len; i++) {
-		fprintf(err, "actual[%d]=%02x\n", i, actual[i]);
+		fprintf(err, "actual[%lu]=%02x\n", (unsigned long)i, actual[i]);
 	}
 	for (i = 0; i < expected_len; i++) {
-		fprintf(err, "expected[%d]=%02x\n", i, expected[i]);
+		fprintf(err, "expected[%lu]=%02x\n", (unsigned long)i,
+			expected[i]);
 	}
 	return 1;
 }

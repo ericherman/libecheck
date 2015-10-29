@@ -292,7 +292,7 @@ int check_check_unsigned_long(const char *filename)
 	int failures = 0;
 
 	strs[0] = "1";
-	strs[1] = "4294967295";
+	strs[1] = sizeof(size_t) == 8 ? "18446744073709551615" : "4294967295";
 
 	failures += check_unsigned_long(5L, 5L);
 
@@ -346,7 +346,7 @@ int check_check_size_t(const char *filename)
 	size_t five = 5;
 
 	strs[0] = "1";
-	strs[1] = "4294967295";
+	strs[1] = sizeof(size_t) == 8 ? "18446744073709551615" : "4294967295";
 
 	failures += check_size_t(five, five);
 
