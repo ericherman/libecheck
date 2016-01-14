@@ -1,6 +1,4 @@
-#include "echeck_impl.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "echeck.h"
 #include <string.h>
 
 int echeck_char_m(FILE *err, const char *file, int line, char actual,
