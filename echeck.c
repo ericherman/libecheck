@@ -96,8 +96,8 @@ int echeck_str_m(FILE *err, const char *func, const char *file, int line,
 }
 
 int echeck_byte_array_m(FILE *err, const char *func, const char *file, int line,
-			unsigned char *actual, size_t actual_len,
-			unsigned char *expected, size_t expected_len,
+			const unsigned char *actual, size_t actual_len,
+			const unsigned char *expected, size_t expected_len,
 			const char *msg)
 {
 

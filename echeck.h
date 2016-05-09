@@ -179,8 +179,8 @@ int echeck_size_t_m(FILE *err, const char *func, const char *file, int line,
 
 /* check byte_array */
 int echeck_byte_array_m(FILE *err, const char *func, const char *file, int line,
-			unsigned char *actual, size_t actual_len,
-			unsigned char *expected, size_t expected_len,
+			const unsigned char *actual, size_t actual_len,
+			const unsigned char *expected, size_t expected_len,
 			const char *msg);
 
 #define fcheck_byte_array_m(log, actual, actual_len, expected, expected_len,\
