@@ -32,7 +32,8 @@ DEBUG_CFLAGS=-ggdb -O3
 NOISY_CFLAGS=-Werror -Wall -Wextra -pedantic
 
 CFLAGS += $(CSTD_CFLAGS) $(DEBUG_CFLAGS) $(NOISY_CFLAGS)
-LDFLAGS += -L. -l$(LIB_NAME)
+LDFLAGS += -L.
+LDADD += -l$(LIB_NAME)
 CC=gcc
 
 ifeq ("$(LIBDIR)", "")
@@ -62,7 +63,7 @@ $(A_NAME): $(LIB_OBJ)
 $(OUT): $(SO_NAME) $(A_NAME)
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(SRC) -o $(OBJ)
 	$(CC) $(OBJ) $(A_NAME) -o $(OUT)-static
-	$(CC) $(OBJ) $(LDFLAGS) -o $(OUT)-dynamic
+	$(CC) $(OBJ) $(LDFLAGS) -o $(OUT)-dynamic $(LDADD)
 
 check: $(OUT)
 	./$(OUT)-static
