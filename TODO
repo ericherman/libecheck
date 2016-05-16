@@ -1,0 +1,6 @@
+TODO:
+* consider moving src into src/ directory
+* rework test-echeck
+  * move into subdirectory
+  * make err file unique
+  * break into separate tests
