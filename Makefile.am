@@ -5,8 +5,8 @@ include_HEADERS=echeck.h
 
 TESTS=$(check_PROGRAMS)
 check_PROGRAMS=test-echeck
-test-echeck_SOURCES=test-echeck.c
-test-echeck_LDADD=libecheck.la
+test_echeck_SOURCES=test-echeck.c
+test_echeck_LDADD=libecheck.la
 
 AM_CFLAGS=-std=c89 -O0 -ggdb -Wall -Wextra -Wpedantic -Werror
 
