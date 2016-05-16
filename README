@@ -33,6 +33,15 @@ To check a byte[] buffer, additional length parameters are required:
  error_code = check_byte_array(actual, actual_len, expected, expected_len);
 
 
+Packaging
+---------
+autoreconf -iv &&
+ ./configure &&
+ make &&
+ make distcheck &&
+ echo "Success."
+
+
 License
 -------
 GNU Lesser General Public License (LGPL), version 3 or later.
