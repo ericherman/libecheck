@@ -8,6 +8,8 @@ check_PROGRAMS=test-echeck
 test_echeck_SOURCES=test-echeck.c
 test_echeck_LDADD=libecheck.la
 
+ACLOCAL_AMFLAGS=-I m4
+
 AM_CFLAGS=-std=c89 -O0 -ggdb -Wall -Wextra -Wpedantic -Werror
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent

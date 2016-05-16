@@ -5,8 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT([libecheck], [1.0.0], [eric@freesa.org])
 AC_CONFIG_SRCDIR([echeck.h])
 AC_CONFIG_HEADERS([config.h])
-
-AM_INIT_AUTOMAKE([-Werror -Wall])
+AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
 AC_PROG_CC
@@ -22,6 +21,10 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([strstr])
+
+AM_INIT_AUTOMAKE([-Werror -Wall])
+AM_PROG_AR
+LT_INIT
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
