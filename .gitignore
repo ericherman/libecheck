@@ -45,3 +45,17 @@ configure
 depcomp
 install-sh
 missing
+ar-lib
+config.guess
+config.sub
+ltmain.sh
+test-driver
+.deps/
+.libs/
+*.lo
+*.la
+m4/
+*.log
+*.trs
+*.log
+
