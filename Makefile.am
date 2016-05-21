@@ -136,6 +136,6 @@ valgrind: $(check_PROGRAMS)
 	libtool --mode=execute valgrind ./test_check_unsigned_long_m
 
 spotless:
-	rm -rf `cat .gitignore`
-	( cd src; rm -rf `cat ../.gitignore`; cd .. )
-	( cd tests; rm -rf `cat ../.gitignore`; cd .. )
+	rm -rf `cat .gitignore | sed -e 's/#.*//'`
+	pushd src && rm -rf `cat ../.gitignore | sed -e 's/#.*//'`; popd
+	pushd tests && rm -rf `cat ../.gitignore | sed -e 's/#.*//'`; popd
