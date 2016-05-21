@@ -7,6 +7,9 @@ int echeck_char_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
+	if (err == NULL) {
+		err = stderr;
+	}
 	fprintf(err, "FAIL: %s%sExpected '%c' but was '%c' [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -20,6 +23,9 @@ int echeck_unsigned_long_m(FILE *err, const char *func, const char *file,
 {
 	if (expected == actual) {
 		return 0;
+	}
+	if (err == NULL) {
+		err = stderr;
 	}
 	fprintf(err, "FAIL: %s%sExpected %lu but was %lu [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
@@ -35,6 +41,9 @@ int echeck_unsigned_int_m(FILE *err, const char *func, const char *file,
 	if (expected == actual) {
 		return 0;
 	}
+	if (err == NULL) {
+		err = stderr;
+	}
 	fprintf(err, "FAIL: %s%sExpected %u but was %u [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -47,6 +56,9 @@ int echeck_int_m(FILE *err, const char *func, const char *file, int line,
 {
 	if (expected == actual) {
 		return 0;
+	}
+	if (err == NULL) {
+		err = stderr;
 	}
 	fprintf(err, "FAIL: %s%sExpected %d but was %d [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
@@ -61,6 +73,9 @@ int echeck_long_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
+	if (err == NULL) {
+		err = stderr;
+	}
 	fprintf(err, "FAIL: %s%sExpected %ld but was %ld [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -73,6 +88,9 @@ int echeck_size_t_m(FILE *err, const char *func, const char *file, int line,
 {
 	if (expected == actual) {
 		return 0;
+	}
+	if (err == NULL) {
+		err = stderr;
 	}
 	fprintf(err, "FAIL: %s%sExpected %lu but was %lu [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ",
@@ -87,6 +105,9 @@ int echeck_str_m(FILE *err, const char *func, const char *file, int line,
 {
 	if (strcmp(expected, actual) == 0) {
 		return 0;
+	}
+	if (err == NULL) {
+		err = stderr;
 	}
 	fprintf(err, "FAIL: %s%sExpected '%s' but was '%s' [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
@@ -104,6 +125,9 @@ int echeck_byte_array_m(FILE *err, const char *func, const char *file, int line,
 	size_t i;
 	const char *fmt;
 
+	if (err == NULL) {
+		err = stderr;
+	}
 	fmt = "actual/expected length mis-match %d != %d [%s%s%s:%d]\n";
 
 	if (actual_len != expected_len) {
@@ -140,6 +164,9 @@ int echeck_ptr_m(FILE *err, const char *func, const char *file, int line,
 {
 	if (expected == actual) {
 		return 0;
+	}
+	if (err == NULL) {
+		err = stderr;
 	}
 	fprintf(err, "FAIL: %s%sExpected '%p' but was '%p' [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,

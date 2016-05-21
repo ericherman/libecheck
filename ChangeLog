@@ -2,6 +2,7 @@
 
 	move source files into src/ and tests/ subdirs
 	break test-echeck.c into many individual tests
+	default to stderr if FILE *err is NULL
 
 2016-05-16  Eric Herman <eric@freesa.org>
 
