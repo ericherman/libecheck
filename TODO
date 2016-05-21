@@ -1,5 +1,3 @@
 libecheck TODO:
 
-* rework test-echeck
-  * make err file unique
-  * break into separate tests
+* better platform independence in tests

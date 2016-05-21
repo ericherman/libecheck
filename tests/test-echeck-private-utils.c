@@ -5,8 +5,12 @@
 
 char *set_log(char *log, const char *logdir, const char *filename)
 {
-        sprintf(log, "%s%c%s.log", logdir, ECHECK_PATH_SEP, filename);
-        return log;
+	if (logdir) {
+		sprintf(log, "%s%c%s.log", logdir, ECHECK_PATH_SEP, filename);
+	} else {
+		sprintf(log, "%s.log", filename);
+	}
+	return log;
 }
 
 int err_contains(const char *filename, char *expected[], size_t expected_len)

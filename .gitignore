@@ -24,9 +24,31 @@ $*
 *.trs
 *.log
 *.tar.gz
+
+################
+# compiled tests
+################
 test-*-dynamic
 test-*-static
 test-echeck
+test_check_byte_array
+test_check_byte_array_m
+test_check_char
+test_check_char_m
+test_check_int
+test_check_int_m
+test_check_long
+test_check_long_m
+test_check_ptr
+test_check_ptr_m
+test_check_size_t
+test_check_size_t_m
+test_check_str
+test_check_str_m
+test_check_unsigned_int
+test_check_unsigned_int_m
+test_check_unsigned_long
+test_check_unsigned_long_m
 
 ################
 # autotools
