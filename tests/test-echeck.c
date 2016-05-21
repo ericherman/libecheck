@@ -36,7 +36,7 @@ int err_contains(const char *filename, char *expected[], size_t str_count)
 	return str_count - msg_found;
 }
 
-int check_check_str(const char *filename)
+int test_check_str(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -55,12 +55,12 @@ int check_check_str(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_str\n", failures);
+		fprintf(stderr, "%d failures in test_check_str\n", failures);
 	}
 	return failures;
 }
 
-int check_check_str_m(const char *filename)
+int test_check_str_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -80,12 +80,12 @@ int check_check_str_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_str_m\n", failures);
+		fprintf(stderr, "%d failures in test_check_str_m\n", failures);
 	}
 	return failures;
 }
 
-int check_check_char(const char *filename)
+int test_check_char(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -104,12 +104,12 @@ int check_check_char(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_char\n", failures);
+		fprintf(stderr, "%d failures in test_check_char\n", failures);
 	}
 	return failures;
 }
 
-int check_check_char_m(const char *filename)
+int test_check_char_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -129,13 +129,13 @@ int check_check_char_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_char_m\n",
+		fprintf(stderr, "%d failures in test_check_char_m\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_int(const char *filename)
+int test_check_int(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -154,12 +154,12 @@ int check_check_int(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_int\n", failures);
+		fprintf(stderr, "%d failures in test_check_int\n", failures);
 	}
 	return failures;
 }
 
-int check_check_int_m(const char *filename)
+int test_check_int_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -179,12 +179,12 @@ int check_check_int_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_int_m\n", failures);
+		fprintf(stderr, "%d failures in test_check_int_m\n", failures);
 	}
 	return failures;
 }
 
-int check_check_unsigned_int(const char *filename)
+int test_check_unsigned_int(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -203,13 +203,13 @@ int check_check_unsigned_int(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_unsigned_int\n",
+		fprintf(stderr, "%d failures in test_check_unsigned_int\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_unsigned_int_m(const char *filename)
+int test_check_unsigned_int_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -229,13 +229,13 @@ int check_check_unsigned_int_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_unsigned_int_m\n",
+		fprintf(stderr, "%d failures in test_check_unsigned_int_m\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_long(const char *filename)
+int test_check_long(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -254,12 +254,12 @@ int check_check_long(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_long\n", failures);
+		fprintf(stderr, "%d failures in test_check_long\n", failures);
 	}
 	return failures;
 }
 
-int check_check_long_m(const char *filename)
+int test_check_long_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -279,13 +279,13 @@ int check_check_long_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_long_m\n",
+		fprintf(stderr, "%d failures in test_check_long_m\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_unsigned_long(const char *filename)
+int test_check_unsigned_long(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -304,13 +304,13 @@ int check_check_unsigned_long(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_unsigned_long\n",
+		fprintf(stderr, "%d failures in test_check_unsigned_long\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_unsigned_long_m(const char *filename)
+int test_check_unsigned_long_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -330,13 +330,13 @@ int check_check_unsigned_long_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_unsigned_long_m\n",
+		fprintf(stderr, "%d failures in test_check_unsigned_long_m\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_size_t(const char *filename)
+int test_check_size_t(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -358,13 +358,13 @@ int check_check_size_t(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_size_t\n",
+		fprintf(stderr, "%d failures in test_check_size_t\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_size_t_m(const char *filename)
+int test_check_size_t_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -386,13 +386,13 @@ int check_check_size_t_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_size_t_m\n",
+		fprintf(stderr, "%d failures in test_check_size_t_m\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_byte_array(const char *filename)
+int test_check_byte_array(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -415,13 +415,13 @@ int check_check_byte_array(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_byte_array\n",
+		fprintf(stderr, "%d failures in test_check_byte_array\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_byte_array_m(const char *filename)
+int test_check_byte_array_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -448,13 +448,13 @@ int check_check_byte_array_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_byte_array_m\n",
+		fprintf(stderr, "%d failures in test_check_byte_array_m\n",
 			failures);
 	}
 	return failures;
 }
 
-int check_check_ptr(const char *filename)
+int test_check_ptr(const char *filename)
 {
 	FILE *log;
 	char *strs[2];
@@ -473,12 +473,12 @@ int check_check_ptr(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_ptr\n", failures);
+		fprintf(stderr, "%d failures in test_check_ptr\n", failures);
 	}
 	return failures;
 }
 
-int check_check_ptr_m(const char *filename)
+int test_check_ptr_m(const char *filename)
 {
 	FILE *log;
 	char *strs[3];
@@ -497,7 +497,7 @@ int check_check_ptr_m(const char *filename)
 
 	failures += err_contains(filename, strs, 1);
 	if (failures) {
-		fprintf(stderr, "%d failures in check_check_ptr_m\n", failures);
+		fprintf(stderr, "%d failures in test_check_ptr_m\n", failures);
 	}
 	return failures;
 }
@@ -513,28 +513,28 @@ int main(int argc, char *argv[])
 		filename = "/tmp/stderr.log";
 	}
 
-	failures += check_check_str(filename);
-	failures += check_check_str_m(filename);
-	failures += check_check_char(filename);
-	failures += check_check_char_m(filename);
+	failures += test_check_str(filename);
+	failures += test_check_str_m(filename);
+	failures += test_check_char(filename);
+	failures += test_check_char_m(filename);
 
-	failures += check_check_int(filename);
-	failures += check_check_int_m(filename);
-	failures += check_check_unsigned_int(filename);
-	failures += check_check_unsigned_int_m(filename);
+	failures += test_check_int(filename);
+	failures += test_check_int_m(filename);
+	failures += test_check_unsigned_int(filename);
+	failures += test_check_unsigned_int_m(filename);
 
-	failures += check_check_long(filename);
-	failures += check_check_long_m(filename);
-	failures += check_check_unsigned_long(filename);
-	failures += check_check_unsigned_long_m(filename);
+	failures += test_check_long(filename);
+	failures += test_check_long_m(filename);
+	failures += test_check_unsigned_long(filename);
+	failures += test_check_unsigned_long_m(filename);
 
-	failures += check_check_size_t(filename);
-	failures += check_check_size_t_m(filename);
+	failures += test_check_size_t(filename);
+	failures += test_check_size_t_m(filename);
 
-	failures += check_check_ptr(filename);
-	failures += check_check_ptr_m(filename);
-	failures += check_check_byte_array(filename);
-	failures += check_check_byte_array_m(filename);
+	failures += test_check_ptr(filename);
+	failures += test_check_ptr_m(filename);
+	failures += test_check_byte_array(filename);
+	failures += test_check_byte_array_m(filename);
 
 	if (failures) {
 		fprintf(stderr, "%d failures in total\n", failures);
