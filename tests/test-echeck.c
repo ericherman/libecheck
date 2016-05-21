@@ -2,49 +2,7 @@
 #include <string.h>
 
 #include "echeck.h"
-
-/* TODO: do something portable alternative here */
-#define ECHECK_PATH_MAX 4096
-#define ECHECK_SEP '/'
-
-static char *set_log(char *log, const char *logdir, const char *filename)
-{
-	sprintf(log, "%s%c%s.log", logdir, ECHECK_SEP, filename);
-	return log;
-}
-
-int err_contains(const char *filename, char *expected[], size_t str_count)
-{
-	FILE *log;
-	char buffer[4096];
-	size_t i, len;
-	unsigned int msg_found;
-
-	log = fopen(filename, "r");
-	msg_found = 0;
-	if (log) {
-		len = 0;
-		while (fgets(buffer + len, (sizeof buffer) - len, log)) {
-			len = strlen(buffer);
-			if (len >= (sizeof buffer)) {
-				len = (sizeof buffer);
-				buffer[len - 1] = '\0';
-			}
-		}
-		if (len) {
-			for (i = 0; i < str_count; i++) {
-				if (strstr(buffer, expected[i])) {
-					msg_found++;
-				} else {
-					fprintf(stderr, "'%s' not in: %s\n",
-						expected[i], buffer);
-				}
-			}
-		}
-		fclose(log);
-	}
-	return str_count - msg_found;
-}
+#include "test-echeck-private-utils.h"
 
 int test_check_str(const char *filename)
 {

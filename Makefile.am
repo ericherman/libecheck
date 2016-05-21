@@ -5,7 +5,11 @@ include_HEADERS=src/echeck.h
 
 TESTS=$(check_PROGRAMS)
 check_PROGRAMS=test-echeck
-test_echeck_SOURCES=tests/test-echeck.c src/echeck.h
+TESTS_COMMON_SOURCES=\
+ tests/test-echeck-private-utils.h \
+ tests/test-echeck-private-utils.c \
+ src/echeck.h
+test_echeck_SOURCES=tests/test-echeck.c $(TESTS_COMMON_SOURCES)
 test_echeck_LDADD=libecheck.la
 
 ACLOCAL_AMFLAGS=-I m4 --install
