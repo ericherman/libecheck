@@ -18,6 +18,12 @@ $*
 *.a
 *.bin
 *.d
+*.lo
+*.la
+*.log
+*.trs
+*.log
+*.tar.gz
 test-*-dynamic
 test-*-static
 test-echeck
@@ -34,7 +40,6 @@ config.log
 config.status
 libtool
 Makefile
-*.tar.gz
 stamp-h1
 INSTALL
 Makefile.in
@@ -50,12 +55,8 @@ config.guess
 config.sub
 ltmain.sh
 test-driver
+.dirstamp
 .deps/
 .libs/
-*.lo
-*.la
 m4/
-*.log
-*.trs
-*.log
-
+build-aux/

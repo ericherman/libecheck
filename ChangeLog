@@ -1,3 +1,7 @@
+2016-05-21  Eric Herman <eric@freesa.org>
+
+	move source files into src/ and tests/ subdirs
+
 2016-05-16  Eric Herman <eric@freesa.org>
 
 	* tagging as release version 1.0.0
