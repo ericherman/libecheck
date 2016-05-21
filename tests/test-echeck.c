@@ -3,6 +3,16 @@
 
 #include "echeck.h"
 
+/* TODO: do something portable alternative here */
+#define ECHECK_PATH_MAX 4096
+#define ECHECK_SEP '/'
+
+static char *set_log(char *log, const char *logdir, const char *filename)
+{
+	sprintf(log, "%s%c%s.log", logdir, ECHECK_SEP, filename);
+	return log;
+}
+
 int err_contains(const char *filename, char *expected[], size_t str_count)
 {
 	FILE *log;
@@ -129,8 +139,7 @@ int test_check_char_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_char_m\n",
-			failures);
+		fprintf(stderr, "%d failures in test_check_char_m\n", failures);
 	}
 	return failures;
 }
@@ -279,8 +288,7 @@ int test_check_long_m(const char *filename)
 
 	failures += err_contains(filename, strs, 3);
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_long_m\n",
-			failures);
+		fprintf(stderr, "%d failures in test_check_long_m\n", failures);
 	}
 	return failures;
 }
@@ -358,8 +366,7 @@ int test_check_size_t(const char *filename)
 
 	failures += err_contains(filename, strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_size_t\n",
-			failures);
+		fprintf(stderr, "%d failures in test_check_size_t\n", failures);
 	}
 	return failures;
 }
@@ -504,37 +511,69 @@ int test_check_ptr_m(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *filename;
+	const char *dir;
+	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
 	if (argc > 1) {
-		filename = argv[1];
+		dir = argv[1];
 	} else {
-		filename = "/tmp/stderr.log";
+		dir = "/tmp";
 	}
 
-	failures += test_check_str(filename);
-	failures += test_check_str_m(filename);
-	failures += test_check_char(filename);
-	failures += test_check_char_m(filename);
+	set_log(log, dir, "test_check_str");
+	failures += test_check_str(log);
 
-	failures += test_check_int(filename);
-	failures += test_check_int_m(filename);
-	failures += test_check_unsigned_int(filename);
-	failures += test_check_unsigned_int_m(filename);
+	set_log(log, dir, "test_check_str_m");
+	failures += test_check_str_m(log);
 
-	failures += test_check_long(filename);
-	failures += test_check_long_m(filename);
-	failures += test_check_unsigned_long(filename);
-	failures += test_check_unsigned_long_m(filename);
+	set_log(log, dir, "test_check_char");
+	failures += test_check_char(log);
 
-	failures += test_check_size_t(filename);
-	failures += test_check_size_t_m(filename);
+	set_log(log, dir, "test_check_char_m");
+	failures += test_check_char_m(log);
 
-	failures += test_check_ptr(filename);
-	failures += test_check_ptr_m(filename);
-	failures += test_check_byte_array(filename);
-	failures += test_check_byte_array_m(filename);
+	set_log(log, dir, "test_check_int");
+	failures += test_check_int(log);
+
+	set_log(log, dir, "test_check_int_m");
+	failures += test_check_int_m(log);
+
+	set_log(log, dir, "test_check_unsigned_int");
+	failures += test_check_unsigned_int(log);
+
+	set_log(log, dir, "test_check_unsigned_int_m");
+	failures += test_check_unsigned_int_m(log);
+
+	set_log(log, dir, "test_check_long");
+	failures += test_check_long(log);
+
+	set_log(log, dir, "test_check_long_m");
+	failures += test_check_long_m(log);
+
+	set_log(log, dir, "test_check_unsigned_long");
+	failures += test_check_unsigned_long(log);
+
+	set_log(log, dir, "test_check_unsigned_long_m");
+	failures += test_check_unsigned_long_m(log);
+
+	set_log(log, dir, "test_check_size_t");
+	failures += test_check_size_t(log);
+
+	set_log(log, dir, "test_check_size_t_m");
+	failures += test_check_size_t_m(log);
+
+	set_log(log, dir, "test_check_ptr");
+	failures += test_check_ptr(log);
+
+	set_log(log, dir, "test_check_ptr_m");
+	failures += test_check_ptr_m(log);
+
+	set_log(log, dir, "test_check_byte_array");
+	failures += test_check_byte_array(log);
+
+	set_log(log, dir, "test_check_byte_array_m");
+	failures += test_check_byte_array_m(log);
 
 	if (failures) {
 		fprintf(stderr, "%d failures in total\n", failures);
