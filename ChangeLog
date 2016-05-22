@@ -1,3 +1,40 @@
+2016-05-22  Eric Herman <eric@freesa.org>
+
+	Added "echeck_status" function and updated tests.
+	The "check_status" functions allow returning error counts exit codes.
+	Values larger than 127 or smaller than -128 will be capped.
+	Thus, a value of 256 for instance, will not return EXIT_SUCCESS.
+
+	Changed the test headers to include "../src/echeck.h" so they do not
+	find the system installed <echeck.h>; I expect there is a better way
+	to do this.
+
+	* README: add "check_status" text
+	* src/echeck.h: add "echeck_status" and relatives
+	* src/echeck.c: add "echeck_status" impl
+	* Makefile.am: add "test_check_status", reduce LDADD duplication
+	* tests/test_check_status.c: new test, (does not use 'check_status')
+	* tests/test_check_byte_array.c: header, returns check_status(failures)
+	* tests/test_check_byte_array_m.c: (also)
+	* tests/test_check_char.c: (also)
+	* tests/test_check_char_m.c: (also)
+	* tests/test_check_int.c: (also)
+	* tests/test_check_int_m.c: (also)
+	* tests/test_check_long.c: (also)
+	* tests/test_check_long_m.c: (also)
+	* tests/test_check_ptr.c: (also)
+	* tests/test_check_ptr_m.c: (also)
+	* tests/test_check_size_t.c: (also)
+	* tests/test_check_size_t_m.c: (also)
+	* tests/test_check_str.c: (also)
+	* tests/test_check_str_m.c: (also)
+	* tests/test_check_unsigned_int.c: (also)
+	* tests/test_check_unsigned_int_m.c: (also)
+	* tests/test_check_unsigned_long.c: (also)
+	* tests/test_check_unsigned_long_m.c: (also)
+	* .gitignore: add new test
+
+
 2016-05-21  Eric Herman <eric@freesa.org>
 
 	move source files into src/ and tests/ subdirs

@@ -174,3 +174,28 @@ int echeck_ptr_m(FILE *err, const char *func, const char *file, int line,
 		(func == NULL) ? "" : " at ", file, line);
 	return 1;
 }
+
+char echeck_status_m(FILE *err, const char *func, const char *file, int line,
+		     int val, const char *msg)
+{
+	char c;
+
+	if ((-128 <= val) && (val <= 127)) {
+		c = (char)val;
+		return val;
+	}
+	if (val < -128) {
+		c = -128;
+	} else {
+		c = 127;
+	}
+	if (err == NULL) {
+		err = stderr;
+	}
+	fprintf(err, "%s%s'%d' capped at '%c' [%s%s%s:%d]\n",
+		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ",
+		val, c,
+		(func == NULL) ? "" : func,
+		(func == NULL) ? "" : " at ", file, line);
+	return c;
+}

@@ -200,4 +200,21 @@ int echeck_byte_array_m(FILE *err, const char *func, const char *file, int line,
 	echeck_byte_array_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, actual_len, expected, expected_len, NULL)
 
+/*check status*/
+/* safe casting of non-zero int to avoid EXIT_SUCCESS */
+char echeck_status_m(FILE *err, const char *func, const char *file, int line,
+		     int val, const char *msg);
+
+#define fcheck_status_m(log, val, msg)\
+	echeck_status_m(log, ECHECK_FUNC, __FILE__, __LINE__, val, msg)
+
+#define check_status_m(val, msg)\
+	echeck_status_m(stderr, ECHECK_FUNC, __FILE__, __LINE__, val, msg)
+
+#define fcheck_status(log, val)\
+	echeck_status_m(log, ECHECK_FUNC, __FILE__, __LINE__, val, NULL)
+
+#define check_status(val)\
+	echeck_status_m(stderr, ECHECK_FUNC, __FILE__, __LINE__, val, NULL)
+
 #endif /* ECHECK_H */

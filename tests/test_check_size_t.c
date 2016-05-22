@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "echeck.h"
+#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
 int test_check_size_t(const char *filename)
@@ -45,5 +45,5 @@ int main(int argc, char *argv[])
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
 	}
-	return failures;
+	return check_status(failures);
 }
