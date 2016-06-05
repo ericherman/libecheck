@@ -45,6 +45,7 @@ test_check_ptr_m
 test_check_size_t
 test_check_size_t_m
 test_check_str
+test_check_str_null_ptr
 test_check_str_m
 test_check_unsigned_int
 test_check_unsigned_int_m

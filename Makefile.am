@@ -19,6 +19,7 @@ check_PROGRAMS=\
  test_check_size_t \
  test_check_size_t_m \
  test_check_str \
+ test_check_str_null_ptr \
  test_check_str_m \
  test_check_unsigned_int \
  test_check_unsigned_int_m \
@@ -88,6 +89,10 @@ test_check_str_SOURCES=tests/test_check_str.c \
  $(TESTS_COMMON_SOURCES)
 test_check_str_LDADD=$(T_LDADD)
 
+test_check_str_null_ptr_SOURCES=tests/test_check_str_null_ptr.c \
+ $(TESTS_COMMON_SOURCES)
+test_check_str_null_ptr_LDADD=$(T_LDADD)
+
 test_check_str_m_SOURCES=tests/test_check_str_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_str_m_LDADD=$(T_LDADD)
@@ -137,6 +142,7 @@ valgrind: $(check_PROGRAMS)
 	libtool --mode=execute valgrind ./test_check_size_t
 	libtool --mode=execute valgrind ./test_check_size_t_m
 	libtool --mode=execute valgrind ./test_check_str
+	libtool --mode=execute valgrind ./test_check_str_null_ptr
 	libtool --mode=execute valgrind ./test_check_str_m
 	libtool --mode=execute valgrind ./test_check_unsigned_int
 	libtool --mode=execute valgrind ./test_check_unsigned_int_m

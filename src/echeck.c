@@ -103,7 +103,10 @@ int echeck_size_t_m(FILE *err, const char *func, const char *file, int line,
 int echeck_str_m(FILE *err, const char *func, const char *file, int line,
 		 const char *actual, const char *expected, const char *msg)
 {
-	if (strcmp(expected, actual) == 0) {
+	if (actual == expected) {
+		return 0;
+	}
+	if (actual != NULL && expected != NULL && strcmp(expected, actual) == 0) {
 		return 0;
 	}
 	if (err == NULL) {

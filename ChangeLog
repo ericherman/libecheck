@@ -1,3 +1,10 @@
+2016-06-05  Eric Herman <eric@freesa.org>
+
+	* src/echeck.c: check_str now handles NULL reasonably
+	* tests/test_check_str_null_ptr.c: add test for NULL
+	* Makefile.am: add new test
+	* .gitignore: ignore new test
+
 2016-05-22  Eric Herman <eric@freesa.org>
 
 	Added "echeck_status" function and updated tests.
