@@ -9,9 +9,11 @@ int test_check_unsigned_int(const char *filename)
 	FILE *log;
 	char *strs[2];
 	int failures = 0;
+	char buf[40];
 
 	strs[0] = "1";
-	strs[1] = "4294967295";
+	sprintf(buf, "%lu", (unsigned long)-1);
+	strs[1] = buf;
 
 	failures += check_unsigned_int(5, 5);
 

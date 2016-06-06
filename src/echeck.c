@@ -34,39 +34,6 @@ int echeck_unsigned_long_m(FILE *err, const char *func, const char *file,
 	return 1;
 }
 
-int echeck_unsigned_int_m(FILE *err, const char *func, const char *file,
-			  int line, unsigned int actual, unsigned int expected,
-			  const char *msg)
-{
-	if (expected == actual) {
-		return 0;
-	}
-	if (err == NULL) {
-		err = stderr;
-	}
-	fprintf(err, "FAIL: %s%sExpected %u but was %u [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
-	return 1;
-}
-
-int echeck_int_m(FILE *err, const char *func, const char *file, int line,
-		 int actual, int expected, const char *msg)
-{
-	if (expected == actual) {
-		return 0;
-	}
-	if (err == NULL) {
-		err = stderr;
-	}
-	fprintf(err, "FAIL: %s%sExpected %d but was %d [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
-	return 1;
-}
-
 int echeck_long_m(FILE *err, const char *func, const char *file, int line,
 		  long actual, long expected, const char *msg)
 {

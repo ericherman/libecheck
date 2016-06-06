@@ -35,26 +35,6 @@ int echeck_char_m(FILE *err, const char *func, const char *file, int line,
 	echeck_char_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, expected, NULL)
 
-/* check int */
-int echeck_int_m(FILE *err, const char *func, const char *file, int line,
-		 int actual, int expected, const char *msg);
-
-#define fcheck_int_m(log, actual, expected, msg)\
-	echeck_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, msg)
-
-#define check_int_m(actual, expected, msg)\
-	echeck_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, msg)
-
-#define fcheck_int(log, actual, expected)\
-	echeck_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, NULL)
-
-#define check_int(actual, expected)\
-	echeck_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, NULL)
-
 /* check long */
 int echeck_long_m(FILE *err, const char *func, const char *file, int line,
 		  long actual, long expected, const char *msg);
@@ -73,6 +53,26 @@ int echeck_long_m(FILE *err, const char *func, const char *file, int line,
 
 #define check_long(actual, expected)\
 	echeck_long_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, NULL)
+
+/* check int */
+#define echeck_int_m(err, func, file, line, actual, expected, msg)\
+	echeck_long_m(err, func, file, line, actual, expected, msg)
+
+#define fcheck_int_m(log, actual, expected, msg)\
+	echeck_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, msg)
+
+#define check_int_m(actual, expected, msg)\
+	echeck_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, msg)
+
+#define fcheck_int(log, actual, expected)\
+	echeck_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, NULL)
+
+#define check_int(actual, expected)\
+	echeck_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, expected, NULL)
 
 /* check str */
@@ -115,27 +115,6 @@ int echeck_ptr_m(FILE *err, const char *func, const char *file, int line,
 	echeck_ptr_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, expected, NULL)
 
-/* check unsigned int */
-int echeck_unsigned_int_m(FILE *err, const char *func, const char *file,
-			  int line, unsigned int actual, unsigned int expected,
-			  const char *msg);
-
-#define fcheck_unsigned_int_m(log, actual, expected, msg)\
-	echeck_unsigned_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, msg)
-
-#define check_unsigned_int_m(actual, expected, msg)\
-	echeck_unsigned_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, msg)
-
-#define fcheck_unsigned_int(log, actual, expected)\
-	echeck_unsigned_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, NULL)
-
-#define check_unsigned_int(actual, expected)\
-	echeck_unsigned_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
-		 actual, expected, NULL)
-
 /* check unsigned long */
 int echeck_unsigned_long_m(FILE *err, const char *func, const char *file,
 			   int line, unsigned long actual,
@@ -155,6 +134,26 @@ int echeck_unsigned_long_m(FILE *err, const char *func, const char *file,
 
 #define check_unsigned_long(actual, expected)\
 	echeck_unsigned_long_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, NULL)
+
+/* check unsigned int */
+#define echeck_unsigned_int_m(err, func, file, line, actual, expected, msg)\
+	echeck_unsigned_long_m(err, func, file, line, actual, expected, msg)
+
+#define fcheck_unsigned_int_m(log, actual, expected, msg)\
+	echeck_unsigned_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, msg)
+
+#define check_unsigned_int_m(actual, expected, msg)\
+	echeck_unsigned_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, msg)
+
+#define fcheck_unsigned_int(log, actual, expected)\
+	echeck_unsigned_int_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, expected, NULL)
+
+#define check_unsigned_int(actual, expected)\
+	echeck_unsigned_int_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, expected, NULL)
 
 /* check size_t */

@@ -1,3 +1,9 @@
+2016-06-06  Eric Herman <eric@freesa.org>
+
+	* src/echeck.h: factor together int and long
+	* src/echeck.c: same
+	* tests/test_check_unsigned_int.c: -1 unsigned now a unsigned long
+
 2016-06-05  Eric Herman <eric@freesa.org>
 
 	* src/echeck.c: check_str now handles NULL reasonably
