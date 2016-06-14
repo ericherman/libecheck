@@ -2,6 +2,10 @@
 #ifndef ECHECK_H
 #define ECHECK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>		/* for size_t */
 #include <stdio.h>		/* for FILE */
 
@@ -215,5 +219,9 @@ char echeck_status_m(FILE *err, const char *func, const char *file, int line,
 
 #define check_status(val)\
 	echeck_status_m(stderr, ECHECK_FUNC, __FILE__, __LINE__, val, NULL)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ECHECK_H */

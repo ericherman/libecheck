@@ -1,3 +1,11 @@
+echeck Changelog
+
+2016-06-14  Eric Herman <eric@freesa.org>
+
+	* src/echeck.h: make nice for c++
+	* misc/pre-tidy.patch: comment out block before running indent
+	* Makefile.am: update "make tidy"
+
 2016-06-06  Eric Herman <eric@freesa.org>
 
 	(unsigned) int checks now use long check code.

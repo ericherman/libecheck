@@ -122,10 +122,12 @@ AM_CFLAGS=-std=c89 -O0 -ggdb -Wall -Wextra -Wpedantic -Werror
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
 
 tidy:
+	patch -Np1 -i misc/pre-tidy.patch
 	$(LINDENT) \
 		-T FILE \
 		-T size_t \
 		`find src tests -name '*.h' -o -name '*.c'`
+	patch -Rp1 -i misc/pre-tidy.patch
 
 valgrind: $(check_PROGRAMS)
 	libtool --mode=execute valgrind ./test_check_status
