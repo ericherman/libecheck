@@ -113,6 +113,7 @@ test_check_unsigned_long_m_SOURCES=tests/test_check_unsigned_long_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_unsigned_long_m_LDADD=$(T_LDADD)
 
+EXTRA_DIST=misc
 
 ACLOCAL_AMFLAGS=-I m4 --install
 
