@@ -2,6 +2,19 @@ echeck Changelog
 
 2016-06-16  Eric Herman <eric@freesa.org>
 
+	LGPLv3+ friendly structure
+
+	* src/echeck.h: boilerplate LGPLv3+
+	* src/echeck.c: boilerplate LGPLv3+
+	* README: new file name/locations
+	* Makefile.am: include COPYING.GPL3
+	* misc/gpl-3.0.txt: renamed to COPYING.GPL3
+	* misc/lgpl-3.0.txt: renamed to COPYING
+	* COPYING: renamed from misc/lgpl-3.0.txt
+	* COPYING.GPL3: renamed from misc/gpl-3.0.txt
+
+2016-06-16  Eric Herman <eric@freesa.org>
+
 	* COPYING: boilerplate LGPLv3+
 	* README: reference misc/
 	* Makefile.am: include misc/
