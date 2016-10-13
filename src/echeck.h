@@ -23,14 +23,14 @@ extern "C" {
 #include <stdlib.h>		/* for size_t */
 #include <stdio.h>		/* for FILE */
 
-#ifdef __GNUC__
+#ifdef _GNU_SOURCE
 #define ECHECK_FUNC __PRETTY_FUNCTION__
 #else
 #if (__STDC_VERSION__ >= 199901L)
 #define ECHECK_FUNC __func__
 #else
 #define ECHECK_FUNC NULL
-#endif /* __GNUC__ */
+#endif /* _GNU_SOURCE */
 #endif /* __STDC_VERSION__ */
 
 /*check char*/
