@@ -7,6 +7,7 @@
 
 char *set_log(char *log, const char *logdir, const char *filename);
 
-int err_contains(const char *filename, char *expected[], size_t expected_len);
+int err_contains(const char *filename, const char *expected[],
+		 size_t expected_len);
 
 #endif /* TEST_ECHECK_PRIVATE_UTILS_H */

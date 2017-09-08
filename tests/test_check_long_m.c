@@ -7,7 +7,7 @@
 int test_check_long_m(const char *filename)
 {
 	FILE *log;
-	char *strs[3];
+	const char *strs[3];
 	int failures = 0;
 
 	strs[0] = "5";

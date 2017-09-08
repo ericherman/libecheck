@@ -13,7 +13,8 @@ char *set_log(char *log, const char *logdir, const char *filename)
 	return log;
 }
 
-int err_contains(const char *filename, char *expected[], size_t expected_len)
+int err_contains(const char *filename, const char *expected[],
+		 size_t expected_len)
 {
 	FILE *log;
 	char buffer[4096];

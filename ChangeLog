@@ -1,5 +1,9 @@
 echeck Changelog
 
+2016-09-07  Eric Herman <eric@freesa.org>
+
+	pass "const char **" for lists of constant strings
+
 2016-06-16  Eric Herman <eric@freesa.org>
 
 	LGPLv3+ friendly structure

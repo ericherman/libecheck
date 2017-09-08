@@ -7,7 +7,7 @@
 int test_check_byte_array(const char *filename)
 {
 	FILE *log;
-	char *strs[2];
+	const char *strs[2];
 	int failures = 0;
 
 	unsigned char bytes_a[2] = { 0x00, 0xFF };

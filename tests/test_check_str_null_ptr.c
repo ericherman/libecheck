@@ -8,7 +8,7 @@ int test_check_str_null_ptr(const char *filename)
 {
 	FILE *log;
 	int failures = 0;
-	char *strs[2];
+	const char *strs[2];
 
 	strs[0] = "not_null_second";
 	strs[1] = "not_null_first";

@@ -10,7 +10,7 @@ int test_check_status(const char *filename)
 	FILE *log;
 	char actual, expected;
 	char buf[40];
-	char *expected_strs[1];
+	const char *expected_strs[1];
 
 	failures = 0;
 

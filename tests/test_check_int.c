@@ -7,7 +7,7 @@
 int test_check_int(const char *filename)
 {
 	FILE *log;
-	char *strs[2];
+	const char *strs[2];
 	int failures = 0;
 
 	strs[0] = "5";

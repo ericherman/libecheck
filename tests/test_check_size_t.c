@@ -7,7 +7,7 @@
 int test_check_size_t(const char *filename)
 {
 	FILE *log;
-	char *strs[2];
+	const char *strs[2];
 	int failures = 0;
 	size_t one = 1;
 	size_t big = -1;
