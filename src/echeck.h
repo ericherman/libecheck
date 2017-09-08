@@ -217,6 +217,27 @@ int echeck_byte_array_m(FILE *err, const char *func, const char *file, int line,
 	echeck_byte_array_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, actual_len, expected, expected_len, NULL)
 
+/* check double */
+int echeck_double_m(FILE *err, const char *func, const char *file, int line,
+		    double actual, double expected, double epsilon,
+		    const char *msg);
+
+#define fcheck_double_m(log, actual, expected, epsilon, msg)\
+	echeck_double_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+			actual, expected, epsilon, msg)
+
+#define check_double_m(actual, expected, epsilon, msg)\
+	echeck_double_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
+			actual, expected, epsilon, msg)
+
+#define fcheck_double(log, actual, expected, epsilon)\
+	echeck_double_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+			actual, expected, epsilon, NULL)
+
+#define check_double(actual, expected, epsilon)\
+	echeck_double_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
+			actual, expected, epsilon, NULL)
+
 /*check status*/
 /* safe casting of non-zero int to avoid EXIT_SUCCESS */
 char echeck_status_m(FILE *err, const char *func, const char *file, int line,

@@ -12,7 +12,7 @@
  
  #include <stdlib.h>		/* for size_t */
  #include <stdio.h>		/* for FILE */
-@@ -234,8 +236,10 @@
+@@ -255,8 +257,10 @@
  #define check_status(val)\
  	echeck_status_m(stderr, ECHECK_FUNC, __FILE__, __LINE__, val, NULL)
  

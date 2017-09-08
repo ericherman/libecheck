@@ -1,3 +1,5 @@
+
+
 lib_LTLIBRARIES=libecheck.la
 libecheck_la_SOURCES=src/echeck.c src/echeck.h
 
@@ -10,6 +12,7 @@ check_PROGRAMS=\
  test_check_byte_array_m \
  test_check_char \
  test_check_char_m \
+ test_check_double \
  test_check_int \
  test_check_int_m \
  test_check_long \
@@ -97,6 +100,9 @@ test_check_str_m_SOURCES=tests/test_check_str_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_str_m_LDADD=$(T_LDADD)
 
+test_check_double_SOURCES=tests/test_check_double.c $(TESTS_COMMON_SOURCES)
+test_check_double_LDADD=$(T_LDADD)
+
 test_check_unsigned_int_SOURCES=tests/test_check_unsigned_int.c \
  $(TESTS_COMMON_SOURCES)
 test_check_unsigned_int_LDADD=$(T_LDADD)
@@ -136,6 +142,7 @@ valgrind: $(check_PROGRAMS)
 	libtool --mode=execute valgrind ./test_check_byte_array_m
 	libtool --mode=execute valgrind ./test_check_char
 	libtool --mode=execute valgrind ./test_check_char_m
+	libtool --mode=execute valgrind ./test_check_double
 	libtool --mode=execute valgrind ./test_check_int
 	libtool --mode=execute valgrind ./test_check_int_m
 	libtool --mode=execute valgrind ./test_check_long

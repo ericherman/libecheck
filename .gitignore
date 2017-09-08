@@ -36,6 +36,7 @@ test_check_byte_array
 test_check_byte_array_m
 test_check_char
 test_check_char_m
+test_check_double
 test_check_int
 test_check_int_m
 test_check_long

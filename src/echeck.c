@@ -143,6 +143,41 @@ fail:
 	return 1;
 }
 
+#include <stdio.h>
+
+int echeck_double_m(FILE *err, const char *func, const char *file, int line,
+		    double actual, double expected, double epsilon,
+		    const char *msg)
+{
+	double from, to, swap;
+
+	if (actual == expected) {
+		return 0;
+	}
+
+	epsilon = (epsilon < 0.0) ? -epsilon : epsilon;
+	from = expected + epsilon;
+	to = expected - epsilon;
+	if (from > to) {
+		swap = from;
+		from = to;
+		to = swap;
+	}
+
+	if (actual >= from && actual <= to) {
+		return 0;
+	}
+
+	if (err == NULL) {
+		err = stderr;
+	}
+	fprintf(err, "FAIL: %s%sExpected %f but was %f (%f) [%s%s%s:%d]\n",
+		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
+		actual, (epsilon), (func == NULL) ? "" : func,
+		(func == NULL) ? "" : " at ", file, line);
+	return 1;
+}
+
 int echeck_ptr_m(FILE *err, const char *func, const char *file, int line,
 		 const void *actual, const void *expected, const char *msg)
 {

@@ -1,6 +1,17 @@
 echeck Changelog
 
-2016-09-07  Eric Herman <eric@freesa.org>
+2017-09-08  Eric Herman <eric@freesa.org>
+
+	Add check_double(actual, expected, epsilon)
+
+	* src/echeck.h: prototype
+	* src/echeck.c: impl
+	* tests/test_check_double.c: some basic checks
+	* misc/pre-tidy.patch: respin
+	* Makefile.am: add test
+	* .gitignore: add test
+
+2017-09-07  Eric Herman <eric@freesa.org>
 
 	pass "const char **" for lists of constant strings
 
