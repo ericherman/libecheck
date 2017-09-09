@@ -1,6 +1,6 @@
 /*
 libecheck: "E(asy)Check" boiler-plate to make simple testing easier
-Copyright (C) 2016 Eric Herman <eric@freesa.org>
+Copyright (C) 2016, 2017 Eric Herman <eric@freesa.org>
 
 This work is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by
@@ -11,6 +11,9 @@ This work is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
 License for more details.
+
+	https://www.gnu.org/licenses/lgpl-3.0.txt
+	https://www.gnu.org/licenses/gpl-3.0.txt
 */
 #include "echeck.h"
 #include <string.h>

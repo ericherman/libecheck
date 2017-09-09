@@ -15,16 +15,3 @@ License for more details.
 	https://www.gnu.org/licenses/lgpl-3.0.txt
 	https://www.gnu.org/licenses/gpl-3.0.txt
 */
-#ifndef TEST_ECHECK_PRIVATE_UTILS_H
-#define TEST_ECHECK_PRIVATE_UTILS_H
-
-/* TODO: do something portable alternative here */
-#define ECHECK_PATH_MAX 4096
-#define ECHECK_PATH_SEP '/'
-
-char *set_log(char *log, const char *logdir, const char *filename);
-
-int err_contains(const char *filename, const char *expected[],
-		 size_t expected_len);
-
-#endif /* TEST_ECHECK_PRIVATE_UTILS_H */
