@@ -53,6 +53,8 @@ int test_check_double(const char *filename)
 	failures += check_double(-0.0001, 0.0001, 0.1);
 	failures += check_double(0.0002, -0.0002, 0.1);
 
+	failures += check_double_scaled_epsilon(0.0002, 0.0002);
+
 	if (failures) {
 		fprintf(stderr, "%d failures in test_check_double\n", failures);
 	}

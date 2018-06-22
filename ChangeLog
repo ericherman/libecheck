@@ -1,5 +1,16 @@
 echeck Changelog
 
+2017-06-22  Eric Herman <eric@freesa.org>
+
+	Added the "check_double_scaled_epsilon" family of defines.
+	The epsilon is scaled relative to the "expected" value - be
+	careful if the value passed in as "expected" has side effects,
+	as this value is repeated in the #define.
+
+	* src/echeck.h: add the "check_double_scaled_epsilon" family
+	* tests/test_check_double.c: call the function
+	* misc/pre-tidy.patch: respin
+
 2017-09-08  Eric Herman <eric@freesa.org>
 
 	Add check_double(actual, expected, epsilon)

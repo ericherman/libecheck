@@ -1,6 +1,6 @@
 --- orig/src/echeck.h
 +++ tidy/src/echeck.h
-@@ -16,9 +16,11 @@
+@@ -19,9 +19,11 @@
  #ifndef ECHECK_H
  #define ECHECK_H
  
@@ -12,7 +12,7 @@
  
  #include <stdlib.h>		/* for size_t */
  #include <stdio.h>		/* for FILE */
-@@ -255,8 +257,10 @@
+@@ -281,8 +283,10 @@
  #define check_status(val)\
  	echeck_status_m(stderr, ECHECK_FUNC, __FILE__, __LINE__, val, NULL)
  

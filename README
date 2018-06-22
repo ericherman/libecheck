@@ -33,6 +33,33 @@ To check a byte[] buffer, additional length parameters are required:
  error_code = check_byte_array(actual, actual_len, expected, expected_len);
 
 
+To check a double, an epsilon is used to approximate equality.
+For example, the would be equal:
+
+ actual =  1.0000003;
+ expect =  1.0000004;
+ epsilon = 0.0001;
+ error_code = check_double(actual, expected, epsilon);
+
+The following would not be equal:
+
+ actual =  1.0000003;
+ expect =  1.0000004;
+ epsilon = 0.000000001;
+ error_code = check_double(actual, expected, epsilon);
+
+For ease of use, a default scaled epsilon is available:
+
+ check_double_scaled_epsilon(actual, expected);
+
+is the same as, and #defined to be:
+
+ check_double(actual, expected, ((expected) * DBL_EPSILON));
+
+Thus, if "expected" is a function with side-effects, that the call to
+"check_double_scaled_epsilon" will call the "expected" function twice.
+
+
 If you wish to return from main() with a count of errors, this can be
 error-prone, especially if (failures % 256 == 0). This will not be a problem
 if you use "check_status", because this function caps values at 127 (and -128).

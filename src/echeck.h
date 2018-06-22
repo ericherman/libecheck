@@ -25,6 +25,7 @@ extern "C" {
 
 #include <stdlib.h>		/* for size_t */
 #include <stdio.h>		/* for FILE */
+#include <float.h>		/* for DBL_EPSILON */
 
 #ifdef _GNU_SOURCE
 #define ECHECK_FUNC __PRETTY_FUNCTION__
@@ -240,6 +241,28 @@ int echeck_double_m(FILE *err, const char *func, const char *file, int line,
 #define check_double(actual, expected, epsilon)\
 	echeck_double_m(stderr, ECHECK_FUNC, __FILE__, __LINE__,\
 			actual, expected, epsilon, #actual)
+
+#define echeck_double_scaled_epsilon_m(err, func, file, line, actual,\
+				       expected, msg)\
+	echeck_double_m(err, func, file, line, actual, expected,\
+			((expected) * DBL_EPSILON), msg)
+
+/*
+ * WARNING: The "check_double_scaled_epsilon" family of functions
+ * uses the "expected" value to scale DBL_EPSILON. This should not
+ * be used if "expected" is an expression with side-effects.  */
+#define fcheck_double_scaled_epsilon_m(log, actual, expected, msg)\
+	fcheck_double_m(log, actual, expected,\
+			((expected) * DBL_EPSILON), msg);
+
+#define check_double_scaled_epsilon_m(actual, expected, msg)\
+	check_double_m(actual, expected, ((expected) * DBL_EPSILON), msg);
+
+#define fcheck_double_scaled_epsilon(log, actual, expected)\
+	fcheck_double(log, actual, expected, ((expected) * DBL_EPSILON));
+
+#define check_double_scaled_epsilon(actual, expected)\
+	check_double(actual, expected, ((expected) * DBL_EPSILON));
 
 /*check status*/
 /* safe casting of non-zero int to avoid EXIT_SUCCESS */
