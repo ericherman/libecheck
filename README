@@ -80,4 +80,4 @@ autoreconf -iv &&
 License
 -------
 GNU Lesser General Public License (LGPL), version 3 or later.
-See COPYING, COPYING.GPL3 for details.
+See COPYING, COPYING.LESSER for details.
