@@ -137,7 +137,7 @@ test_check_unsigned_long_m_SOURCES=tests/test_check_unsigned_long_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_unsigned_long_m_LDADD=$(T_LDADD)
 
-EXTRA_DIST=COPYING.GPL3 misc
+EXTRA_DIST=COPYING.LESSER
 
 ACLOCAL_AMFLAGS=-I m4 --install
 
@@ -147,12 +147,10 @@ AM_CFLAGS=-std=c89 -pipe -O0 -ggdb -fomit-frame-pointer -Wall -Wextra -Wpedantic
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
 
 tidy:
-	patch -Np1 -i misc/pre-tidy.patch
 	$(LINDENT) \
 		-T FILE \
 		-T size_t \
 		`find src tests -name '*.h' -o -name '*.c'`
-	patch -Rp1 -i misc/pre-tidy.patch
 
 valgrind: $(check_PROGRAMS)
 	libtool --mode=execute valgrind ./test_check_status

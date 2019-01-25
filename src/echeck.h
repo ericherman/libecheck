@@ -20,7 +20,11 @@ License for more details.
 #define ECHECK_H
 
 #ifdef __cplusplus
-extern "C" {
+#define Echeck_begin_C_functions extern "C" {
+#define Echeck_end_C_functions }
+#else
+#define Echeck_begin_C_functions
+#define Echeck_end_C_functions
 #endif
 
 #include <stdlib.h>		/* for size_t */
@@ -37,6 +41,7 @@ extern "C" {
 #endif /* _GNU_SOURCE */
 #endif /* __STDC_VERSION__ */
 
+Echeck_begin_C_functions
 /*check char*/
 int echeck_char_m(FILE *err, const char *func, const char *file, int line,
 		  char actual, char expected, const char *msg);
@@ -281,8 +286,7 @@ char echeck_status_m(FILE *err, const char *func, const char *file, int line,
 #define check_status(val)\
 	echeck_status_m(stderr, ECHECK_FUNC, __FILE__, __LINE__, val, NULL)
 
-#ifdef __cplusplus
-}
-#endif
-
+Echeck_end_C_functions
+#undef Echeck_begin_C_functions
+#undef Echeck_end_C_functions
 #endif /* ECHECK_H */

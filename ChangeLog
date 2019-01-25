@@ -1,5 +1,11 @@
 echeck Changelog
 
+2019-01-25  Eric Herman <eric@freesa.org>
+
+	* src/echeck.h: use defines for the CPP friendliness
+	* misc/pre-tidy.patch: no longer needed
+	* Makefile.am: no pre-tidy; misc directory no longer exists
+
 2017-06-22  Eric Herman <eric@freesa.org>
 
 	Added the "check_double_scaled_epsilon" family of defines.
