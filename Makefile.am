@@ -1,5 +1,5 @@
 # Makefile: "E(asy)Check" boiler-plate to make simple testing easier
-# Copyright (C) 2016, 2017 Eric Herman
+# Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org>
 #
 # This work is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
