@@ -1,8 +1,10 @@
-#                                               -*- Autoconf -*-
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# configure.ac: "E(asy)Check" boiler-plate to make simple testing easier
+# Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org>
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libecheck], [1.0.1-dev], [eric@freesa.org])
+AC_INIT([libecheck], [1.0.2-dev], [eric@freesa.org])
 AC_CONFIG_SRCDIR([src/echeck.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
