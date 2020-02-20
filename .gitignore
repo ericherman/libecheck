@@ -24,6 +24,11 @@ $*
 *.trs
 *.log
 *.tar.gz
+*.gcda
+*.gcno
+coverage.info
+coverage_html/
+
 
 ################
 # compiled tests

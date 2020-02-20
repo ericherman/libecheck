@@ -5,15 +5,18 @@
 #include "echeck.h"
 #include <string.h>
 
+FILE *echeck_ensure_stream(FILE *stream)
+{
+	return stream ? stream : stderr;
+}
+
 int echeck_char_m(FILE *err, const char *func, const char *file, int line,
 		  char actual, char expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
 	}
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "FAIL: %s%sExpected '%c' but was '%c' [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -28,9 +31,7 @@ int echeck_unsigned_long_m(FILE *err, const char *func, const char *file,
 	if (expected == actual) {
 		return 0;
 	}
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "FAIL: %s%sExpected %lu but was %lu [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -44,9 +45,7 @@ int echeck_long_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "FAIL: %s%sExpected %ld but was %ld [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -60,9 +59,7 @@ int echeck_size_t_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "FAIL: %s%sExpected %lu but was %lu [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ",
 		(unsigned long)expected, (unsigned long)actual,
@@ -80,9 +77,7 @@ int echeck_str_m(FILE *err, const char *func, const char *file, int line,
 	if (actual != NULL && expected != NULL && strcmp(expected, actual) == 0) {
 		return 0;
 	}
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "FAIL: %s%sExpected '%s' but was '%s' [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -99,9 +94,7 @@ int echeck_byte_array_m(FILE *err, const char *func, const char *file, int line,
 	size_t i;
 	const char *fmt;
 
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fmt = "actual/expected length mis-match %d != %d [%s%s%s:%d]\n";
 
 	if (actual_len != expected_len) {
@@ -158,9 +151,7 @@ int echeck_double_m(FILE *err, const char *func, const char *file, int line,
 		return 0;
 	}
 
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "FAIL: %s%sExpected %f but was %f (%f) [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (epsilon), (func == NULL) ? "" : func,
@@ -174,9 +165,7 @@ int echeck_ptr_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "FAIL: %s%sExpected '%p' but was '%p' [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
 		actual, (func == NULL) ? "" : func,
@@ -198,9 +187,7 @@ char echeck_status_m(FILE *err, const char *func, const char *file, int line,
 	} else {
 		c = 127;
 	}
-	if (err == NULL) {
-		err = stderr;
-	}
+	err = echeck_ensure_stream(err);
 	fprintf(err, "%s%s'%d' capped at '%c' [%s%s%s:%d]\n",
 		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ",
 		val, c,

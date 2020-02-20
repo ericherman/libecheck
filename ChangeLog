@@ -1,5 +1,17 @@
 echeck Changelog
 
+2020-02-20  Eric Herman <eric@freesa.org>
+
+Added test lcov reporting
+
+	* .gitignore: coverage files
+	* Makefile.am: coverage if DEBUG, parallel valgrind
+	* configure.ac: --enable-debug
+	* src/echeck.c: extract echeck_ensure_stream
+	* src/echeck.h: echeck_ensure_stream
+	* tests/test_check_byte_array_m.c: test different lengths
+
+
 2019-08-20  Eric Herman <eric@freesa.org>
 
 	switch to "SPDX-License-Identifier: LGPL-3.0-or-later"

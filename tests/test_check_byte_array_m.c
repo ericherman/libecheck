@@ -41,6 +41,32 @@ int test_check_byte_array_m(const char *filename)
 	return failures;
 }
 
+int test_check_byte_array_m_2(const char *filename)
+{
+	FILE *log;
+	const char *strs[2];
+	int failures = 0;
+
+	unsigned char bytes_a[3] = { 0x13, 0x10, 0x00 };
+	unsigned char bytes_b[4] = { 0x13, 0x10, 0x00, 0x7F };
+
+	strs[0] = "length mis-match";
+	strs[1] = "contextual";
+
+	log = fopen(filename, "w");
+	if (0 == fcheck_byte_array_m(log, bytes_a, 3, bytes_b, 4, "contextual")) {
+		failures++;
+	}
+	fclose(log);
+
+	failures += err_contains(filename, strs, 2);
+	if (failures) {
+		fprintf(stderr, "%d failures in test_check_byte_array_m\n",
+			failures);
+	}
+	return failures;
+}
+
 int main(int argc, char *argv[])
 {
 	const char *dir;
@@ -51,6 +77,7 @@ int main(int argc, char *argv[])
 	set_log(log, dir, "test_check_byte_array_m");
 
 	failures += test_check_byte_array_m(log);
+	failures += test_check_byte_array_m_2(log);
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
