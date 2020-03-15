@@ -29,8 +29,13 @@
 #endif /* __STDC_VERSION__ */
 
 Echeck_begin_C_functions
-/* ensure not-null, default to stderr */
+/* ensure not-null, default to stderr
+ *
+ * if the stream is stderr, stdout is flushed; avoid POSIX undefined behavior
+ * https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_05_01
+ */
 FILE *echeck_ensure_stream(FILE *stream);
+
 /*check char*/
 int echeck_char_m(FILE *err, const char *func, const char *file, int line,
 		  char actual, char expected, const char *msg);

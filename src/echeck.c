@@ -7,7 +7,23 @@
 
 FILE *echeck_ensure_stream(FILE *stream)
 {
-	return stream ? stream : stderr;
+	FILE *ec_stream;
+
+	/* To avoid undefined behavior when writing to stderr, first flush
+	 * stdout, thus ensuring stdout and stderr are "coordinated":
+	 *
+	 * "if two or more handles are used, and any one of them is a stream,
+	 * the application shall ensure that their actions are coordinated as
+	 * described below. If this is not done, the result is undefined."
+	 *
+	 * https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_05_01
+	 */
+	ec_stream = stream ? stream : stderr;
+	if (ec_stream == stderr) {
+		fflush(stdout);
+	}
+
+	return ec_stream;
 }
 
 int echeck_char_m(FILE *err, const char *func, const char *file, int line,
