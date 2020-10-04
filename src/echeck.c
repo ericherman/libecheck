@@ -26,17 +26,56 @@ FILE *echeck_ensure_stream(FILE *stream)
 	return ec_stream;
 }
 
+static void echeck_print_fail(FILE *err, const char *msg)
+{
+	fprintf(err, "%s", "FAIL:");
+	if (msg) {
+		fprintf(err, "%s", " ");
+		fprintf(err, "%s", msg);
+		fprintf(err, "%s", ":");
+	}
+}
+
+static void echeck_print_err_location(FILE *err, const char *func,
+				      const char *file, int line)
+{
+	fprintf(err, "%s", "[");
+	if (func) {
+		fprintf(err, "%s", func);
+		fprintf(err, "%s", " at ");
+	}
+	fprintf(err, "%s", file);
+	fprintf(err, "%s", ":");
+	fprintf(err, "%d", line);
+	fprintf(err, "%s", "]");
+}
+
 int echeck_char_m(FILE *err, const char *func, const char *file, int line,
 		  char actual, char expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
 	}
+
 	err = echeck_ensure_stream(err);
-	fprintf(err, "FAIL: %s%sExpected '%c' but was '%c' [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
+
+	echeck_print_fail(err, msg);
+	fprintf(err, "%s", " Expected '");
+	if (expected) {
+		fprintf(err, "%c", expected);
+	} else {
+		fprintf(err, "%s", "\\0");
+	}
+	fprintf(err, "%s", "' but was '");
+	if (actual) {
+		fprintf(err, "%c", actual);
+	} else {
+		fprintf(err, "%s", "\\0");
+	}
+	fprintf(err, "%s", "' ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return 1;
 }
 
@@ -47,11 +86,18 @@ int echeck_unsigned_long_m(FILE *err, const char *func, const char *file,
 	if (expected == actual) {
 		return 0;
 	}
+
 	err = echeck_ensure_stream(err);
-	fprintf(err, "FAIL: %s%sExpected %lu but was %lu [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
+
+	echeck_print_fail(err, msg);
+	fprintf(err, "%s", " Expected ");
+	fprintf(err, "%lu", expected);
+	fprintf(err, "%s", " but was ");
+	fprintf(err, "%lu", actual);
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return 1;
 }
 
@@ -61,11 +107,18 @@ int echeck_long_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
+
 	err = echeck_ensure_stream(err);
-	fprintf(err, "FAIL: %s%sExpected %ld but was %ld [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
+
+	echeck_print_fail(err, msg);
+	fprintf(err, "%s", " Expected ");
+	fprintf(err, "%ld", expected);
+	fprintf(err, "%s", " but was ");
+	fprintf(err, "%ld", actual);
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return 1;
 }
 
@@ -75,12 +128,18 @@ int echeck_size_t_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
+
 	err = echeck_ensure_stream(err);
-	fprintf(err, "FAIL: %s%sExpected %lu but was %lu [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ",
-		(unsigned long)expected, (unsigned long)actual,
-		(func == NULL) ? "" : func, (func == NULL) ? "" : " at ", file,
-		line);
+
+	echeck_print_fail(err, msg);
+	fprintf(err, "%s", " Expected ");
+	fprintf(err, "%lu", (unsigned long)expected);
+	fprintf(err, "%s", " but was ");
+	fprintf(err, "%lu", (unsigned long)actual);
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return 1;
 }
 
@@ -93,11 +152,30 @@ int echeck_str_m(FILE *err, const char *func, const char *file, int line,
 	if (actual != NULL && expected != NULL && strcmp(expected, actual) == 0) {
 		return 0;
 	}
+
 	err = echeck_ensure_stream(err);
-	fprintf(err, "FAIL: %s%sExpected '%s' but was '%s' [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
+
+	echeck_print_fail(err, msg);
+	fprintf(err, "%s", " Expected ");
+	if (expected) {
+		fprintf(err, "%s", "'");
+		fprintf(err, "%s", expected);
+		fprintf(err, "%s", "'");
+	} else {
+		fprintf(err, "%s", "(null)");
+	}
+	fprintf(err, "%s", " but was ");
+	if (actual) {
+		fprintf(err, "%s", "'");
+		fprintf(err, "%s", actual);
+		fprintf(err, "%s", "'");
+	} else {
+		fprintf(err, "%s", "(null)");
+	}
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return 1;
 }
 
@@ -108,36 +186,52 @@ int echeck_byte_array_m(FILE *err, const char *func, const char *file, int line,
 {
 
 	size_t i;
-	const char *fmt;
+	size_t min_max;
+
+	int fail = 0;
 
 	err = echeck_ensure_stream(err);
-	fmt = "actual/expected length mis-match %d != %d [%s%s%s:%d]\n";
-
 	if (actual_len != expected_len) {
-		fprintf(err, fmt, actual_len, expected_len,
-			(func == NULL) ? "" : func,
-			(func == NULL) ? "" : " at ", file, line);
-		goto fail;
+		fprintf(err, "%s", "actual/expected length mis-match ");
+		fprintf(err, "%lu", (unsigned long)actual_len);
+		fprintf(err, "%s", " != ");
+		fprintf(err, "%lu", (unsigned long)expected_len);
+		fprintf(err, "%s", " ");
+		echeck_print_err_location(err, func, file, line);
+		fprintf(err, "%s", "\n");
+		fail = 1;
 	}
-	for (i = 0; i < actual_len; i++) {
+	min_max = actual_len < expected_len ? actual_len : expected_len;
+	for (i = 0; i < min_max; i++) {
 		if (actual[i] != expected[i]) {
-			fprintf(err, "buffers differ at %lu\n",
-				(unsigned long)i);
-			goto fail;
+			fprintf(err, "%s", "buffers differ at ");
+			fprintf(err, "%lu", (unsigned long)i);
+			fprintf(err, "%s", "\n");
+			fail = 1;
 		}
 	}
-	return 0;
-
-fail:
-	fprintf(err, "FAIL: %s%s[%s%s%s:%d]\n", (msg == NULL) ? "" : msg,
-		(msg == NULL) ? "" : " ", (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
-	for (i = 0; i < actual_len; i++) {
-		fprintf(err, "actual[%lu]=%02x\n", (unsigned long)i, actual[i]);
+	if (!fail) {
+		return 0;
 	}
-	for (i = 0; i < expected_len; i++) {
-		fprintf(err, "expected[%lu]=%02x\n", (unsigned long)i,
-			expected[i]);
+
+	echeck_print_fail(err, msg);
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
+	fprintf(err, "%s", "index\tactual\texpected");
+	fprintf(err, "%s", "\n");
+	for (i = 0; i < actual_len || i < expected_len; i++) {
+		fprintf(err, "%lu", (unsigned long)i);
+		fprintf(err, "%s", "\t");
+		if (i < actual_len) {
+			fprintf(err, "%02x", actual[i]);
+		}
+		if (i < expected_len) {
+			fprintf(err, "%s", "\t");
+			fprintf(err, "%02x", expected[i]);
+		}
+		fprintf(err, "%s", "\n");
 	}
 	return 1;
 }
@@ -168,10 +262,19 @@ int echeck_double_m(FILE *err, const char *func, const char *file, int line,
 	}
 
 	err = echeck_ensure_stream(err);
-	fprintf(err, "FAIL: %s%sExpected %f but was %f (%f) [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (epsilon), (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
+
+	echeck_print_fail(err, msg);
+	fprintf(err, "%s", " Expected ");
+	fprintf(err, "%f", expected);
+	fprintf(err, "%s", "(+/- ");
+	fprintf(err, "%f", epsilon);
+	fprintf(err, "%s", ")");
+	fprintf(err, "%s", " but was ");
+	fprintf(err, "%f", actual);
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return 1;
 }
 
@@ -181,11 +284,17 @@ int echeck_ptr_m(FILE *err, const char *func, const char *file, int line,
 	if (expected == actual) {
 		return 0;
 	}
-	err = echeck_ensure_stream(err);
-	fprintf(err, "FAIL: %s%sExpected '%p' but was '%p' [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ", expected,
-		actual, (func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
+
+	echeck_print_fail(err, msg);
+
+	fprintf(err, "%s", " Expected ");
+	fprintf(err, "%p", expected);
+	fprintf(err, "%s", " but was ");
+	fprintf(err, "%p", actual);
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return 1;
 }
 
@@ -204,10 +313,16 @@ char echeck_status_m(FILE *err, const char *func, const char *file, int line,
 		c = 127;
 	}
 	err = echeck_ensure_stream(err);
-	fprintf(err, "%s%s'%d' capped at '%c' [%s%s%s:%d]\n",
-		(msg == NULL) ? "" : msg, (msg == NULL) ? "" : " ",
-		val, c,
-		(func == NULL) ? "" : func,
-		(func == NULL) ? "" : " at ", file, line);
+	if (msg) {
+		fprintf(err, "%s", msg);
+		fprintf(err, "%s", " ");
+	}
+	fprintf(err, "%d", val);
+	fprintf(err, "%s", " capped at ");
+	fprintf(err, "%d", (int)c);
+	fprintf(err, "%s", " ");
+	echeck_print_err_location(err, func, file, line);
+	fprintf(err, "%s", "\n");
+
 	return c;
 }
