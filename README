@@ -13,9 +13,28 @@ for instance:
   assert(error_code == 0);
 
 
-To send error messages to a FILE, use the "fcheck" form:
+To send error messages to a log, first construct a log object, which is
+defined in echeck.h to be:
+	struct echeck_log {
+		void *context;
+		void (*append_s)(struct echeck_log *log, const char *str);
+		void (*append_ul)(struct echeck_log *log, unsigned long ul);
+		void (*append_z)(struct echeck_log *log, size_t z);
+		void (*append_l)(struct echeck_log *log, long l);
+		void (*append_f)(struct echeck_log *log, double f);
+		void (*append_vp)(struct echeck_log *log, const void *ptr);
+		void (*append_eol)(struct echeck_log *log);
+	}
+Then use the "lcheck" form:
 
- error_code = fcheck_char(log, val, 'a');
+ error_code = lcheck_char(log, val, 'a');
+
+In hosted systems which have stdio.h, to send error messages to a FILE*,
+set the context on the default logger:
+
+ FILE *logfile = fopen(filename, "w");
+ echeck_default_log->context = logfile;
+ error_code = check_char(val, 'a');
 
 
 To include a message for additional context, use the "_m" form:
@@ -25,7 +44,7 @@ To include a message for additional context, use the "_m" form:
 
 And the forms can be combined:
 
- error_code = fcheck_str_m(log, actual, "expected str", "BAD MOJO!")
+ error_code = lcheck_str_m(log, actual, "expected str", "BAD MOJO!")
 
 
 To check a byte[] buffer, additional length parameters are required:

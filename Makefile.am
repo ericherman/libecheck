@@ -16,7 +16,7 @@ BUILD_TYPE_CFLAGS=-ggdb -O0 \
 	--coverage
 BUILD_TYPE_LDFLAGS=--coverage
 else
-BUILD_TYPE_CFLAGS=-ggdb -O2 -DNDEBUG -Wno-unused-parameter -fomit-frame-pointer
+BUILD_TYPE_CFLAGS=-ggdb -O2 -DNDEBUG -fomit-frame-pointer
 BUILD_TYPE_LDFLAGS=
 endif
 
@@ -138,7 +138,9 @@ EXTRA_DIST=COPYING.LESSER
 
 ACLOCAL_AMFLAGS=-I m4 --install
 
-AM_CFLAGS=-std=c89 -pipe -Wall -Wextra -Wpedantic -Werror $(BUILD_TYPE_CFLAGS)
+AM_CFLAGS=-std=c89 -pipe -Isrc \
+ -Wall -Wextra -Wpedantic -Werror \
+ $(BUILD_TYPE_CFLAGS)
 AM_LDFLAGS=$(BUILD_TYPE_LDFLAGS)
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
@@ -148,6 +150,7 @@ tidy:
 	$(LINDENT) \
 		-T FILE \
 		-T size_t \
+		-T echeck_log \
 		`find src tests -name '*.h' -o -name '*.c'`
 
 vg-test_check_status: test_check_status

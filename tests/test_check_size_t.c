@@ -2,15 +2,13 @@
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
 /* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
 
-#include <stdio.h>
-#include <string.h>
-
-#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
-int test_check_size_t(const char *filename)
+#include <stdio.h>
+
+int test_check_size_t(void)
 {
-	FILE *log;
+	struct echeck_log *orig = NULL;
 	const char *strs[2];
 	int failures = 0;
 	size_t one = 1;
@@ -22,13 +20,13 @@ int test_check_size_t(const char *filename)
 
 	failures += check_size_t(five, five);
 
-	log = fopen(filename, "w");
-	if (0 == fcheck_size_t(log, one, big)) {
+	orig = echeck_test_log_capture();
+	if (0 == check_size_t(one, big)) {
 		failures++;
 	}
-	fclose(log);
+	echeck_test_log_release(orig);
+	failures += err_contains(strs, 2);
 
-	failures += err_contains(filename, strs, 2);
 	if (failures) {
 		fprintf(stderr, "%d failures in test_check_size_t\n", failures);
 	}
@@ -37,14 +35,12 @@ int test_check_size_t(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *dir;
-	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
-	dir = (argc > 1) ? argv[1] : NULL;
-	set_log(log, dir, "test_check_size_t");
+	(void)argc;
+	(void)argv;
 
-	failures += test_check_size_t(log);
+	failures += test_check_size_t();
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);

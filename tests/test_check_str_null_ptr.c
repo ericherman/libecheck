@@ -2,15 +2,13 @@
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
 /* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
 
-#include <stdio.h>
-#include <string.h>
-
-#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
-int test_check_str_null_ptr(const char *filename)
+#include <stdio.h>
+
+int test_check_str_null_ptr(void)
 {
-	FILE *log;
+	struct echeck_log *orig = NULL;
 	int failures = 0;
 	const char *strs[2];
 
@@ -19,16 +17,16 @@ int test_check_str_null_ptr(const char *filename)
 
 	failures += check_str(NULL, NULL);
 
-	log = fopen(filename, "w");
-	if (0 == fcheck_str(log, NULL, strs[0])) {
+	orig = echeck_test_log_capture();
+	if (0 == check_str(NULL, strs[0])) {
 		failures++;
 	}
-	if (0 == fcheck_str(log, strs[1], NULL)) {
+	if (0 == check_str(strs[1], NULL)) {
 		failures++;
 	}
-	fclose(log);
+	echeck_test_log_release(orig);
+	failures += err_contains(strs, 2);
 
-	failures += err_contains(filename, strs, 2);
 	if (failures) {
 		fprintf(stderr, "%d failures in test_check_str\n", failures);
 	}
@@ -37,14 +35,12 @@ int test_check_str_null_ptr(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *dir;
-	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
-	dir = (argc > 1) ? argv[1] : NULL;
-	set_log(log, dir, "test_check_str_null_ptr");
+	(void)argc;
+	(void)argv;
 
-	failures += test_check_str_null_ptr(log);
+	failures += test_check_str_null_ptr();
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);

@@ -3,33 +3,32 @@
 /* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
 
 #include <stdio.h>
-#include <string.h>
 
-#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
-int test_check_byte_array(const char *filename)
+int test_check_byte_array(void)
 {
-	FILE *log;
-	const char *strs[2];
+	struct echeck_log *orig = NULL;
+	const char *strs[3];
 	int failures = 0;
 
 	unsigned char bytes_a[2] = { 0x00, 0xFF };
 	unsigned char bytes_b[2] = { 0x00, 0xFF };
 	unsigned char bytes_c[2] = { 0x13, 0x10 };
 
-	strs[0] = "";
-	strs[1] = "";
+	strs[0] = "bytes_b";
+	strs[1] = "FAIL";
+	strs[2] = "differ";
 
 	failures += check_byte_array(bytes_a, 2, bytes_b, 2);
 
-	log = fopen(filename, "w");
-	if (0 == fcheck_byte_array(log, bytes_b, 2, bytes_c, 2)) {
+	orig = echeck_test_log_capture();
+	if (0 == check_byte_array(bytes_b, 2, bytes_c, 2)) {
 		failures++;
 	}
-	fclose(log);
+	echeck_test_log_release(orig);
 
-	failures += err_contains(filename, strs, 2);
+	failures += err_contains(strs, 3);
 	if (failures) {
 		fprintf(stderr, "%d failures in test_check_byte_array\n",
 			failures);
@@ -39,14 +38,12 @@ int test_check_byte_array(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *dir;
-	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
-	dir = (argc > 1) ? argv[1] : NULL;
-	set_log(log, dir, "test_check_byte_array");
+	(void)argc;
+	(void)argv;
 
-	failures += test_check_byte_array(log);
+	failures += test_check_byte_array();
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);

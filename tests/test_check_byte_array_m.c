@@ -2,15 +2,13 @@
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
 /* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
 
-#include <stdio.h>
-#include <string.h>
-
-#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
-int test_check_byte_array_m(const char *filename)
+#include <stdio.h>
+
+int test_check_byte_array_m(void)
 {
-	FILE *log;
+	struct echeck_log *orig = NULL;
 	const char *strs[3];
 	int failures = 0;
 
@@ -25,15 +23,13 @@ int test_check_byte_array_m(const char *filename)
 	failures +=
 	    check_byte_array_m(bytes_a, 2, bytes_b, 2, "contextual info");
 
-	log = fopen(filename, "w");
-	if (0 ==
-	    fcheck_byte_array_m(log, bytes_b, 2, bytes_c, 2,
-				"contextual info")) {
+	orig = echeck_test_log_capture();
+	if (0 == check_byte_array_m(bytes_b, 2, bytes_c, 2, "contextual info")) {
 		failures++;
 	}
-	fclose(log);
+	echeck_test_log_release(orig);
+	failures += err_contains(strs, 3);
 
-	failures += err_contains(filename, strs, 3);
 	if (failures) {
 		fprintf(stderr, "%d failures in test_check_byte_array_m\n",
 			failures);
@@ -41,9 +37,9 @@ int test_check_byte_array_m(const char *filename)
 	return failures;
 }
 
-int test_check_byte_array_m_2(const char *filename)
+int test_check_byte_array_m_2(void)
 {
-	FILE *log;
+	struct echeck_log *orig = NULL;
 	const char *strs[2];
 	int failures = 0;
 
@@ -53,13 +49,13 @@ int test_check_byte_array_m_2(const char *filename)
 	strs[0] = "length mis-match";
 	strs[1] = "contextual";
 
-	log = fopen(filename, "w");
-	if (0 == fcheck_byte_array_m(log, bytes_a, 3, bytes_b, 4, "contextual")) {
+	orig = echeck_test_log_capture();
+	if (0 == check_byte_array_m(bytes_a, 3, bytes_b, 4, "contextual")) {
 		failures++;
 	}
-	fclose(log);
+	echeck_test_log_release(orig);
 
-	failures += err_contains(filename, strs, 2);
+	failures += err_contains(strs, 2);
 	if (failures) {
 		fprintf(stderr, "%d failures in test_check_byte_array_m\n",
 			failures);
@@ -69,15 +65,13 @@ int test_check_byte_array_m_2(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *dir;
-	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
-	dir = (argc > 1) ? argv[1] : NULL;
-	set_log(log, dir, "test_check_byte_array_m");
+	(void)argc;
+	(void)argv;
 
-	failures += test_check_byte_array_m(log);
-	failures += test_check_byte_array_m_2(log);
+	failures += test_check_byte_array_m();
+	failures += test_check_byte_array_m_2();
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);

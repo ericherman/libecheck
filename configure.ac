@@ -4,7 +4,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libecheck], [1.0.2-dev], [eric@freesa.org])
+AC_INIT([libecheck], [2.0.0-dev], [eric@freesa.org])
 AC_CONFIG_SRCDIR([src/echeck.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])

@@ -2,16 +2,14 @@
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
 /* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
 
-#include <stdio.h>
-#include <string.h>
-
-#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
-int test_check_status(const char *filename)
+#include <stdio.h>
+
+int test_check_status(void)
 {
+	struct echeck_log *orig = NULL;
 	int i, failures;
-	FILE *log;
 	char actual, expected;
 	char buf[40];
 	const char *expected_strs[1];
@@ -32,24 +30,24 @@ int test_check_status(const char *filename)
 
 	expected = 127;
 	for (i = expected; i < 260; ++i) {
-		log = fopen(filename, "w");
-		actual = fcheck_status(log, i);
-		fclose(log);
+		orig = echeck_test_log_capture();
+		actual = check_status(i);
+		echeck_test_log_release(orig);
 		sprintf(buf, "%d", i);
 		if (i != expected) {
-			failures += err_contains(filename, expected_strs, 1);
+			failures += err_contains(expected_strs, 1);
 		}
 		failures += check_int_m(actual, expected, buf);
 	}
 
 	expected = -128;
 	for (i = expected; i < -260; --i) {
-		log = fopen(filename, "w");
-		actual = fcheck_status(log, i);
-		fclose(log);
+		echeck_test_log_release(orig);
+		actual = check_status(i);
+		echeck_test_log_release(orig);
 		sprintf(buf, "%d", i);
 		if (i != expected) {
-			failures += err_contains(filename, expected_strs, 1);
+			failures += err_contains(expected_strs, 1);
 		}
 		failures += check_int_m(actual, expected, buf);
 	}
@@ -62,14 +60,12 @@ int test_check_status(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *dir;
-	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
-	dir = (argc > 1) ? argv[1] : NULL;
-	set_log(log, dir, "test_check_status");
+	(void)argc;
+	(void)argv;
 
-	failures += test_check_status(log);
+	failures += test_check_status();
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);

@@ -3,14 +3,12 @@
 /* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
 
 #include <stdio.h>
-#include <string.h>
 
-#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
-int test_check_int(const char *filename)
+int test_check_int(void)
 {
-	FILE *log;
+	struct echeck_log *orig = NULL;
 	const char *strs[2];
 	int failures = 0;
 
@@ -19,13 +17,13 @@ int test_check_int(const char *filename)
 
 	failures += check_int(5, 5);
 
-	log = fopen(filename, "w");
-	if (0 == fcheck_int(log, 5, -5)) {
+	orig = echeck_test_log_capture();
+	if (0 == check_int(5, -5)) {
 		failures++;
 	}
-	fclose(log);
+	echeck_test_log_release(orig);
 
-	failures += err_contains(filename, strs, 2);
+	failures += err_contains(strs, 2);
 	if (failures) {
 		fprintf(stderr, "%d failures in test_check_int\n", failures);
 	}
@@ -34,14 +32,12 @@ int test_check_int(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *dir;
-	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
-	dir = (argc > 1) ? argv[1] : NULL;
-	set_log(log, dir, "test_check_int");
+	(void)argc;
+	(void)argv;
 
-	failures += test_check_int(log);
+	failures += test_check_int();
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);

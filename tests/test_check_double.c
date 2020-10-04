@@ -3,14 +3,12 @@
 /* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
 
 #include <stdio.h>
-#include <string.h>
 
-#include "../src/echeck.h"
 #include "test-echeck-private-utils.h"
 
-int test_check_double(const char *filename)
+int test_check_double(void)
 {
-	FILE *log;
+	struct echeck_log *orig = NULL;
 	const char *strs[4];
 	int failures = 0;
 
@@ -27,15 +25,15 @@ int test_check_double(const char *filename)
 	failures += check_double(0.00006, 0.0, 0.001);
 	failures += check_double(0.0, 0.00007, 0.001);
 
-	log = fopen(filename, "w");
-	if (0 == fcheck_double(log, 8.8, -8.8, 0.00001)) {
+	orig = echeck_test_log_capture();
+	if (0 == check_double(8.8, -8.8, 0.00001)) {
 		failures++;
 	}
-	if (0 == fcheck_double(log, 9.001, 9.002, 0.00001)) {
+	if (0 == check_double(9.001, 9.002, 0.00001)) {
 		failures++;
 	}
-	fclose(log);
-	failures += err_contains(filename, strs, 2);
+	echeck_test_log_release(orig);
+	failures += err_contains(strs, 2);
 
 	failures += check_double(-0.0001, 0.0001, 0.1);
 	failures += check_double(0.0002, -0.0002, 0.1);
@@ -50,14 +48,12 @@ int test_check_double(const char *filename)
 
 int main(int argc, char *argv[])
 {
-	const char *dir;
-	char log[ECHECK_PATH_MAX + 1];
 	int failures = 0;
 
-	dir = (argc > 1) ? argv[1] : NULL;
-	set_log(log, dir, "test_check_double");
+	(void)argc;
+	(void)argv;
 
-	failures += test_check_double(log);
+	failures += test_check_double();
 
 	if (failures) {
 		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
