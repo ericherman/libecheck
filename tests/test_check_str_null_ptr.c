@@ -4,12 +4,10 @@
 
 #include "test-echeck-private-utils.h"
 
-#include <stdio.h>
-
-int test_check_str_null_ptr(void)
+unsigned test_check_str_null_ptr(void)
 {
 	struct echeck_log *orig = NULL;
-	int failures = 0;
+	unsigned failures = 0;
 	const char *strs[2];
 
 	strs[0] = "not_null_second";
@@ -28,14 +26,16 @@ int test_check_str_null_ptr(void)
 	failures += err_contains(strs, 2);
 
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_str\n", failures);
+		echeck_test_debug_print_failures(failures,
+						 "test_check_str_null_ptr");
 	}
 	return failures;
 }
 
+#if ECHECK_HOSTED
 int main(int argc, char *argv[])
 {
-	int failures = 0;
+	unsigned failures = 0;
 
 	(void)argc;
 	(void)argv;
@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
 	failures += test_check_str_null_ptr();
 
 	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
+		echeck_test_debug_print_failures(failures, __FILE__);
 	}
 	return check_status(failures);
 }
+#endif

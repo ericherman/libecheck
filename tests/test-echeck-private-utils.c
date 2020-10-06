@@ -4,13 +4,54 @@
 
 #include "test-echeck-private-utils.h"
 
-#include <stdint.h>
 #include <limits.h>
+
+#if ECHECK_HOSTED
+#include <stdio.h>
+void echeck_test_stderr_prints(const char *s)
+{
+	fprintf(stderr, "%s", s);
+}
+
+void (*echeck_test_debug_prints)(const char *s) = echeck_test_stderr_prints;
+#else
+void echeck_test_silent_prints(const char *s)
+{
+	(void)s;
+}
+
+void (*echeck_test_debug_prints)(const char *s) = echeck_test_silent_prints;
+#endif
+
+void echeck_test_diy_printv(const void *v)
+{
+	char buf[25];
+	echeck_test_u64_to_hex(buf, 25, (uint64_t) v);
+	echeck_test_debug_prints(buf);
+}
+
+void (*echeck_test_debug_printv)(const void *v) = echeck_test_diy_printv;
+
+void echeck_test_diy_pritntz(size_t z)
+{
+	char buf[25];
+	echeck_test_ul_to_str(buf, 25, (unsigned long)z);
+	echeck_test_debug_prints(buf);
+}
+
+void (*echeck_test_debug_printz)(size_t z) = echeck_test_diy_pritntz;
+
+void echeck_test_diy_printeol(void)
+{
+	echeck_test_debug_prints("\n");
+}
+
+void (*echeck_test_debug_printeol)(void) = echeck_test_diy_printeol;
 
 #define echeck_test_mem_log_len 1024
 char echeck_test_mem_log[echeck_test_mem_log_len];
 
-static size_t echeck_diy_strnlen(const char *str, size_t buf_size)
+size_t echeck_diy_strnlen(const char *str, size_t buf_size)
 {
 	size_t i;
 
@@ -126,7 +167,7 @@ char *echeck_test_bogus_float_to_str(char *buf, size_t len, double f)
 	unsigned long ul = 0;
 
 	buf[0] = '\0';
-	buf[len] = '\0';
+	buf[len - 1] = '\0';
 	if (f < 0.0) {
 		buf[pos++] = '-';
 		f = -f;
@@ -257,8 +298,6 @@ static char *echeck_diy_strstr(const char *haystack, const char *needle)
 	return NULL;
 }
 
-#include <stdio.h>
-
 int err_contains(const char *expected[], size_t expected_len)
 {
 	size_t i;
@@ -269,9 +308,21 @@ int err_contains(const char *expected[], size_t expected_len)
 		if (echeck_diy_strstr(echeck_test_mem_log, expected[i])) {
 			msg_found++;
 		} else {
-			fprintf(stderr, "'%s' not in: %s\n",
-				expected[i], echeck_test_mem_log);
+			echeck_test_debug_prints("'");
+			echeck_test_debug_prints(expected[i]);
+			echeck_test_debug_prints("' not in '");
+			echeck_test_debug_prints(echeck_test_mem_log);
+			echeck_test_debug_prints("'");
+			echeck_test_debug_printeol();
 		}
 	}
 	return expected_len - msg_found;
+}
+
+void echeck_test_debug_print_failures(unsigned failures, const char *where)
+{
+	echeck_test_debug_printz(failures);
+	echeck_test_debug_prints(" failures in ");
+	echeck_test_debug_prints(where);
+	echeck_test_debug_printeol();
 }

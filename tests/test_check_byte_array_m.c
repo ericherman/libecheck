@@ -4,13 +4,11 @@
 
 #include "test-echeck-private-utils.h"
 
-#include <stdio.h>
-
-int test_check_byte_array_m(void)
+unsigned test_check_byte_array_m_1(void)
 {
 	struct echeck_log *orig = NULL;
 	const char *strs[3];
-	int failures = 0;
+	unsigned failures = 0;
 
 	unsigned char bytes_a[2] = { 0x00, 0xFF };
 	unsigned char bytes_b[2] = { 0x00, 0xFF };
@@ -31,17 +29,17 @@ int test_check_byte_array_m(void)
 	failures += err_contains(strs, 3);
 
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_byte_array_m\n",
-			failures);
+		echeck_test_debug_print_failures(failures,
+						 "test_check_byte_array_m_1");
 	}
 	return failures;
 }
 
-int test_check_byte_array_m_2(void)
+unsigned test_check_byte_array_m_2(void)
 {
 	struct echeck_log *orig = NULL;
 	const char *strs[2];
-	int failures = 0;
+	unsigned failures = 0;
 
 	unsigned char bytes_a[3] = { 0x13, 0x10, 0x00 };
 	unsigned char bytes_b[4] = { 0x13, 0x10, 0x00, 0x7F };
@@ -57,24 +55,33 @@ int test_check_byte_array_m_2(void)
 
 	failures += err_contains(strs, 2);
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_byte_array_m\n",
-			failures);
+		echeck_test_debug_print_failures(failures,
+						 "test_check_byte_array_m_2");
 	}
 	return failures;
 }
 
+unsigned test_check_byte_array_m(void)
+{
+	unsigned failures = 0;
+	failures += test_check_byte_array_m_1();
+	failures += test_check_byte_array_m_2();
+	return failures;
+}
+
+#if ECHECK_HOSTED
 int main(int argc, char *argv[])
 {
-	int failures = 0;
+	unsigned failures = 0;
 
 	(void)argc;
 	(void)argv;
 
 	failures += test_check_byte_array_m();
-	failures += test_check_byte_array_m_2();
 
 	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
+		echeck_test_debug_print_failures(failures, __FILE__);
 	}
 	return check_status(failures);
 }
+#endif

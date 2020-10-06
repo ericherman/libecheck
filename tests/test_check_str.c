@@ -4,13 +4,11 @@
 
 #include "test-echeck-private-utils.h"
 
-#include <stdio.h>
-
-int test_check_str(void)
+unsigned test_check_str(void)
 {
 	struct echeck_log *orig = NULL;
 	const char *strs[2];
-	int failures = 0;
+	unsigned failures = 0;
 
 	strs[0] = "same";
 	strs[1] = "different";
@@ -25,14 +23,15 @@ int test_check_str(void)
 	failures += err_contains(strs, 2);
 
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_str\n", failures);
+		echeck_test_debug_print_failures(failures, "test_check_str");
 	}
 	return failures;
 }
 
+#if ECHECK_HOSTED
 int main(int argc, char *argv[])
 {
-	int failures = 0;
+	unsigned failures = 0;
 
 	(void)argc;
 	(void)argv;
@@ -40,7 +39,8 @@ int main(int argc, char *argv[])
 	failures += test_check_str();
 
 	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
+		echeck_test_debug_print_failures(failures, __FILE__);
 	}
 	return check_status(failures);
 }
+#endif

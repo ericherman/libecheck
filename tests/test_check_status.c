@@ -4,21 +4,55 @@
 
 #include "test-echeck-private-utils.h"
 
-#include <stdio.h>
+static void fill_buf(char *buf, size_t buflen, int in, char expected)
+{
+	size_t len = 0;
+	unsigned long ul = 0;
 
-int test_check_status(void)
+	buf[len] = '\0';
+
+	buf[len++] = 'i';
+	buf[len++] = 'n';
+	buf[len++] = ':';
+	if (in < 0) {
+		buf[len++] = '-';
+		ul = (-in);
+	} else {
+		ul = in;
+	}
+	buf[len] = '\0';
+	len = echeck_diy_strnlen(buf, buflen);
+	echeck_test_ul_to_str(buf + len, buflen - len, ul);
+	len = echeck_diy_strnlen(buf, buflen);
+	buf[len++] = ',';
+	buf[len] = '\0';
+	if (expected < 0) {
+		buf[len++] = '-';
+		buf[len] = '\0';
+		ul = (-expected);
+	} else {
+		ul = expected;
+	}
+	echeck_test_ul_to_str(buf + len, buflen - len, ul);
+}
+
+unsigned test_check_status(void)
 {
 	struct echeck_log *orig = NULL;
-	int i, failures;
-	char actual, expected;
-	char buf[40];
+	unsigned failures = 0;
+	char actual = '\0';
+	char expected = '\0';
+	int i = 0;
+	char buf[80];
 	const char *expected_strs[1];
 
 	failures = 0;
+	buf[0] = '\0';
 
 	for (i = -128; i < 128; ++i) {
-		sprintf(buf, "in:%d expected:%c", i, (char)i);
+		expected = (char)i;
 		actual = check_status(i);
+		fill_buf(buf, 80, i, expected);
 		failures += check_int_m(actual, i, buf);
 		if (i == 0) {
 			failures +=
@@ -33,7 +67,7 @@ int test_check_status(void)
 		orig = echeck_test_log_capture();
 		actual = check_status(i);
 		echeck_test_log_release(orig);
-		sprintf(buf, "%d", i);
+		echeck_test_ul_to_str(buf, 80, i);
 		if (i != expected) {
 			failures += err_contains(expected_strs, 1);
 		}
@@ -45,7 +79,9 @@ int test_check_status(void)
 		echeck_test_log_release(orig);
 		actual = check_status(i);
 		echeck_test_log_release(orig);
-		sprintf(buf, "%d", i);
+		buf[0] = '-';
+		buf[1] = '\0';
+		echeck_test_ul_to_str(buf + 1, 80 - 1, (unsigned long)(-i));
 		if (i != expected) {
 			failures += err_contains(expected_strs, 1);
 		}
@@ -53,14 +89,15 @@ int test_check_status(void)
 	}
 
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_status\n", failures);
+		echeck_test_debug_print_failures(failures, "test_check_status");
 	}
 	return failures;
 }
 
+#if ECHECK_HOSTED
 int main(int argc, char *argv[])
 {
-	int failures = 0;
+	unsigned failures = 0;
 
 	(void)argc;
 	(void)argv;
@@ -68,8 +105,9 @@ int main(int argc, char *argv[])
 	failures += test_check_status();
 
 	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
+		echeck_test_debug_print_failures(failures, __FILE__);
 	}
 
 	return ((failures == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
 }
+#endif

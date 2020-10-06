@@ -4,18 +4,18 @@
 
 #include "test-echeck-private-utils.h"
 
-#include <stdio.h>
-
-int test_check_unsigned_int(void)
+unsigned test_check_unsigned_int(void)
 {
 	struct echeck_log *orig = NULL;
 	const char *strs[2];
-	int failures = 0;
+	unsigned failures = 0;
 	char buf[40];
 
+	buf[0] = '\0';
 	strs[0] = "1";
-	sprintf(buf, "%lu", (unsigned long)-1);
 	strs[1] = buf;
+
+	echeck_test_ul_to_str(buf, 40, (unsigned long)-1);
 
 	failures += check_unsigned_int(5, 5);
 
@@ -27,15 +27,16 @@ int test_check_unsigned_int(void)
 	failures += err_contains(strs, 2);
 
 	if (failures) {
-		fprintf(stderr, "%d failures in test_check_unsigned_int\n",
-			failures);
+		echeck_test_debug_print_failures(failures,
+						 "test_check_unsigned_int");
 	}
 	return failures;
 }
 
+#if ECHECK_HOSTED
 int main(int argc, char *argv[])
 {
-	int failures = 0;
+	unsigned failures = 0;
 
 	(void)argc;
 	(void)argv;
@@ -43,7 +44,8 @@ int main(int argc, char *argv[])
 	failures += test_check_unsigned_int();
 
 	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
+		echeck_test_debug_print_failures(failures, __FILE__);
 	}
 	return check_status(failures);
 }
+#endif
