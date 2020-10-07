@@ -20,7 +20,7 @@ unsigned test_check_ptr_m(void)
 		failures++;
 	}
 	echeck_test_log_release(orig);
-	failures += err_contains(strs, 1);
+	failures += echeck_test_err_log_contains(strs, 1);
 
 	if (failures) {
 		echeck_test_debug_print_failures(failures, "test_check_ptr_m");

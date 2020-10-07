@@ -31,7 +31,7 @@ unsigned test_check_double(void)
 		failures++;
 	}
 	echeck_test_log_release(orig);
-	failures += err_contains(strs, 2);
+	failures += echeck_test_err_log_contains(strs, 2);
 
 	failures += check_double(-0.0001, 0.0001, 0.1);
 	failures += check_double(0.0002, -0.0002, 0.1);

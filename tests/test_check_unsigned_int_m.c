@@ -21,7 +21,7 @@ unsigned test_check_unsigned_int_m(void)
 		failures++;
 	}
 	echeck_test_log_release(orig);
-	failures += err_contains(strs, 3);
+	failures += echeck_test_err_log_contains(strs, 3);
 
 	if (failures) {
 		echeck_test_debug_print_failures(failures,

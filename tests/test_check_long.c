@@ -20,7 +20,7 @@ unsigned test_check_long(void)
 		failures++;
 	}
 	echeck_test_log_release(orig);
-	failures += err_contains(strs, 2);
+	failures += echeck_test_err_log_contains(strs, 2);
 
 	if (failures) {
 		echeck_test_debug_print_failures(failures, "test_check_long");

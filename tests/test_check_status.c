@@ -69,7 +69,8 @@ unsigned test_check_status(void)
 		echeck_test_log_release(orig);
 		echeck_test_ul_to_str(buf, 80, i);
 		if (i != expected) {
-			failures += err_contains(expected_strs, 1);
+			failures +=
+			    echeck_test_err_log_contains(expected_strs, 1);
 		}
 		failures += check_int_m(actual, expected, buf);
 	}
@@ -83,7 +84,8 @@ unsigned test_check_status(void)
 		buf[1] = '\0';
 		echeck_test_ul_to_str(buf + 1, 80 - 1, (unsigned long)(-i));
 		if (i != expected) {
-			failures += err_contains(expected_strs, 1);
+			failures +=
+			    echeck_test_err_log_contains(expected_strs, 1);
 		}
 		failures += check_int_m(actual, expected, buf);
 	}

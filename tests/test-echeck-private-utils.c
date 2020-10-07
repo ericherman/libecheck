@@ -298,23 +298,29 @@ static char *echeck_diy_strstr(const char *haystack, const char *needle)
 	return NULL;
 }
 
-int err_contains(const char *expected[], size_t expected_len)
+int echeck_test_buf_contains(const char *log, const char *expected)
+{
+	if (echeck_diy_strstr(log, expected)) {
+		return 1;
+	}
+	echeck_test_debug_prints("'");
+	echeck_test_debug_prints(expected);
+	echeck_test_debug_prints("' not in '");
+	echeck_test_debug_prints(log);
+	echeck_test_debug_prints("'");
+	echeck_test_debug_printeol();
+	return 0;
+}
+
+int echeck_test_err_log_contains(const char *expected[], size_t expected_len)
 {
 	size_t i;
 	unsigned int msg_found;
 
 	msg_found = 0;
 	for (i = 0; i < expected_len; i++) {
-		if (echeck_diy_strstr(echeck_test_mem_log, expected[i])) {
-			msg_found++;
-		} else {
-			echeck_test_debug_prints("'");
-			echeck_test_debug_prints(expected[i]);
-			echeck_test_debug_prints("' not in '");
-			echeck_test_debug_prints(echeck_test_mem_log);
-			echeck_test_debug_prints("'");
-			echeck_test_debug_printeol();
-		}
+		msg_found +=
+		    echeck_test_buf_contains(echeck_test_mem_log, expected[i]);
 	}
 	return expected_len - msg_found;
 }

@@ -27,7 +27,8 @@ extern struct echeck_log echeck_test_buf_log;
 struct echeck_log *echeck_test_log_capture(void);
 void echeck_test_log_release(struct echeck_log *orig);
 
-int err_contains(const char *expected[], size_t expected_len);
+int echeck_test_buf_contains(const char *buf, const char *expected);
+int echeck_test_err_log_contains(const char *expected[], size_t expected_len);
 
 void echeck_test_debug_print_failures(unsigned failures, const char *where);
 
