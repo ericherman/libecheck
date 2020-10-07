@@ -17,15 +17,13 @@
 #include <stdlib.h>		/* for size_t */
 #include <float.h>		/* for DBL_EPSILON */
 
-#ifdef _GNU_SOURCE
-#define ECHECK_FUNC __PRETTY_FUNCTION__
-#else
-#if (__STDC_VERSION__ >= 199901L)
+#ifndef ECHECK_FUNC
+#if __STDC_VERSION__ >= 199901L
 #define ECHECK_FUNC __func__
 #else
-#define ECHECK_FUNC NULL
-#endif /* _GNU_SOURCE */
-#endif /* __STDC_VERSION__ */
+#define ECHECK_FUNC ((char *)NULL)
+#endif
+#endif
 
 struct echeck_log {
 	void *context;
@@ -249,27 +247,29 @@ int echeck_double_m(struct echeck_log *err, const char *func, const char *file,
 	echeck_double_m(NULL, ECHECK_FUNC, __FILE__, __LINE__,\
 			actual, expected, epsilon, #actual)
 
+/* check double scaled epsilon */
+/*
+ * WARNING: The "check_double_scaled_epsilon" family of functions
+ * uses the "expected" value to scale DBL_EPSILON. This should not
+ * be used if "expected" is an expression with side-effects.
+ */
 #define echeck_double_scaled_epsilon_m(err, func, file, line, actual,\
 				       expected, msg)\
 	echeck_double_m(err, func, file, line, actual, expected,\
 			((expected) * DBL_EPSILON), msg)
 
-/*
- * WARNING: The "check_double_scaled_epsilon" family of functions
- * uses the "expected" value to scale DBL_EPSILON. This should not
- * be used if "expected" is an expression with side-effects.  */
 #define lcheck_double_scaled_epsilon_m(log, actual, expected, msg)\
 	lcheck_double_m(log, actual, expected,\
-			((expected) * DBL_EPSILON), msg);
+			((expected) * DBL_EPSILON), msg)
 
 #define check_double_scaled_epsilon_m(actual, expected, msg)\
-	check_double_m(actual, expected, ((expected) * DBL_EPSILON), msg);
+	check_double_m(actual, expected, ((expected) * DBL_EPSILON), msg)
 
 #define lcheck_double_scaled_epsilon(log, actual, expected)\
-	lcheck_double(log, actual, expected, ((expected) * DBL_EPSILON));
+	lcheck_double(log, actual, expected, ((expected) * DBL_EPSILON))
 
 #define check_double_scaled_epsilon(actual, expected)\
-	check_double(actual, expected, ((expected) * DBL_EPSILON));
+	check_double(actual, expected, ((expected) * DBL_EPSILON))
 
 /*check status*/
 /* safe casting of non-zero int to avoid EXIT_SUCCESS */

@@ -40,9 +40,12 @@
 #if ECHECK_HOSTED
 #include <stdio.h>
 
-FILE *echeck_ensure_stream(void *context)
+/* LCOV_EXCL_START */
+static FILE *echeck_ensure_stream(void *context)
 {
 	FILE *stream = NULL;
+
+	stream = context ? (FILE *)context : stderr;
 
 	/* To avoid undefined behavior when writing to stderr, first flush
 	 * stdout, thus ensuring stdout and stderr are "coordinated":
@@ -53,13 +56,14 @@ FILE *echeck_ensure_stream(void *context)
 	 *
 	 * https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_05_01
 	 */
-	stream = context ? (FILE *)context : stderr;
 	if (stream == stderr) {
 		fflush(stdout);
 	}
 
 	return stream;
 }
+
+/* LCOV_EXCL_STOP */
 
 void echeck_fprintf_append_s(struct echeck_log *log, const char *str)
 {
@@ -295,9 +299,9 @@ int echeck_size_t_m(struct echeck_log *err, const char *func, const char *file,
 
 	echeck_append_fail(err, msg);
 	err->append_s(err, " Expected ");
-	err->append_ul(err, (unsigned long)expected);
+	err->append_z(err, expected);
 	err->append_s(err, " but was ");
-	err->append_ul(err, (unsigned long)actual);
+	err->append_z(err, actual);
 	err->append_s(err, " ");
 	echeck_append_func_file_line(err, func, file, line);
 	err->append_eol(err);
@@ -317,7 +321,7 @@ int echeck_diy_strcmp(const char *s1, const char *s2)
 
 	for (; *s1 || *s2; ++s1, ++s2) {
 		if (*s1 != *s2) {
-			return *s1 - *s2;
+			break;
 		}
 	}
 	return *s1 - *s2;

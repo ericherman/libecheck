@@ -42,7 +42,8 @@ check_PROGRAMS=\
  test_check_unsigned_int \
  test_check_unsigned_int_m \
  test_check_unsigned_long \
- test_check_unsigned_long_m
+ test_check_unsigned_long_m \
+ test_hosted
 
 TESTS_COMMON_SOURCES=\
  tests/test-echeck-private-utils.h \
@@ -134,6 +135,12 @@ test_check_unsigned_long_m_SOURCES=tests/test_check_unsigned_long_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_unsigned_long_m_LDADD=$(T_LDADD)
 
+test_hosted_SOURCES=tests/test_hosted.c $(TESTS_COMMON_SOURCES)
+test_hosted_CFLAGS=-std=c11 -pipe -Isrc -Itests \
+		   -Wall -Wextra -Wpedantic -Werror \
+		   $(BUILD_TYPE_CFLAGS)
+test_hosted_LDADD=$(T_LDADD)
+
 EXTRA_DIST=COPYING.LESSER
 
 ACLOCAL_AMFLAGS=-I m4 --install
@@ -216,6 +223,9 @@ vg-test_check_unsigned_long: test_check_unsigned_long
 vg-test_check_unsigned_long_m: test_check_unsigned_long_m
 	./libtool --mode=execute valgrind -q ./test_check_unsigned_long_m
 
+vg-test_hosted: test_hosted
+	./libtool --mode=execute valgrind -q ./test_hosted
+
 valgrind: \
 	vg-test_check_byte_array \
 	vg-test_check_byte_array_m \
@@ -237,7 +247,9 @@ valgrind: \
 	vg-test_check_unsigned_int \
 	vg-test_check_unsigned_int_m \
 	vg-test_check_unsigned_long \
-	vg-test_check_unsigned_long_m
+	vg-test_check_unsigned_long_m \
+	vg-test_hosted
+	echo "valgrind complete"
 
 
 spotless:

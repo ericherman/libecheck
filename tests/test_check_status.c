@@ -65,7 +65,7 @@ unsigned test_check_status(void)
 	expected = 127;
 	for (i = expected; i < 260; ++i) {
 		orig = echeck_test_log_capture();
-		actual = check_status(i);
+		actual = check_status_m(i, "127 < 260");
 		echeck_test_log_release(orig);
 		echeck_test_ul_to_str(buf, 80, i);
 		if (i != expected) {

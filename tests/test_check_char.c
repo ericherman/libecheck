@@ -7,16 +7,25 @@
 unsigned test_check_char(void)
 {
 	struct echeck_log *orig = NULL;
-	const char *strs[2];
+	const char *strs[5];
 	unsigned failures = 0;
 
-	strs[0] = "a";
-	strs[1] = "b";
+	strs[0] = "L";
+	strs[1] = "M";
+	strs[2] = "N";
+	strs[3] = "\\0";
+	strs[4] = "Q";
 
 	failures += check_char('a', 'a');
 
 	orig = echeck_test_log_capture();
-	if (0 == check_char('a', 'b')) {
+	if (0 == check_char('L', 'M')) {
+		failures++;
+	}
+	if (0 == check_char('N', '\0')) {
+		failures++;
+	}
+	if (0 == check_char('\0', 'Q')) {
 		failures++;
 	}
 	echeck_test_log_release(orig);
