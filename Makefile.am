@@ -159,7 +159,8 @@ tidy:
 		-T size_t \
 		-T echeck_log \
 		`find src tests -name '*.h' -o -name '*.c'` \
-		echeck_tests_arduino/echeck_tests_arduino.ino
+		echeck_tests_arduino/echeck_tests_arduino.ino \
+		echeck_arduino_demo/echeck_arduino_demo.ino
 
 vg-test_check_status: test_check_status
 	./libtool --mode=execute valgrind -q ./test_check_status
