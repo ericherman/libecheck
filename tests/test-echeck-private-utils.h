@@ -7,6 +7,10 @@
 
 #include "echeck.h"
 
+#ifdef ARDUINO
+#define ECHECK_HOSTED 0
+#endif
+
 #ifndef ECHECK_HOSTED
 #ifdef __STDC_HOSTED__
 #define ECHECK_HOSTED __STDC_HOSTED__

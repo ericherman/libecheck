@@ -4,6 +4,10 @@
 
 #include "echeck.h"
 
+#ifdef ARDUINO
+#define ECHECK_HOSTED 0
+#endif
+
 #ifndef ECHECK_HOSTED
 /*
  __STDC_HOSTED__
@@ -149,7 +153,7 @@ void echeck_noop_append_l(struct echeck_log *log, long l)
 void echeck_noop_append_f(struct echeck_log *log, double f)
 {
 	(void)log;
-	(void)log;
+	(void)f;
 }
 
 void echeck_noop_append_vp(struct echeck_log *log, const void *ptr)
@@ -164,7 +168,7 @@ void echeck_noop_append_eol(struct echeck_log *log)
 }
 
 struct echeck_log echeck_noop_log = {
-	(void *)stderr,
+	NULL,
 	echeck_noop_append_s,
 	echeck_noop_append_ul,
 	echeck_noop_append_z,

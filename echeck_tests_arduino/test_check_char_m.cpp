@@ -1,0 +1,1 @@
+../tests/test_check_char_m.c

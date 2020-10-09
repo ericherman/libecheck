@@ -1,0 +1,1 @@
+../tests/test_check_ptr_m.c

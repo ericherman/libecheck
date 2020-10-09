@@ -14,7 +14,25 @@ unsigned test_check_size_t(void)
 	size_t five = 5;
 
 	strs[0] = "1";
-	strs[1] = sizeof(size_t) == 8 ? "18446744073709551615" : "4294967295";
+	strs[1] = "";
+
+	switch (sizeof(size_t)) {
+	case 8:
+		strs[1] = "18446744073709551615";
+		break;
+	case 4:
+		strs[1] = "4294967295";
+		break;
+	case 2:
+		strs[1] = "65535";
+		break;
+	default:
+		echeck_test_debug_prints("sizeof(size_t) == ");
+		echeck_test_debug_printz(sizeof(size_t));
+		echeck_test_debug_prints(" not supported");
+		echeck_test_debug_printeol();
+		return 1;
+	}
 
 	failures += check_size_t(five, five);
 

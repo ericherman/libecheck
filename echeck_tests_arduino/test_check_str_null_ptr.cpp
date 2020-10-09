@@ -1,0 +1,1 @@
+../tests/test_check_str_null_ptr.c
