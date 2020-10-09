@@ -1,5 +1,89 @@
 echeck Changelog
 
+2020-10-09  Eric Herman <eric@freesa.org>
+
+	2.0.0 API Breaking changes:
+	- Change the return type from int to unsigned char.
+	- Replace printf usage with a logger object.
+	- Replace all of the fcheck macros with lcheck macros.
+
+	Merged 'support-freestanding' branch, including:
+	- New echeck_arduino_demo example firmware
+	- new echeck self-tests as arduino firmware
+	- Add test_hosted for covering default printf usage
+
+	Fixed the check_double_scaled_epsilon macros by removing the ';'
+
+	* src/echeck.h
+	* src/echeck.c
+	* .gitignore
+	* ChangeLog
+	* Makefile.am
+	* README
+	* configure.ac
+	* echeck_arduino_demo/echeck.cpp
+	* echeck_arduino_demo/echeck.h
+	* echeck_arduino_demo/echeck_arduino_demo.ino
+	* echeck_tests_arduino/echeck.cpp
+	* echeck_tests_arduino/echeck.h
+	* echeck_tests_arduino/echeck_tests_arduino.ino
+	* echeck_tests_arduino/test-echeck-private-utils.cpp
+	* echeck_tests_arduino/test-echeck-private-utils.h
+	* echeck_tests_arduino/test_check_byte_array.cpp
+	* echeck_tests_arduino/test_check_byte_array_m.cpp
+	* echeck_tests_arduino/test_check_char.cpp
+	* echeck_tests_arduino/test_check_char_m.cpp
+	* echeck_tests_arduino/test_check_double.cpp
+	* echeck_tests_arduino/test_check_int.cpp
+	* echeck_tests_arduino/test_check_int_m.cpp
+	* echeck_tests_arduino/test_check_long.cpp
+	* echeck_tests_arduino/test_check_long_m.cpp
+	* echeck_tests_arduino/test_check_ptr.cpp
+	* echeck_tests_arduino/test_check_ptr_m.cpp
+	* echeck_tests_arduino/test_check_size_t.cpp
+	* echeck_tests_arduino/test_check_size_t_m.cpp
+	* echeck_tests_arduino/test_check_status.cpp
+	* echeck_tests_arduino/test_check_str.cpp
+	* echeck_tests_arduino/test_check_str_m.cpp
+	* echeck_tests_arduino/test_check_str_null_ptr.cpp
+	* echeck_tests_arduino/test_check_unsigned_int.cpp
+	* echeck_tests_arduino/test_check_unsigned_int_m.cpp
+	* echeck_tests_arduino/test_check_unsigned_long.cpp
+	* echeck_tests_arduino/test_check_unsigned_long_m.cpp
+	* tests/test-echeck-private-utils.c
+	* tests/test-echeck-private-utils.h
+	* tests/test_check_byte_array.c
+	* tests/test_check_byte_array_m.c
+	* tests/test_check_char.c
+	* tests/test_check_char_m.c
+	* tests/test_check_double.c
+	* tests/test_check_int.c
+	* tests/test_check_int_m.c
+	* tests/test_check_long.c
+	* tests/test_check_long_m.c
+	* tests/test_check_ptr.c
+	* tests/test_check_ptr_m.c
+	* tests/test_check_size_t.c
+	* tests/test_check_size_t_m.c
+	* tests/test_check_status.c
+	* tests/test_check_str.c
+	* tests/test_check_str_m.c
+	* tests/test_check_str_null_ptr.c
+	* tests/test_check_unsigned_int.c
+	* tests/test_check_unsigned_int_m.c
+	* tests/test_check_unsigned_long.c
+	* tests/test_check_unsigned_long_m.c
+	* tests/test_hosted.c
+
+
+2020-03-15  Eric Herman <eric@freesa.org>
+	Avoid POSIX undefined behavior of printing to stderr before
+	flushing stdout
+
+	https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_05_01
+
+	* src/echeck.c: fflush(stdout) before writing to stderr
+
 2020-02-20  Eric Herman <eric@freesa.org>
 
 Added test lcov reporting
