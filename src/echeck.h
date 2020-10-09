@@ -41,8 +41,9 @@ Echeck_begin_C_functions
 extern struct echeck_log *echeck_default_log;
 
 /*check char*/
-int echeck_char_m(struct echeck_log *err, const char *func, const char *file,
-		  int line, char actual, char expected, const char *msg);
+unsigned char echeck_char_m(struct echeck_log *err, const char *func,
+			    const char *file, int line, char actual,
+			    char expected, const char *msg);
 
 #define lcheck_char_m(log, actual, expected, msg)\
 	echeck_char_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
@@ -61,8 +62,9 @@ int echeck_char_m(struct echeck_log *err, const char *func, const char *file,
 		 actual, expected, #actual)
 
 /* check long */
-int echeck_long_m(struct echeck_log *err, const char *func, const char *file,
-		  int line, long actual, long expected, const char *msg);
+unsigned char echeck_long_m(struct echeck_log *err, const char *func,
+			    const char *file, int line, long actual,
+			    long expected, const char *msg);
 
 #define lcheck_long_m(log, actual, expected, msg)\
 	echeck_long_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
@@ -101,9 +103,9 @@ int echeck_long_m(struct echeck_log *err, const char *func, const char *file,
 		 actual, expected, #actual)
 
 /* check str */
-int echeck_str_m(struct echeck_log *err, const char *func, const char *file,
-		 int line, const char *actual, const char *expected,
-		 const char *msg);
+unsigned char echeck_str_m(struct echeck_log *err, const char *func,
+			   const char *file, int line, const char *actual,
+			   const char *expected, const char *msg);
 
 #define lcheck_str_m(log, actual, expected, msg)\
 	echeck_str_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
@@ -122,9 +124,9 @@ int echeck_str_m(struct echeck_log *err, const char *func, const char *file,
 		 actual, expected, #actual)
 
 /* check ptr */
-int echeck_ptr_m(struct echeck_log *err, const char *func, const char *file,
-		 int line, const void *actual, const void *expected,
-		 const char *msg);
+unsigned char echeck_ptr_m(struct echeck_log *err, const char *func,
+			   const char *file, int line, const void *actual,
+			   const void *expected, const char *msg);
 
 #define lcheck_ptr_m(log, actual, expected, msg)\
 	echeck_ptr_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
@@ -143,9 +145,10 @@ int echeck_ptr_m(struct echeck_log *err, const char *func, const char *file,
 		 actual, expected, #actual)
 
 /* check unsigned long */
-int echeck_unsigned_long_m(struct echeck_log *err, const char *func,
-			   const char *file, int line, unsigned long actual,
-			   unsigned long expected, const char *msg);
+unsigned char echeck_unsigned_long_m(struct echeck_log *err, const char *func,
+				     const char *file, int line,
+				     unsigned long actual,
+				     unsigned long expected, const char *msg);
 
 #define lcheck_unsigned_long_m(log, actual, expected, msg)\
 	echeck_unsigned_long_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
@@ -184,8 +187,9 @@ int echeck_unsigned_long_m(struct echeck_log *err, const char *func,
 		 actual, expected, #actual)
 
 /* check size_t */
-int echeck_size_t_m(struct echeck_log *err, const char *func, const char *file,
-		    int line, size_t actual, size_t expected, const char *msg);
+unsigned char echeck_size_t_m(struct echeck_log *err, const char *func,
+			      const char *file, int line, size_t actual,
+			      size_t expected, const char *msg);
 
 #define lcheck_size_t_m(log, actual, expected, msg)\
 	echeck_size_t_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
@@ -204,10 +208,12 @@ int echeck_size_t_m(struct echeck_log *err, const char *func, const char *file,
 		 actual, expected, #actual)
 
 /* check byte_array */
-int echeck_byte_array_m(struct echeck_log *err, const char *func,
-			const char *file, int line, const unsigned char *actual,
-			size_t actual_len, const unsigned char *expected,
-			size_t expected_len, const char *msg);
+unsigned char echeck_byte_array_m(struct echeck_log *err, const char *func,
+				  const char *file, int line,
+				  const unsigned char *actual,
+				  size_t actual_len,
+				  const unsigned char *expected,
+				  size_t expected_len, const char *msg);
 
 #define lcheck_byte_array_m(log, actual, actual_len, expected, expected_len,\
 	msg)\
@@ -227,9 +233,9 @@ int echeck_byte_array_m(struct echeck_log *err, const char *func,
 		 actual, actual_len, expected, expected_len, #actual)
 
 /* check double */
-int echeck_double_m(struct echeck_log *err, const char *func, const char *file,
-		    int line, double actual, double expected, double epsilon,
-		    const char *msg);
+unsigned char echeck_double_m(struct echeck_log *err, const char *func,
+			      const char *file, int line, double actual,
+			      double expected, double epsilon, const char *msg);
 
 #define lcheck_double_m(log, actual, expected, epsilon, msg)\
 	echeck_double_m(log, ECHECK_FUNC, __FILE__, __LINE__,\

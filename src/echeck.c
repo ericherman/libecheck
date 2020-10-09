@@ -215,8 +215,9 @@ static void echeck_append_func_file_line(struct echeck_log *err,
 	err->append_s(err, "]");
 }
 
-int echeck_char_m(struct echeck_log *err, const char *func, const char *file,
-		  int line, char actual, char expected, const char *msg)
+unsigned char echeck_char_m(struct echeck_log *err, const char *func,
+			    const char *file, int line, char actual,
+			    char expected, const char *msg)
 {
 	char buf[2];
 	if (expected == actual) {
@@ -249,9 +250,10 @@ int echeck_char_m(struct echeck_log *err, const char *func, const char *file,
 	return 1;
 }
 
-int echeck_unsigned_long_m(struct echeck_log *err, const char *func,
-			   const char *file, int line, unsigned long actual,
-			   unsigned long expected, const char *msg)
+unsigned char echeck_unsigned_long_m(struct echeck_log *err, const char *func,
+				     const char *file, int line,
+				     unsigned long actual,
+				     unsigned long expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -271,8 +273,9 @@ int echeck_unsigned_long_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-int echeck_long_m(struct echeck_log *err, const char *func, const char *file,
-		  int line, long actual, long expected, const char *msg)
+unsigned char echeck_long_m(struct echeck_log *err, const char *func,
+			    const char *file, int line, long actual,
+			    long expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -292,8 +295,9 @@ int echeck_long_m(struct echeck_log *err, const char *func, const char *file,
 	return 1;
 }
 
-int echeck_size_t_m(struct echeck_log *err, const char *func, const char *file,
-		    int line, size_t actual, size_t expected, const char *msg)
+unsigned char echeck_size_t_m(struct echeck_log *err, const char *func,
+			      const char *file, int line, size_t actual,
+			      size_t expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
@@ -313,7 +317,7 @@ int echeck_size_t_m(struct echeck_log *err, const char *func, const char *file,
 	return 1;
 }
 
-int echeck_diy_strcmp(const char *s1, const char *s2)
+unsigned char echeck_diy_strcmp(const char *s1, const char *s2)
 {
 	if (s1 == s2) {
 		return 0;
@@ -331,9 +335,9 @@ int echeck_diy_strcmp(const char *s1, const char *s2)
 	return *s1 - *s2;
 }
 
-int echeck_str_m(struct echeck_log *err, const char *func, const char *file,
-		 int line, const char *actual, const char *expected,
-		 const char *msg)
+unsigned char echeck_str_m(struct echeck_log *err, const char *func,
+			   const char *file, int line, const char *actual,
+			   const char *expected, const char *msg)
 {
 	if (actual == expected) {
 		return 0;
@@ -369,10 +373,12 @@ int echeck_str_m(struct echeck_log *err, const char *func, const char *file,
 	return 1;
 }
 
-int echeck_byte_array_m(struct echeck_log *err, const char *func,
-			const char *file, int line, const unsigned char *actual,
-			size_t actual_len, const unsigned char *expected,
-			size_t expected_len, const char *msg)
+unsigned char echeck_byte_array_m(struct echeck_log *err, const char *func,
+				  const char *file, int line,
+				  const unsigned char *actual,
+				  size_t actual_len,
+				  const unsigned char *expected,
+				  size_t expected_len, const char *msg)
 {
 
 	size_t i = 0;
@@ -426,9 +432,9 @@ int echeck_byte_array_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-int echeck_double_m(struct echeck_log *err, const char *func, const char *file,
-		    int line, double actual, double expected, double epsilon,
-		    const char *msg)
+unsigned char echeck_double_m(struct echeck_log *err, const char *func,
+			      const char *file, int line, double actual,
+			      double expected, double epsilon, const char *msg)
 {
 	double from, to, swap;
 
@@ -466,9 +472,9 @@ int echeck_double_m(struct echeck_log *err, const char *func, const char *file,
 	return 1;
 }
 
-int echeck_ptr_m(struct echeck_log *err, const char *func, const char *file,
-		 int line, const void *actual, const void *expected,
-		 const char *msg)
+unsigned char echeck_ptr_m(struct echeck_log *err, const char *func,
+			   const char *file, int line, const void *actual,
+			   const void *expected, const char *msg)
 {
 	if (expected == actual) {
 		return 0;
