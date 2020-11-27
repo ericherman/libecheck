@@ -7,6 +7,20 @@
 
 #include "eembed-arduino.h"
 
+unsigned long eembed_die_delay = 5 * 1000;
+
+void (*call_null_pointer_to_crash_and_reboot)(void) = NULL;
+void die(void)
+{
+	Serial.println("EXIT FAILURE");
+	Serial.print("(reboot in ");
+	Serial.print(eembed_die_delay);
+	Serial.println(" ms)");
+	delay(eembed_die_delay);
+	Serial.println();
+	call_null_pointer_to_crash_and_reboot();
+}
+
 void serial_print_s(const char *s)
 {
 	Serial.print(s);
@@ -75,4 +89,6 @@ void eembed_arduino_serial_log_init(void)
 
 	eembed_system_print = serial_print_s;
 	eembed_system_println = serial_println;
+
+	eembed_assert_crash = die;
 }

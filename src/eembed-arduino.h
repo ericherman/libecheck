@@ -5,7 +5,8 @@
 #ifndef EEMBED_ARDUINO_H
 #define EEMBED_ARDUINO_H 1
 
-#include "echeck.h"
+#include "eembed.h"
+#include "eembed-assert.h"
 
 void eembed_arduino_serial_log_init(void);
 

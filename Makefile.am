@@ -195,7 +195,7 @@ tidy:
 		-T FILE \
 		-T size_t \
 		-T echeck_log \
-		`find src tests -name '*.h' -o -name '*.c'` \
+		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino
 

@@ -9,6 +9,8 @@
 #include "eembed.h"
 #include "eembed-hosted.h"
 
+void (*eembed_assert_crash)(void) = NULL;
+
 #if EEMBED_HOSTED
 #include <stdarg.h>
 #include <stdio.h>

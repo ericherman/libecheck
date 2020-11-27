@@ -74,6 +74,8 @@ void setup(void)
 void loop(void)
 {
 	++loop_count;
+	eembed_assert(loop_count < 5);
+
 	Serial.println("==================================================");
 	Serial.print("Starting test run #");
 	Serial.println(loop_count);

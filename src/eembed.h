@@ -50,6 +50,8 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 					    struct eembed_buf_context *ctx,
 					    char *buf, size_t len);
 
+extern void (*eembed_assert_crash)(void);
+
 extern int (*eembed_memcmp)(const void *s1, const void *s2, size_t n);
 
 extern void *(*eembed_memcpy)(void *dest, const void *src, size_t n);
@@ -70,7 +72,6 @@ extern size_t (*eembed_strlen)(const char *s);
 extern size_t (*eembed_strnlen)(const char *s, size_t maxlen);
 
 extern char *(*eembed_strstr)(const char *haystack, const char *needle);
-
 
 Eembed_end_C_functions
 #undef Eembed_end_C_functions

@@ -1,7 +1,9 @@
-E(asy)Check: Boiler-plate to make simple testing easier, when I do not
-want a whole testing framework.
+libecheck consists of two main parts:
 
-E(asy)Embed: make writing and testing embedded libraries easier.
+* E(asy)Embed: make writing and testing embedded libraries easier.
+
+* E(asy)Check: Boiler-plate to make simple testing easier, when one
+  does not want a whole testing framework.
 
 ECheck
 ------
@@ -94,6 +96,8 @@ little as:
 	<stddef.h>
 	<stdint.h>
 
+
+
 That said however, often there is at least some support for serial
 I/O even when if it is lacking the lovely full-features of fprintf
 and sprintf.  Additionally, development may be done in a "hosted"
@@ -174,6 +178,17 @@ functions are provided:
 	size_t (*eembed_strnlen)(const char *s, size_t maxlen);
 
 	char *(*eembed_strstr)(const char *haystack, const char *needle);
+
+Since "assert.h" is not in the list of freestanding headers,
+"eembed-assert.h" can be used.  In the standard hosted case,
+"eembed_assert(expression)" is defined to be "assert(expression)",
+in the freestanding case, it is defined to make use of
+"eembed_system_print" and then call the function:
+
+	void (*eembed_assert_crash)(void);
+
+By default, it is a null function pointer, but it can be redefined if
+other action is needed to reset the firmware.
 
 
 License
