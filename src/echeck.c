@@ -4,193 +4,15 @@
 
 #include "echeck.h"
 
-#ifdef ARDUINO
-#define ECHECK_HOSTED 0
-#endif
-
-#ifndef ECHECK_HOSTED
-/*
- __STDC_HOSTED__
- The integer constant 1 if the implementation is a hosted
- implementation or the integer constant 0 if it is not.
-
- C99 standard (section 6.10.8):
- http://www.open-std.org/jtc1/sc22/WG14/www/docs/n1256.pdf
-
- C++11 standard (section 16.8):
- http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3337.pdf
-
- "The standard also defines two environments for programs, a
- freestanding environment, required of all implementations and which
- may not have library facilities beyond those required of
- freestanding implementations, where the handling of program startup
- and termination are implementation-defined; and a hosted
- environment, which is not required, in which all the library
- facilities are provided and startup is through a function int main
- (void) or int main (int, char *[]). An OS kernel is an example of a
- program running in a freestanding environment; a program using the
- facilities of an operating system is an example of a program
- running in a hosted environment."
- https://gcc.gnu.org/onlinedocs/gcc/Standards.html
-*/
-#ifdef __STDC_HOSTED__
-#define ECHECK_HOSTED __STDC_HOSTED__
-#else
-/* guess? */
-#define ECHECK_HOSTED 1
-#endif
-#endif
-
-#if ECHECK_HOSTED
-#include <stdio.h>
-
-/* LCOV_EXCL_START */
-static FILE *echeck_ensure_stream(void *context)
-{
-	FILE *stream = NULL;
-
-	stream = context ? (FILE *)context : stderr;
-
-	/* To avoid undefined behavior when writing to stderr, first flush
-	 * stdout, thus ensuring stdout and stderr are "coordinated":
-	 *
-	 * "if two or more handles are used, and any one of them is a stream,
-	 * the application shall ensure that their actions are coordinated as
-	 * described below. If this is not done, the result is undefined."
-	 *
-	 * https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_05_01
-	 */
-	if (stream == stderr) {
-		fflush(stdout);
-	}
-
-	return stream;
-}
-
-/* LCOV_EXCL_STOP */
-
-void echeck_fprintf_append_s(struct echeck_log *log, const char *str)
-{
-	FILE *stream = echeck_ensure_stream(log->context);
-	fprintf(stream, "%s", str);
-}
-
-void echeck_fprintf_append_ul(struct echeck_log *log, unsigned long ul)
-{
-	FILE *stream = echeck_ensure_stream(log->context);
-	fprintf(stream, "%lu", ul);
-}
-
-void echeck_fprintf_append_z(struct echeck_log *log, size_t z)
-{
-	FILE *stream = echeck_ensure_stream(log->context);
-	fprintf(stream, "%lu", (unsigned long)z);
-}
-
-void echeck_fprintf_append_l(struct echeck_log *log, long l)
-{
-	FILE *stream = echeck_ensure_stream(log->context);
-	fprintf(stream, "%ld", l);
-}
-
-void echeck_fprintf_append_f(struct echeck_log *log, double f)
-{
-	FILE *stream = echeck_ensure_stream(log->context);
-	fprintf(stream, "%g", f);
-}
-
-void echeck_fprintf_append_vp(struct echeck_log *log, const void *ptr)
-{
-	FILE *stream = echeck_ensure_stream(log->context);
-	fprintf(stream, "%p", ptr);
-}
-
-void echeck_fprintf_append_eol(struct echeck_log *log)
-{
-	FILE *stream = echeck_ensure_stream(log->context);
-	fprintf(stream, "\n");
-}
-
-struct echeck_log echeck_stderr_log = {
-	NULL,
-	echeck_fprintf_append_s,
-	echeck_fprintf_append_ul,
-	echeck_fprintf_append_z,
-	echeck_fprintf_append_l,
-	echeck_fprintf_append_f,
-	echeck_fprintf_append_vp,
-	echeck_fprintf_append_eol
-};
-
-struct echeck_log *echeck_default_log = &echeck_stderr_log;
-
-#else /* ECHECK_HOSTED */
-
-void echeck_noop_append_s(struct echeck_log *log, const char *str)
-{
-	(void)log;
-	(void)str;
-}
-
-void echeck_noop_append_ul(struct echeck_log *log, unsigned long ul)
-{
-	(void)log;
-	(void)ul;
-}
-
-void echeck_noop_append_z(struct echeck_log *log, size_t z)
-{
-	(void)log;
-	(void)z;
-}
-
-void echeck_noop_append_l(struct echeck_log *log, long l)
-{
-	(void)log;
-	(void)l;
-}
-
-void echeck_noop_append_f(struct echeck_log *log, double f)
-{
-	(void)log;
-	(void)f;
-}
-
-void echeck_noop_append_vp(struct echeck_log *log, const void *ptr)
-{
-	(void)log;
-	(void)ptr;
-}
-
-void echeck_noop_append_eol(struct echeck_log *log)
-{
-	(void)log;
-}
-
-struct echeck_log echeck_noop_log = {
-	NULL,
-	echeck_noop_append_s,
-	echeck_noop_append_ul,
-	echeck_noop_append_z,
-	echeck_noop_append_l,
-	echeck_noop_append_f,
-	echeck_noop_append_vp,
-	echeck_noop_append_eol
-};
-
-struct echeck_log *echeck_default_log = &echeck_noop_log;
-
-#endif /* ECHECK_HOSTED */
-
-struct echeck_log *echeck_ensure_log(struct echeck_log *err)
+struct eembed_log *echeck_ensure_log(struct eembed_log *err)
 {
 	if (err) {
 		return err;
 	}
-	return echeck_default_log;
+	return eembed_err_log;
 }
 
-static void echeck_append_fail(struct echeck_log *err, const char *msg)
+static void echeck_append_fail(struct eembed_log *err, const char *msg)
 {
 	err->append_s(err, "FAIL:");
 	if (msg) {
@@ -200,7 +22,7 @@ static void echeck_append_fail(struct echeck_log *err, const char *msg)
 	}
 }
 
-static void echeck_append_func_file_line(struct echeck_log *err,
+static void echeck_append_func_file_line(struct eembed_log *err,
 					 const char *func, const char *file,
 					 int line)
 {
@@ -215,7 +37,7 @@ static void echeck_append_func_file_line(struct echeck_log *err,
 	err->append_s(err, "]");
 }
 
-unsigned char echeck_char_m(struct echeck_log *err, const char *func,
+unsigned char echeck_char_m(struct eembed_log *err, const char *func,
 			    const char *file, int line, char actual,
 			    char expected, const char *msg)
 {
@@ -250,7 +72,7 @@ unsigned char echeck_char_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-unsigned char echeck_unsigned_long_m(struct echeck_log *err, const char *func,
+unsigned char echeck_unsigned_long_m(struct eembed_log *err, const char *func,
 				     const char *file, int line,
 				     unsigned long actual,
 				     unsigned long expected, const char *msg)
@@ -273,7 +95,7 @@ unsigned char echeck_unsigned_long_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-unsigned char echeck_long_m(struct echeck_log *err, const char *func,
+unsigned char echeck_long_m(struct eembed_log *err, const char *func,
 			    const char *file, int line, long actual,
 			    long expected, const char *msg)
 {
@@ -295,7 +117,7 @@ unsigned char echeck_long_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-unsigned char echeck_size_t_m(struct echeck_log *err, const char *func,
+unsigned char echeck_size_t_m(struct eembed_log *err, const char *func,
 			      const char *file, int line, size_t actual,
 			      size_t expected, const char *msg)
 {
@@ -317,25 +139,7 @@ unsigned char echeck_size_t_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-unsigned char echeck_diy_strcmp(const char *s1, const char *s2)
-{
-	if (s1 == s2) {
-		return 0;
-	} else if (s1 == NULL) {
-		return -1;
-	} else if (s2 == NULL) {
-		return 1;
-	}
-
-	for (; *s1 || *s2; ++s1, ++s2) {
-		if (*s1 != *s2) {
-			break;
-		}
-	}
-	return *s1 - *s2;
-}
-
-unsigned char echeck_str_m(struct echeck_log *err, const char *func,
+unsigned char echeck_str_m(struct eembed_log *err, const char *func,
 			   const char *file, int line, const char *actual,
 			   const char *expected, const char *msg)
 {
@@ -343,7 +147,7 @@ unsigned char echeck_str_m(struct echeck_log *err, const char *func,
 		return 0;
 	}
 	if (actual != NULL && expected != NULL
-	    && echeck_diy_strcmp(expected, actual) == 0) {
+	    && eembed_strcmp(expected, actual) == 0) {
 		return 0;
 	}
 
@@ -373,7 +177,7 @@ unsigned char echeck_str_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-unsigned char echeck_byte_array_m(struct echeck_log *err, const char *func,
+unsigned char echeck_byte_array_m(struct eembed_log *err, const char *func,
 				  const char *file, int line,
 				  const unsigned char *actual,
 				  size_t actual_len,
@@ -432,7 +236,7 @@ unsigned char echeck_byte_array_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-unsigned char echeck_double_m(struct echeck_log *err, const char *func,
+unsigned char echeck_double_m(struct eembed_log *err, const char *func,
 			      const char *file, int line, double actual,
 			      double expected, double epsilon, const char *msg)
 {
@@ -472,7 +276,7 @@ unsigned char echeck_double_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-unsigned char echeck_ptr_m(struct echeck_log *err, const char *func,
+unsigned char echeck_ptr_m(struct eembed_log *err, const char *func,
 			   const char *file, int line, const void *actual,
 			   const void *expected, const char *msg)
 {
@@ -494,7 +298,7 @@ unsigned char echeck_ptr_m(struct echeck_log *err, const char *func,
 	return 1;
 }
 
-char echeck_status_m(struct echeck_log *err, const char *func, const char *file,
+char echeck_status_m(struct eembed_log *err, const char *func, const char *file,
 		     int line, int val, const char *msg)
 {
 	char c;

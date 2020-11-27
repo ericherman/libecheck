@@ -6,7 +6,7 @@
 
 unsigned test_check_byte_array(void)
 {
-	struct echeck_log *orig = NULL;
+	struct eembed_log *orig = NULL;
 	const char *strs[3];
 	unsigned failures = 0;
 
@@ -34,19 +34,4 @@ unsigned test_check_byte_array(void)
 	return failures;
 }
 
-#if ECHECK_HOSTED
-int main(int argc, char *argv[])
-{
-	unsigned failures = 0;
-
-	(void)argc;
-	(void)argv;
-
-	failures += test_check_byte_array();
-
-	if (failures) {
-		echeck_test_debug_print_failures(failures, __FILE__);
-	}
-	return check_status(failures);
-}
-#endif
+ECHECK_TEST_MAIN(test_check_byte_array, __FILE__)

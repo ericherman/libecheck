@@ -6,39 +6,38 @@
 #define TEST_ECHECK_PRIVATE_UTILS_H
 
 #include "echeck.h"
+#include "eembed.h"
+#include "eembed-hosted.h"
 
-#ifdef ARDUINO
-#define ECHECK_HOSTED 0
-#endif
-
-#ifndef ECHECK_HOSTED
-#ifdef __STDC_HOSTED__
-#define ECHECK_HOSTED __STDC_HOSTED__
-#else
-#define ECHECK_HOSTED 1
-#endif
-#endif
+#define EEMBED_TEST_MAIN
 
 #include <stdint.h>
 
-extern void (*echeck_test_debug_prints)(const char *s);
-extern void (*echeck_test_debug_printv)(const void *v);
-extern void (*echeck_test_debug_printz)(size_t z);
-extern void (*echeck_test_debug_printeol)(void);
+extern struct eembed_log echeck_test_buf_log;
 
-extern struct echeck_log echeck_test_buf_log;
-
-struct echeck_log *echeck_test_log_capture(void);
-void echeck_test_log_release(struct echeck_log *orig);
+struct eembed_log *echeck_test_log_capture(void);
+void echeck_test_log_release(struct eembed_log *orig);
 
 int echeck_test_buf_contains(const char *buf, const char *expected);
 int echeck_test_err_log_contains(const char *expected[], size_t expected_len);
 
 void echeck_test_debug_print_failures(unsigned failures, const char *where);
 
-size_t echeck_diy_strnlen(const char *str, size_t buf_size);
-char *echeck_test_u64_to_hex(char *buf, size_t len, uint64_t z);
-char *echeck_test_ul_to_str(char *buf, size_t len, unsigned long ul);
-char *echeck_test_bogus_float_to_str(char *buf, size_t len, double f);
+#ifndef ECHECK_TEST_MAIN
+#if (!EEMBED_HOSTED && !FAUX_FREESTANDING)
+#define ECHECK_TEST_MAIN(pfunc, filename)	/* skip */
+#else
+#define ECHECK_TEST_MAIN(pfunc, filename) \
+int main(void) \
+{ \
+	unsigned failures = 0; \
+	failures += pfunc(); \
+	if (failures) { \
+		echeck_test_debug_print_failures(failures, filename); \
+	} \
+	return check_status(failures); \
+}
+#endif
+#endif /* ECHECK_TEST_MAIN */
 
 #endif /* TEST_ECHECK_PRIVATE_UTILS_H */

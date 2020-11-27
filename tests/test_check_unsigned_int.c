@@ -6,7 +6,7 @@
 
 unsigned test_check_unsigned_int(void)
 {
-	struct echeck_log *orig = NULL;
+	struct eembed_log *orig = NULL;
 	const char *strs[2];
 	unsigned failures = 0;
 	char buf[40];
@@ -15,7 +15,7 @@ unsigned test_check_unsigned_int(void)
 	strs[0] = "1";
 	strs[1] = buf;
 
-	echeck_test_ul_to_str(buf, 40, (unsigned long)-1);
+	eembed_ulong_to_str(buf, 40, (unsigned long)-1);
 
 	failures += check_unsigned_int(5, 5);
 
@@ -33,19 +33,4 @@ unsigned test_check_unsigned_int(void)
 	return failures;
 }
 
-#if ECHECK_HOSTED
-int main(int argc, char *argv[])
-{
-	unsigned failures = 0;
-
-	(void)argc;
-	(void)argv;
-
-	failures += test_check_unsigned_int();
-
-	if (failures) {
-		echeck_test_debug_print_failures(failures, __FILE__);
-	}
-	return check_status(failures);
-}
-#endif
+ECHECK_TEST_MAIN(test_check_unsigned_int, __FILE__)

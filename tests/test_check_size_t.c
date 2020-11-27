@@ -6,8 +6,9 @@
 
 unsigned test_check_size_t(void)
 {
-	struct echeck_log *orig = NULL;
+	struct eembed_log *orig = NULL;
 	const char *strs[2];
+	char buf[25];
 	unsigned failures = 0;
 	size_t one = 1;
 	size_t big = -1;
@@ -27,10 +28,11 @@ unsigned test_check_size_t(void)
 		strs[1] = "65535";
 		break;
 	default:
-		echeck_test_debug_prints("sizeof(size_t) == ");
-		echeck_test_debug_printz(sizeof(size_t));
-		echeck_test_debug_prints(" not supported");
-		echeck_test_debug_printeol();
+		eembed_system_print("sizeof(size_t) == ");
+		eembed_system_print(eembed_ulong_to_str
+				    (buf, 25, sizeof(size_t)));
+		eembed_system_print(" not supported");
+		eembed_system_println();
 		return 1;
 	}
 
@@ -49,19 +51,4 @@ unsigned test_check_size_t(void)
 	return failures;
 }
 
-#if ECHECK_HOSTED
-int main(int argc, char *argv[])
-{
-	unsigned failures = 0;
-
-	(void)argc;
-	(void)argv;
-
-	failures += test_check_size_t();
-
-	if (failures) {
-		echeck_test_debug_print_failures(failures, __FILE__);
-	}
-	return check_status(failures);
-}
-#endif
+ECHECK_TEST_MAIN(test_check_size_t, __FILE__)

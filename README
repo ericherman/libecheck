@@ -1,6 +1,10 @@
-Boiler-plate to make simple testing easier, when I do not want
-a whole testing framework.
+E(asy)Check: Boiler-plate to make simple testing easier, when I do not
+want a whole testing framework.
 
+E(asy)Embed: make writing and testing embedded libraries easier.
+
+ECheck
+------
 The basic idea is that you get this kind of interface:
 
   check_[TYPE](actual, expected);
@@ -14,18 +18,7 @@ for instance:
 
 
 To send error messages to a log, first construct a log object, which is
-defined in echeck.h to be:
-	struct echeck_log {
-		void *context;
-		void (*append_s)(struct echeck_log *log, const char *str);
-		void (*append_ul)(struct echeck_log *log, unsigned long ul);
-		void (*append_z)(struct echeck_log *log, size_t z);
-		void (*append_l)(struct echeck_log *log, long l);
-		void (*append_f)(struct echeck_log *log, double f);
-		void (*append_vp)(struct echeck_log *log, const void *ptr);
-		void (*append_eol)(struct echeck_log *log);
-	}
-Then use the "lcheck" form:
+defined in eembed.h (see below).  Then use the "lcheck" form:
 
  error_code = lcheck_char(log, val, 'a');
 
@@ -86,6 +79,107 @@ if you use "check_status", because this function caps values at 127 (and -128).
  return check_status(failures);
 
 
+EEmbed
+------
+
+Embedded environments may not support very much more than what is
+required of "freestanding" implementations, thus it might be as
+little as:
+
+	<float.h>
+	<iso646.h>
+	<limits.h>
+	<stdarg.h>
+	<stdbool.h>
+	<stddef.h>
+	<stdint.h>
+
+That said however, often there is at least some support for serial
+I/O even when if it is lacking the lovely full-features of fprintf
+and sprintf.  Additionally, development may be done in a "hosted"
+environment where the developer has access to the full standard
+library.
+
+The goal of this library is to make it straight-forward to develop
+libraries which are useful in both freestanding and hosted
+applications.
+
+In a hosted environment, the global eembed_err_log is a wrapper
+for fprintf(stderr). In a freestanding environment, it may be NULL
+unless the it is initialized by the firmware.
+
+This is the structure of the eembed_log:
+
+	struct eembed_log {
+		void *context;
+		void (*append_s)(struct eembed_log *log, const char *str);
+		void (*append_ul)(struct eembed_log *log, unsigned long ul);
+		void (*append_z)(struct eembed_log *log, size_t z);
+		void (*append_l)(struct eembed_log *log, long l);
+		void (*append_f)(struct eembed_log *log, double f);
+		void (*append_vp)(struct eembed_log *log, const void *ptr);
+		void (*append_eol)(struct eembed_log *log);
+	}
+
+	extern struct eembed_log *eembed_err_log;
+
+
+In addition to writing to "stderr", it's often handy to write use stdout for
+basic reporting. The "eembed.h" file declares two function pointers which can
+be used:
+
+	extern void (*eembed_system_print)(const char *str);
+	extern void (*eembed_system_println)(void);
+
+In a hosted environment, these are thinn wrappers around fprintf(stdout),
+but in the freestanding environment they default to no-op unless they are
+set to a different function. The "eembed-arduino.cpp" gives an example of
+how the eembed_err_log and the eembed_system_print functions can be set
+to use serial printing.
+
+Because it can be handy to print numbers, simple number-to-string functions
+are provided. In the hosted case, these simply wrap sprintf; in the
+freestanding case, straight-forward, if inefficient, implmentations are
+provided:
+
+	char *eembed_long_to_str(char *buf, size_t len, long l);
+	char *eembed_ulong_to_str(char *buf, size_t len, unsigned long ul);
+	char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long z);
+	char *eembed_float_to_str(char *buf, size_t len, double f);
+
+Additionally, there are a handful of functions which are requried by
+echeck or are needed by nearly any program.  This library provides
+function pointers to a few of these functions which in the hosted
+case simply point to the standard library version. In the
+freestanding case, very basic implementations of a few of these
+functions are provided:
+
+	int (*eembed_memcmp)(const void *s1, const void *s2, size_t n);
+
+	void *(*eembed_memcpy)(void *dest, const void *src, size_t n);
+	void *(*eembed_memmove)(void *dest, const void *src, size_t n);
+
+	void *(*eembed_memset)(void *dest, int val, size_t n);
+
+	char *(*eembed_strcat)(char *dest, const char *src);
+	char *(*eembed_strncat)(char *dest, const char *src, size_t n);
+
+	int (*eembed_strcmp)(const char *s1, const char *s2);
+	int (*eembed_strncmp)(const char *s1, const char *s2, size_t n);
+
+	char *(*eembed_strcpy)(char *dest, const char *src);
+	char *(*eembed_strncpy)(char *dest, const char *src, size_t n);
+
+	size_t (*eembed_strlen)(const char *s);
+	size_t (*eembed_strnlen)(const char *s, size_t maxlen);
+
+	char *(*eembed_strstr)(const char *haystack, const char *needle);
+
+
+License
+-------
+GNU Lesser General Public License (LGPL), version 3 or later.
+See COPYING, COPYING.LESSER for details.
 
 Packaging
 ---------

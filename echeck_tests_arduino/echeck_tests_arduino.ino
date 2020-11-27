@@ -6,14 +6,9 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "echeck-arduino.h"
+#include "eembed-arduino.h"
 
 #include "test-echeck-private-utils.h"
-
-void serial_prints(const char *s)
-{
-	Serial.print(s);
-}
 
 /* prototypes for the test functions, are not needed in the hosted case
  * becase these are normally called by individual programs in parallel, but
@@ -41,14 +36,15 @@ unsigned test_check_unsigned_int_m(void);
 unsigned test_check_unsigned_long(void);
 unsigned test_check_unsigned_long_m(void);
 
+unsigned test_eembed_log(void);
+
 /* setup/loop globals */
 uint32_t loop_count;
 uint16_t loop_delay_ms = (2 * 1000);
 
 void setup(void)
 {
-	echeck_arduino_serial_log_init();
-	echeck_test_debug_prints = serial_prints;
+	eembed_arduino_serial_log_init();
 
 	Serial.begin(9600);
 
@@ -67,8 +63,8 @@ void setup(void)
 	Serial.print("__STDC_HOSTED__ == ");
 	Serial.println(__STDC_HOSTED__);
 	Serial.println();
-	Serial.print("ECHECK_HOSTED == ");
-	Serial.println(ECHECK_HOSTED);
+	Serial.print("EEMBED_HOSTED == ");
+	Serial.println(EEMBED_HOSTED);
 	Serial.println();
 	Serial.println("Begin");
 
@@ -84,6 +80,9 @@ void loop(void)
 	Serial.println("==================================================");
 
 	unsigned failures = 0;
+
+	Serial.println("test_eembed_log");
+	failures += test_eembed_log();
 
 	Serial.println("test_check_byte_array");
 	failures += test_check_byte_array();

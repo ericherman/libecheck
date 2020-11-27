@@ -4,7 +4,7 @@
 
 #include "test-echeck-private-utils.h"
 
-#if ECHECK_HOSTED
+#if EEMBED_HOSTED || FAUX_FREESTANDING
 
 #include <stdio.h>
 /* _POSIX_C_SOURCE >= 200809L || _GNU_SOURCE */
@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
 
 	memlogfile = fmemopen(logbuf, 255, "w+");
 
-	orig = echeck_default_log->context;
-	echeck_default_log->context = memlogfile;
+	orig = eembed_err_log->context;
+	eembed_err_log->context = memlogfile;
 
 	if (0 == check_ptr(memlogfile, orig)) {
 		++failures;
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 		++failures;
 	}
 
-	echeck_default_log->context = orig;
+	eembed_err_log->context = orig;
 
 	fflush(memlogfile);
 

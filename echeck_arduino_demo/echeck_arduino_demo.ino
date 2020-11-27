@@ -6,7 +6,16 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "echeck-arduino.h"
+#include "echeck.h"
+#include "eembed-arduino.h"
+
+/* additional files needed by the project:
+eembed-hosted.h
+eembed-io.cpp
+eembed-strcmp.cpp
+eembed-strlen.cpp
+eembed.h
+*/
 
 /* setup/loop globals */
 uint32_t loop_count;
@@ -14,7 +23,7 @@ uint16_t loop_delay_ms = (2 * 1000);
 
 void setup(void)
 {
-	echeck_arduino_serial_log_init();
+	eembed_arduino_serial_log_init();
 
 	Serial.begin(9600);
 

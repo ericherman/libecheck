@@ -1,5 +1,101 @@
 echeck Changelog
 
+2020-11-27  Eric Herman <eric@freesa.org>
+
+	extract E(asy)Embed for E(asy)Check 2.0.0
+
+	Renamed "struct echeck_log" -> "struct eembed_log"
+	Added the "eembed.h" for printing and platform extractions.
+	Provide "eembed-hosted.h" for use in tests.
+
+	Add function pointers for essential functions. These functions
+	default to the ones from the standard C library, but simple, if
+	inefficient, alternatives are provided for freestanding use.
+
+	Most of these were essential copy-pasted from eh-no-libc or
+	other projects which support arduino, including this and:
+		https://github.com/ericherman/eh-no-libc
+		https://github.com/ericherman/dumb-alloc
+		https://github.com/ericherman/libdeque
+		https://github.com/ericherman/libeba
+		https://github.com/ericherman/libehbigint
+		https://github.com/ericherman/libehht
+		https://github.com/ericherman/libehstr
+
+	* src/eembed.h: platform abstractions
+	* src/echeck.h: remove platform abstractions
+	* src/eembed-hosted.h: macros for establishing EEMBED_HOSTED
+
+	* src/echeck.c: kill platform-io and echeck_diy_strcmp
+	* src/echeck-arduino.cpp -> src/eembed-arduino.cpp
+	* src/echeck-arduino.h -> src/eembed-arduino.h
+	* src/eembed-arduino.cpp <- src/echeck-arduino.cpp
+	* src/eembed-arduino.h <- src/echeck-arduino.h
+	* src/eembed-io.c: move the platform-io code here
+	* src/eembed-memcmp.c:
+	* src/eembed-memcpy.c:
+	* src/eembed-memset.c: used to zero buffers
+	* src/eembed-strcat.c:
+	* src/eembed-strcmp.c: used in echeck.c, tests
+	* src/eembed-strcpy.c: used in eembed-io.c
+	* src/eembed-strlen.c: used in tests
+	* src/eembed-strstr.c: used in tests
+
+	* README: breakout the EEmbed section
+	* Makefile.am: support both libraries
+	* configure.ac: support --enable-faux-freestanding
+
+	* tests/test-echeck-private-utils.h: remove platform stuff
+	* tests/test-echeck-private-utils.c: move "diy" funcs to eembed
+	* tests/test-eembed-log.c: simple test of "struct eembed_log"
+	* tests/test_check_byte_array.c: use "eembed_log", MAIN
+	* tests/test_check_byte_array_m.c:
+	* tests/test_check_char.c
+	* tests/test_check_char_m.c
+	* tests/test_check_double.c
+	* tests/test_check_int.c
+	* tests/test_check_int_m.c
+	* tests/test_check_long.c
+	* tests/test_check_long_m.c
+	* tests/test_check_ptr.c
+	* tests/test_check_ptr_m.c
+	* tests/test_check_size_t.c
+	* tests/test_check_size_t_m.c
+	* tests/test_check_status.c
+	* tests/test_check_str.c
+	* tests/test_check_str_m.c
+	* tests/test_check_str_null_ptr.c
+	* tests/test_check_unsigned_int.c
+	* tests/test_check_unsigned_int_m.c
+	* tests/test_check_unsigned_long.c
+	* tests/test_check_unsigned_long_m.c
+	* tests/test_hosted.c: support faux-freestanding
+
+	* echeck_arduino_demo/echeck-arduino.cpp
+	* echeck_arduino_demo/echeck_arduino_demo.ino
+	* echeck_arduino_demo/echeck-arduino.h
+	* echeck_arduino_demo/eembed-arduino.cpp
+	* echeck_arduino_demo/eembed-arduino.h
+	* echeck_arduino_demo/eembed.h
+	* echeck_arduino_demo/eembed-hosted.h
+	* echeck_arduino_demo/eembed-io.cpp
+	* echeck_arduino_demo/eembed-strcmp.cpp
+	* echeck_arduino_demo/eembed-strlen.cpp
+	* echeck_tests_arduino/echeck-arduino.cpp
+	* echeck_tests_arduino/echeck-arduino.h
+	* echeck_tests_arduino/echeck_tests_arduino.ino
+	* echeck_tests_arduino/eembed-arduino.cpp
+	* echeck_tests_arduino/eembed-arduino.h
+	* echeck_tests_arduino/eembed.h
+	* echeck_tests_arduino/eembed-hosted.h
+	* echeck_tests_arduino/eembed-io.cpp
+	* echeck_tests_arduino/eembed-strcmp.cpp
+	* echeck_tests_arduino/eembed-strcpy.cpp
+	* echeck_tests_arduino/eembed-strlen.cpp
+	* echeck_tests_arduino/eembed-strstr.cpp
+	* echeck_tests_arduino/test-eembed-log.cpp
+
+
 2020-10-09  Eric Herman <eric@freesa.org>
 
 	2.0.0 API Breaking changes:

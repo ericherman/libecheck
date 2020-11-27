@@ -14,9 +14,6 @@
 #define Echeck_end_C_functions
 #endif
 
-#include <stdlib.h>		/* for size_t */
-#include <float.h>		/* for DBL_EPSILON */
-
 #ifndef ECHECK_FUNC
 #if __STDC_VERSION__ >= 199901L
 #define ECHECK_FUNC __func__
@@ -25,23 +22,12 @@
 #endif
 #endif
 
-struct echeck_log {
-	void *context;
-	void (*append_s)(struct echeck_log *log, const char *str);
-	void (*append_ul)(struct echeck_log *log, unsigned long ul);
-	void (*append_z)(struct echeck_log *log, size_t z);
-	void (*append_l)(struct echeck_log *log, long l);
-	void (*append_f)(struct echeck_log *log, double f);
-	void (*append_vp)(struct echeck_log *log, const void *ptr);
-	void (*append_eol)(struct echeck_log *log);
-};
-
 Echeck_begin_C_functions
-/* echeck_default_log may be NULL */
-extern struct echeck_log *echeck_default_log;
-
+#include <stddef.h>		/* for size_t */
+#include <float.h>		/* for DBL_EPSILON */
+#include "eembed.h"		/* struct eembed_log */
 /*check char*/
-unsigned char echeck_char_m(struct echeck_log *err, const char *func,
+unsigned char echeck_char_m(struct eembed_log *err, const char *func,
 			    const char *file, int line, char actual,
 			    char expected, const char *msg);
 
@@ -62,7 +48,7 @@ unsigned char echeck_char_m(struct echeck_log *err, const char *func,
 		 actual, expected, #actual)
 
 /* check long */
-unsigned char echeck_long_m(struct echeck_log *err, const char *func,
+unsigned char echeck_long_m(struct eembed_log *err, const char *func,
 			    const char *file, int line, long actual,
 			    long expected, const char *msg);
 
@@ -103,7 +89,7 @@ unsigned char echeck_long_m(struct echeck_log *err, const char *func,
 		 actual, expected, #actual)
 
 /* check str */
-unsigned char echeck_str_m(struct echeck_log *err, const char *func,
+unsigned char echeck_str_m(struct eembed_log *err, const char *func,
 			   const char *file, int line, const char *actual,
 			   const char *expected, const char *msg);
 
@@ -124,7 +110,7 @@ unsigned char echeck_str_m(struct echeck_log *err, const char *func,
 		 actual, expected, #actual)
 
 /* check ptr */
-unsigned char echeck_ptr_m(struct echeck_log *err, const char *func,
+unsigned char echeck_ptr_m(struct eembed_log *err, const char *func,
 			   const char *file, int line, const void *actual,
 			   const void *expected, const char *msg);
 
@@ -145,7 +131,7 @@ unsigned char echeck_ptr_m(struct echeck_log *err, const char *func,
 		 actual, expected, #actual)
 
 /* check unsigned long */
-unsigned char echeck_unsigned_long_m(struct echeck_log *err, const char *func,
+unsigned char echeck_unsigned_long_m(struct eembed_log *err, const char *func,
 				     const char *file, int line,
 				     unsigned long actual,
 				     unsigned long expected, const char *msg);
@@ -187,7 +173,7 @@ unsigned char echeck_unsigned_long_m(struct echeck_log *err, const char *func,
 		 actual, expected, #actual)
 
 /* check size_t */
-unsigned char echeck_size_t_m(struct echeck_log *err, const char *func,
+unsigned char echeck_size_t_m(struct eembed_log *err, const char *func,
 			      const char *file, int line, size_t actual,
 			      size_t expected, const char *msg);
 
@@ -208,7 +194,7 @@ unsigned char echeck_size_t_m(struct echeck_log *err, const char *func,
 		 actual, expected, #actual)
 
 /* check byte_array */
-unsigned char echeck_byte_array_m(struct echeck_log *err, const char *func,
+unsigned char echeck_byte_array_m(struct eembed_log *err, const char *func,
 				  const char *file, int line,
 				  const unsigned char *actual,
 				  size_t actual_len,
@@ -233,7 +219,7 @@ unsigned char echeck_byte_array_m(struct echeck_log *err, const char *func,
 		 actual, actual_len, expected, expected_len, #actual)
 
 /* check double */
-unsigned char echeck_double_m(struct echeck_log *err, const char *func,
+unsigned char echeck_double_m(struct eembed_log *err, const char *func,
 			      const char *file, int line, double actual,
 			      double expected, double epsilon, const char *msg);
 
@@ -279,7 +265,7 @@ unsigned char echeck_double_m(struct echeck_log *err, const char *func,
 
 /*check status*/
 /* safe casting of non-zero int to avoid EXIT_SUCCESS */
-char echeck_status_m(struct echeck_log *err, const char *func, const char *file,
+char echeck_status_m(struct eembed_log *err, const char *func, const char *file,
 		     int line, int val, const char *msg);
 
 #define lcheck_status_m(log, val, msg)\

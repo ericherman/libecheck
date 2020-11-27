@@ -6,7 +6,7 @@
 
 unsigned test_check_str_null_ptr(void)
 {
-	struct echeck_log *orig = NULL;
+	struct eembed_log *orig = NULL;
 	unsigned failures = 0;
 	const char *strs[2];
 
@@ -32,19 +32,4 @@ unsigned test_check_str_null_ptr(void)
 	return failures;
 }
 
-#if ECHECK_HOSTED
-int main(int argc, char *argv[])
-{
-	unsigned failures = 0;
-
-	(void)argc;
-	(void)argv;
-
-	failures += test_check_str_null_ptr();
-
-	if (failures) {
-		echeck_test_debug_print_failures(failures, __FILE__);
-	}
-	return check_status(failures);
-}
-#endif
+ECHECK_TEST_MAIN(test_check_str_null_ptr, __FILE__)

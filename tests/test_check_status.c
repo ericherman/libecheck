@@ -21,9 +21,9 @@ static void fill_buf(char *buf, size_t buflen, int in, char expected)
 		ul = in;
 	}
 	buf[len] = '\0';
-	len = echeck_diy_strnlen(buf, buflen);
-	echeck_test_ul_to_str(buf + len, buflen - len, ul);
-	len = echeck_diy_strnlen(buf, buflen);
+	len = eembed_strnlen(buf, buflen);
+	eembed_ulong_to_str(buf + len, buflen - len, ul);
+	len = eembed_strnlen(buf, buflen);
 	buf[len++] = ',';
 	buf[len] = '\0';
 	if (expected < 0) {
@@ -33,12 +33,12 @@ static void fill_buf(char *buf, size_t buflen, int in, char expected)
 	} else {
 		ul = expected;
 	}
-	echeck_test_ul_to_str(buf + len, buflen - len, ul);
+	eembed_ulong_to_str(buf + len, buflen - len, ul);
 }
 
 unsigned test_check_status(void)
 {
-	struct echeck_log *orig = NULL;
+	struct eembed_log *orig = NULL;
 	unsigned failures = 0;
 	char actual = '\0';
 	char expected = '\0';
@@ -55,8 +55,7 @@ unsigned test_check_status(void)
 		fill_buf(buf, 80, i, expected);
 		failures += check_int_m(actual, i, buf);
 		if (i == 0) {
-			failures +=
-			    check_int_m(actual, EXIT_SUCCESS, "EXIT_SUCCESS");
+			failures += check_int_m(actual, 0, "EXIT_SUCCESS");
 		}
 	}
 
@@ -67,7 +66,7 @@ unsigned test_check_status(void)
 		orig = echeck_test_log_capture();
 		actual = check_status_m(i, "127 < 260");
 		echeck_test_log_release(orig);
-		echeck_test_ul_to_str(buf, 80, i);
+		eembed_ulong_to_str(buf, 80, i);
 		if (i != expected) {
 			failures +=
 			    echeck_test_err_log_contains(expected_strs, 1);
@@ -82,7 +81,7 @@ unsigned test_check_status(void)
 		echeck_test_log_release(orig);
 		buf[0] = '-';
 		buf[1] = '\0';
-		echeck_test_ul_to_str(buf + 1, 80 - 1, (unsigned long)(-i));
+		eembed_ulong_to_str(buf + 1, 80 - 1, (unsigned long)(-i));
 		if (i != expected) {
 			failures +=
 			    echeck_test_err_log_contains(expected_strs, 1);
@@ -96,20 +95,4 @@ unsigned test_check_status(void)
 	return failures;
 }
 
-#if ECHECK_HOSTED
-int main(int argc, char *argv[])
-{
-	unsigned failures = 0;
-
-	(void)argc;
-	(void)argv;
-
-	failures += test_check_status();
-
-	if (failures) {
-		echeck_test_debug_print_failures(failures, __FILE__);
-	}
-
-	return ((failures == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
-}
-#endif
+ECHECK_TEST_MAIN(test_check_status, __FILE__)

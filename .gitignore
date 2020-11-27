@@ -58,6 +58,7 @@ test_check_unsigned_int_m
 test_check_unsigned_long
 test_check_unsigned_long_m
 test_hosted
+test-eembed-log
 
 ################
 # autotools
