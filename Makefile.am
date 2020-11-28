@@ -195,7 +195,8 @@ tidy:
 	$(LINDENT) \
 		-T FILE \
 		-T size_t \
-		-T echeck_log \
+		-T eembed_log \
+		-T eembed_buf_context \
 		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino

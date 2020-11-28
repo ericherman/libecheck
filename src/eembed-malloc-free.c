@@ -28,7 +28,8 @@ void *(*eembed_realloc)(void *ptr, size_t size) = realloc;
 void *(*eembed_calloc)(size_t nmemb, size_t size) = calloc;
 void (*eembed_free)(void *ptr) = free;
 #if EEMBED_HAVE_HOSTED_REALLOC_ARRAY
-void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) = reallocarray;
+void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) =
+    reallocarray;
 #endif
 
 #else

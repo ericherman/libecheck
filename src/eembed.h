@@ -32,13 +32,13 @@ extern struct eembed_log *eembed_err_log;
 
 struct eembed_log {
 	void *context;
-	void (*append_s)(struct eembed_log * log, const char *str);
-	void (*append_ul)(struct eembed_log * log, unsigned long ul);
-	void (*append_z)(struct eembed_log * log, size_t z);
-	void (*append_l)(struct eembed_log * log, long l);
-	void (*append_f)(struct eembed_log * log, double f);
-	void (*append_vp)(struct eembed_log * log, const void *ptr);
-	void (*append_eol)(struct eembed_log * log);
+	void (*append_s)(struct eembed_log *log, const char *str);
+	void (*append_ul)(struct eembed_log *log, unsigned long ul);
+	void (*append_z)(struct eembed_log *log, size_t z);
+	void (*append_l)(struct eembed_log *log, long l);
+	void (*append_f)(struct eembed_log *log, double f);
+	void (*append_vp)(struct eembed_log *log, const void *ptr);
+	void (*append_eol)(struct eembed_log *log);
 };
 
 struct eembed_buf_context {
