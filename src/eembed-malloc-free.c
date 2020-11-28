@@ -42,6 +42,7 @@ void *eembed_noop_malloc(size_t size)
 
 void *(*eembed_malloc)(size_t size) = eembed_noop_malloc;
 
+/* It is a programmer error if this is called with a non-NULL pointer */
 void *eembed_noop_realloc(void *ptr, size_t size)
 {
 	(void)ptr;
@@ -60,6 +61,7 @@ void *eembed_noop_calloc(size_t nmemb, size_t size)
 
 void *(*eembed_calloc)(size_t nmemb, size_t size) = eembed_noop_calloc;
 
+/* It is a programmer error if this is called with a non-NULL pointer */
 void eembed_noop_free(void *ptr)
 {
 	(void)ptr;
