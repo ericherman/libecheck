@@ -9,11 +9,17 @@
 #include "eembed.h"
 #include "eembed-hosted.h"
 
-void (*eembed_assert_crash)(void) = NULL;
-
 #if EEMBED_HOSTED
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+void eembed_exit_failure(void)
+{
+	exit(EXIT_FAILURE);
+}
+
+void (*eembed_assert_crash)(void) = eembed_exit_failure;
 
 #ifndef EEMBDED_IO_HAVE_SNPRINTF
 #if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _GNU_SOURCE || _BSD_SOURCE
@@ -252,6 +258,8 @@ char *eembed_float_to_str(char *buf, size_t len, double f)
 }
 
 #else /* #if EEMBED_HOSTED */
+
+void (*eembed_assert_crash)(void) = NULL;
 
 void eembed_no_op_print(const char *str)
 {
