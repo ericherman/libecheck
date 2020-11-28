@@ -6,7 +6,6 @@
 #define EEMBED_ARDUINO_H 1
 
 #include "eembed.h"
-#include "eembed-assert.h"
 
 extern unsigned long eembed_die_delay;
 

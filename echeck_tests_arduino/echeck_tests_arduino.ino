@@ -53,8 +53,11 @@ void setup(void)
 	Serial.println();
 	Serial.println();
 	Serial.println("==================================================");
+	Serial.print("__FILE__ == ");
 	Serial.println(__FILE__);
+	Serial.print("__LINE__ == ");
 	Serial.println(__LINE__);
+	Serial.print("__func__ == ");
 	Serial.println(__func__);
 	Serial.println();
 	Serial.print("ARDUINO == ");

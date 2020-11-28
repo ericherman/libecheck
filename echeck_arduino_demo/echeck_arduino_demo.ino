@@ -6,15 +6,17 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "echeck.h"
 #include "eembed-arduino.h"
 
+#include "echeck.h"
+
 /* additional files needed by the project:
-eembed-hosted.h
-eembed-io.cpp
-eembed-strcmp.cpp
-eembed-strlen.cpp
 eembed.h
+eembed.cpp
+eembed-arduino.h
+eembed-arduino.cpp
+echeck.h
+echeck.cpp
 */
 
 /* setup/loop globals */

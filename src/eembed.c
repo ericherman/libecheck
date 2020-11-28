@@ -1,25 +1,33 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
-/* eembed-io.c */
+/* eembed.c */
 /* libeembed: "E(asy)Embed": easier writing and testing of embedded libraries */
 /* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
 
-#include <stddef.h>
-#include <limits.h>
-
 #include "eembed.h"
-#include "eembed-hosted.h"
+
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #if EEMBED_HOSTED
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#endif
 
+#if EEMBED_HOSTED
 void eembed_exit_failure(void)
 {
 	exit(EXIT_FAILURE);
 }
 
 void (*eembed_assert_crash)(void) = eembed_exit_failure;
+#else
+void (*eembed_assert_crash)(void) = NULL;
+#endif
+
+#if EEMBED_HOSTED
 
 #ifndef EEMBDED_IO_HAVE_SNPRINTF
 #if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _GNU_SOURCE || _BSD_SOURCE
@@ -258,8 +266,6 @@ char *eembed_float_to_str(char *buf, size_t len, double f)
 }
 
 #else /* #if EEMBED_HOSTED */
-
-void (*eembed_assert_crash)(void) = NULL;
 
 void eembed_no_op_print(const char *str)
 {
@@ -612,3 +618,396 @@ char *eembed_float_to_str(char *buf, size_t len, double f)
 	return eembed_bogus_float_to_str(buf, len, f);
 }
 #endif
+
+#if (EEMBED_HOSTED && (_DEFAULT_SOURCE || _GNU_SOURCE))
+#define EEMBED_HAVE_HOSTED_REALLOC_ARRAY 1
+#else
+#define EEMBED_HAVE_HOSTED_REALLOC_ARRAY 0
+void *eembed_diy_reallocarray(void *ptr, size_t nmemb, size_t size)
+{
+	return eembed_realloc(ptr, (nmemb * size));
+}
+
+void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) =
+    eembed_diy_reallocarray;
+#endif
+
+#if EEMBED_HOSTED
+
+void *(*eembed_malloc)(size_t size) = malloc;
+void *(*eembed_realloc)(void *ptr, size_t size) = realloc;
+void *(*eembed_calloc)(size_t nmemb, size_t size) = calloc;
+void (*eembed_free)(void *ptr) = free;
+#if EEMBED_HAVE_HOSTED_REALLOC_ARRAY
+void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) =
+    reallocarray;
+#endif
+
+#else
+
+void *eembed_noop_malloc(size_t size)
+{
+	(void)size;
+	return NULL;
+}
+
+void *(*eembed_malloc)(size_t size) = eembed_noop_malloc;
+
+/* It is a programmer error if this is called with a non-NULL pointer */
+void *eembed_noop_realloc(void *ptr, size_t size)
+{
+	(void)ptr;
+	(void)size;
+	return NULL;
+}
+
+void *(*eembed_realloc)(void *ptr, size_t size) = eembed_noop_realloc;
+
+void *eembed_noop_calloc(size_t nmemb, size_t size)
+{
+	(void)nmemb;
+	(void)size;
+	return NULL;
+}
+
+void *(*eembed_calloc)(size_t nmemb, size_t size) = eembed_noop_calloc;
+
+/* It is a programmer error if this is called with a non-NULL pointer */
+void eembed_noop_free(void *ptr)
+{
+	(void)ptr;
+}
+
+void (*eembed_free)(void *ptr) = eembed_noop_free;
+#endif
+
+#if EEMBED_HOSTED
+
+int (*eembed_memcmp)(const void *s1, const void *s2, size_t n) = memcmp;
+
+#else
+
+int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
+{
+	size_t i;
+	const unsigned char *s1;
+	const unsigned char *s2;
+	int d;
+
+	if (a1 == a2 || n == 0) {
+		return 0;
+	}
+
+	if (!a1 || !a2) {
+		return a1 ? 1 : -1;
+	}
+
+	s1 = (unsigned char *)a1;
+	s2 = (unsigned char *)a2;
+	for (i = 0; i < n; ++i) {
+		d = s1[i] - s2[i];
+		if (d) {
+			return d;
+		}
+	}
+	return 0;
+}
+
+int (*eembed_memcmp)(const void *s1, const void *s2, size_t n) =
+    eembed_diy_memcmp;
+#endif
+
+#if EEMBED_HOSTED
+
+void *(*eembed_memcpy)(void *dest, const void *src, size_t n) = memcpy;
+void *(*eembed_memmove)(void *dest, const void *src, size_t n) = memmove;
+
+#else
+
+void *eembed_diy_memmove(void *d, const void *s, size_t n)
+{
+	const unsigned char *src = (const unsigned char *)s;
+	unsigned char *dest = (unsigned char *)d;
+	size_t i;
+
+	if (src < dest && dest < src + n) {
+		for (i = n; i; i--) {
+			dest[i - 1] = src[i - 1];
+		}
+	} else {
+		for (i = 0; i < n; ++i) {
+			dest[i] = src[i];
+		}
+	}
+	return d;
+}
+
+void *(*eembed_memcpy)(void *dest, const void *src, size_t n) =
+    eembed_diy_memmove;
+void *(*eembed_memmove)(void *dest, const void *src, size_t n) =
+    eembed_diy_memmove;
+
+#endif
+
+#if EEMBED_HOSTED
+
+void *(*eembed_memset)(void *dest, int c, size_t n) = memset;
+
+#else
+
+void *eembed_diy_memset(void *dest, int val, size_t n)
+{
+	unsigned char *d;
+	unsigned char v;
+	if (!n || !dest) {
+		return dest;
+	}
+
+	d = (unsigned char *)dest;
+	v = (unsigned char)val;
+	while (n--) {
+		d[n] = v;
+	}
+
+	return dest;
+}
+
+void *(*eembed_memset)(void *dest, int c, size_t n) = eembed_diy_memset;
+
+#endif
+
+#if EEMBED_HOSTED
+
+char *(*eembed_strcat)(char *dest, const char *src) = strcat;
+char *(*eembed_strncat)(char *dest, const char *src, size_t n) = strncat;
+
+#else
+
+char *eembed_diy_strcat(char *dest, const char *src)
+{
+	return eembed_strncat(dest, src, SIZE_MAX);
+}
+
+char *(*eembed_strcat)(char *dest, const char *src) = eembed_diy_strcat;
+
+char *eembed_diy_strncat(char *dest, const char *src, size_t n)
+{
+	size_t dest_len = 0;
+	size_t i = 0;
+
+	if (!dest) {
+		return NULL;
+	}
+
+	dest_len = eembed_strlen(dest);
+	if (src) {
+		while (i < n && src[i] != '\0') {
+			dest[dest_len + i] = src[i];
+			++i;
+		}
+	}
+	dest[dest_len + i] = '\0';
+
+	return dest;
+}
+
+char *(*eembed_strncat)(char *dest, const char *src, size_t n) =
+    eembed_diy_strncat;
+
+#endif
+
+#if EEMBED_HOSTED
+
+int (*eembed_strcmp)(const char *s1, const char *s2) = strcmp;
+int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) = strncmp;
+
+#else
+
+int echeck_diy_strcmp(const char *s1, const char *s2)
+{
+	return eembed_strncmp(s1, s2, SIZE_MAX);
+}
+
+int (*eembed_strcmp)(const char *s1, const char *s2) = echeck_diy_strcmp;
+
+int echeck_diy_strncmp(const char *s1, const char *s2, size_t n)
+{
+	size_t i = 0;
+
+	if (s1 == s2) {
+		return 0;
+	} else if (s1 == NULL) {
+		return -1;
+	} else if (s2 == NULL) {
+		return 1;
+	}
+
+	for (i = 0; i < n && s1[i] && s2[i]; ++i) {
+		if (s1[i] != s2[i]) {
+			break;
+		}
+	}
+
+	return s1[i] - s2[i];
+}
+
+int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) =
+    echeck_diy_strncmp;
+#endif
+
+#if EEMBED_HOSTED
+
+char *(*eembed_strcpy)(char *dest, const char *src) = strcpy;
+char *(*eembed_strncpy)(char *dest, const char *src, size_t n) = strncpy;
+
+#else
+
+char *eembedd_diy_strcpy(char *dest, const char *src)
+{
+	return eembed_strncpy(dest, src, SIZE_MAX);
+}
+
+char *(*eembed_strcpy)(char *dest, const char *src) = eembedd_diy_strcpy;
+
+char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
+{
+	size_t i = 0;
+
+	if (!dest) {
+		return NULL;
+	}
+
+	if (src) {
+		while (i < n && src[i] != '\0') {
+			dest[i] = src[i];
+			++i;
+		}
+	}
+	if (i < n) {
+		dest[i] = '\0';
+	}
+
+	return dest;
+}
+
+char *(*eembed_strncpy)(char *dest, const char *src, size_t n) =
+    eembed_diy_strncpy;
+
+#endif
+
+#if (!((_POSIX_C_SOURCE >= 200809L) && (EEMBED_HOSTED)))
+#define Eembed_use_diy_strnlen 1
+size_t eembed_diy_strnlen(const char *str, size_t buf_size)
+{
+	size_t i;
+
+	for (i = 0; i < buf_size; ++i) {
+		if (str[i] == '\0') {
+			return i;
+		}
+	}
+
+	return buf_size;
+}
+#else
+#define Eembed_use_diy_strnlen 0
+#endif
+
+#if EEMBED_HOSTED
+
+size_t (*eembed_strlen)(const char *s) = strlen;
+#if Eembed_use_diy_strnlen
+size_t (*eembed_strnlen)(const char *s, size_t maxlen) = eembed_diy_strnlen;
+#else
+size_t (*eembed_strnlen)(const char *s, size_t maxlen) = strnlen;
+#endif
+
+#else
+
+size_t eembed_diy_strlen(const char *s)
+{
+	return eembed_strnlen(s, SIZE_MAX);
+}
+
+size_t (*eembed_strlen)(const char *s) = eembed_diy_strlen;
+
+size_t (*eembed_strnlen)(const char *s, size_t maxlen) = eembed_diy_strnlen;
+
+#endif
+
+#if EEMBED_HOSTED
+char *(*eembed_strstr)(const char *haystack, const char *needle) = strstr;
+#else
+char *eembed_diy_strstr(const char *haystack, const char *needle)
+{
+	size_t i, j, found, len;
+
+	if (!haystack) {
+		return NULL;
+	}
+
+	len = 0;
+	if (!needle || !needle[0]) {
+		return (char *)haystack;
+	}
+
+	for (i = 0; haystack[i]; ++i) {
+		found = 1;
+		for (j = 0; found && j < len; ++j) {
+			if (haystack[i + j] != needle[j]) {
+				found = 0;
+			}
+		}
+		if (found) {
+			return (char *)(haystack + i);
+		}
+	}
+	return NULL;
+}
+
+char *(*eembed_strstr)(const char *haystack, const char *needle) =
+    eembed_diy_strstr;
+#endif
+
+void *eembed_system_malloc(struct eembed_allocator *ea, size_t size)
+{
+	(void)ea;
+	return eembed_malloc(size);
+}
+
+void *eembed_system_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
+{
+	(void)ea;
+	return eembed_realloc(ptr, size);
+}
+
+void *eembed_system_calloc(struct eembed_allocator *ea, size_t nmemb,
+			   size_t size)
+{
+	(void)ea;
+	return eembed_calloc(nmemb, size);
+}
+
+void *eembed_system_reallocarray(struct eembed_allocator *ea, void *ptr,
+				 size_t nmemb, size_t size)
+{
+	(void)ea;
+	return eembed_realloc(ptr, nmemb * size);
+}
+
+void eembed_system_free(struct eembed_allocator *ea, void *ptr)
+{
+	(void)ea;
+	eembed_free(ptr);
+}
+
+struct eembed_allocator eembed_system_alloctor = {
+	NULL,
+	eembed_system_malloc,
+	eembed_system_calloc,
+	eembed_system_realloc,
+	eembed_system_reallocarray,
+	eembed_system_free
+};
+
+struct eembed_allocator *eembed_global_alloctor = &eembed_system_alloctor;

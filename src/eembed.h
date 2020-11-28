@@ -93,6 +93,79 @@ struct eembed_allocator {
 	void (*free)(struct eembed_allocator *ea, void *ptr);
 };
 
+#ifndef EEMBED_HOSTED
+#ifdef ARDUINO
+#define EEMBED_HOSTED 0
+#endif
+#endif
+
+#ifndef EEMBED_HOSTED
+/*
+ __STDC_HOSTED__
+ The integer constant 1 if the implementation is a hosted
+ implementation or the integer constant 0 if it is not.
+
+ C99 standard (section 6.10.8):
+ http://www.open-std.org/jtc1/sc22/WG14/www/docs/n1256.pdf
+
+ C++11 standard (section 16.8):
+ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3337.pdf
+
+ "The standard also defines two environments for programs, a
+ freestanding environment, required of all implementations and which
+ may not have library facilities beyond those required of
+ freestanding implementations, where the handling of program startup
+ and termination are implementation-defined; and a hosted
+ environment, which is not required, in which all the library
+ facilities are provided and startup is through a function int main
+ (void) or int main (int, char *[]). An OS kernel is an example of a
+ program running in a freestanding environment; a program using the
+ facilities of an operating system is an example of a program
+ running in a hosted environment."
+ https://gcc.gnu.org/onlinedocs/gcc/Standards.html
+*/
+#ifdef __STDC_HOSTED__
+#define EEMBED_HOSTED __STDC_HOSTED__
+#endif
+#endif
+
+#ifndef EEMBED_HOSTED
+#error "EEMBED_HOSTED is not defined"
+#endif
+
+#ifndef EEMBED_NOP
+#define EEMBED_NOP() do { ((void)0); } while (0)
+#endif
+
+#ifndef eembed_assert
+#if EEMBED_HOSTED
+#include <assert.h>
+#define eembed_assert(expression) assert(expression)
+#else
+#ifdef NDEBUG
+#define eembed_assert(expression) EEMBED_NOP()
+#else
+#define eembed_assert(expression) \
+	do { \
+		if (expression) { \
+			EEMBED_NOP(); \
+		} else { \
+			char _eembed_itoa_buf[25]; \
+			eembed_ulong_to_str(_eembed_itoa_buf, 25, __LINE__); \
+			eembed_system_print(__FILE__); \
+			eembed_system_print(":"); \
+			eembed_system_print(_eembed_itoa_buf); \
+			eembed_system_print(": ASSERTION assert("); \
+			eembed_system_print(#expression); \
+			eembed_system_print(") FAILED"); \
+			eembed_system_println(); \
+			eembed_assert_crash(); \
+		} \
+	} while (0)
+#endif
+#endif
+#endif
+
 Eembed_end_C_functions
 #undef Eembed_end_C_functions
 #endif /* EEMBED_H */

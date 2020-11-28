@@ -6,12 +6,8 @@
 #define TEST_ECHECK_PRIVATE_UTILS_H
 
 #include "echeck.h"
-#include "eembed.h"
-#include "eembed-hosted.h"
 
 #define EEMBED_TEST_MAIN
-
-#include <stdint.h>
 
 extern struct eembed_log echeck_test_buf_log;
 

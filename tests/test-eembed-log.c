@@ -1,5 +1,4 @@
 #include "eembed.h"
-#include "eembed-hosted.h"
 
 unsigned int test_eembed_log(void)
 {

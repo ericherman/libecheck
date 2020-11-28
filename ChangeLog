@@ -2,8 +2,67 @@ echeck Changelog
 
 2020-11-28  Eric Herman <eric@freesa.org>
 
+	as nice as it can be to have the source in a zillion files,
+	that makes it particularly irritating when dealing with
+	arduino, so we'll fold things into as few files as reasonable.
+
+	Added:
+	* src/eembed.c:
+	Deleted:
+	* src/eembed-io.c:
+	* src/eembed-malloc-free.c:
+	* src/eembed-memcmp.c:
+	* src/eembed-memcpy.c:
+	* src/eembed-memset.c:
+	* src/eembed-strcat.c:
+	* src/eembed-strcmp.c:
+	* src/eembed-strcpy.c:
+	* src/eembed-strlen.c:
+	* src/eembed-strstr.c:
+	* src/eembed-system-alloc.c:
+
+	Modified
+	* src/eembed.h:
+	* src/eembed-arduino.h:
+	Deleted:
+	* src/eembed-assert.h:
+	* src/eembed-hosted.h:
+
+	Modified:
+	* src/echeck.h:
+	* src/echeck.c:
+	Deleted:
+	* src/echeck-err-injecting-malloc.h:
+	* src/echeck-err-injecting-malloc.c:
+
+	Added:
+	* echeck_arduino_demo/eembed.cpp:
+	Deleted:
+	* echeck_arduino_demo/eembed-assert.h:
+	* echeck_arduino_demo/eembed-hosted.h:
+	* echeck_arduino_demo/eembed-io.cpp:
+	* echeck_arduino_demo/eembed-strcmp.cpp:
+	* echeck_arduino_demo/eembed-strlen.cpp:
+	Modified:
+	* echeck_arduino_demo/echeck_arduino_demo.ino:
+
+	Added:
+	* echeck_tests_arduino/eembed.cpp:
+	Deleted:
+	* echeck_tests_arduino/eembed-assert.h:
+	* echeck_tests_arduino/eembed-hosted.h:
+	* echeck_tests_arduino/eembed-io.cpp:
+	* echeck_tests_arduino/eembed-strcmp.cpp:
+	* echeck_tests_arduino/eembed-strcpy.cpp:
+	* echeck_tests_arduino/eembed-strlen.cpp:
+	* echeck_tests_arduino/eembed-strstr.cpp:
+	Modified:
+	* echeck_tests_arduino/echeck_tests_arduino.ino:
+
+	* Makefile.am: to update reflect the new structure
+	* tests/test-echeck-private-utils.h: update includes
+	* tests/test-eembed-log.c: update includes
 	* src/eembed.h: add eembed_malloc / free pointers
-	* src/eembed-malloc-free.c: wrapper functions
 	* README: doc that freestanding defaults to no-op
 	* configure.ac: 2.0.2
 	* Makefile.am: src/eembed-malloc-free.c

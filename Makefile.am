@@ -5,30 +5,11 @@
 CSTD_CFLAGS=-std=c89
 NOISY_CFLAGS=-Wall -Wextra -pedantic -Werror
 
+eembed_headers=src/eembed.h src/eembed-arduino.h
+include_HEADERS=$(eembed_headers) src/echeck.h
 lib_LTLIBRARIES=libecheck.la libeembed.la
-
-libecheck_la_SOURCES=\
- src/echeck.h \
- src/echeck-err-injecting-malloc.h \
- src/echeck.c \
- src/echeck-err-injecting-malloc.c
-
-libeembed_la_SOURCES=\
- src/eembed.h \
- src/eembed-hosted.h \
- src/eembed-io.c \
- src/eembed-malloc-free.c \
- src/eembed-system-alloc.c \
- src/eembed-memcmp.c \
- src/eembed-memcpy.c \
- src/eembed-memset.c \
- src/eembed-strcat.c \
- src/eembed-strcmp.c \
- src/eembed-strcpy.c \
- src/eembed-strlen.c \
- src/eembed-strstr.c
-
-include_HEADERS=src/eembed.h src/eembed-hosted.h src/echeck.h
+libecheck_la_SOURCES=src/echeck.h src/echeck.c
+libeembed_la_SOURCES=$(eembed_headers) src/eembed.c
 
 if DEBUG
 BUILD_TYPE_CFLAGS=-ggdb -O0 \
