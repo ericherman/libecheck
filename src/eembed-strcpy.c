@@ -18,12 +18,12 @@ char *(*eembed_strncpy)(char *dest, const char *src, size_t n) = strncpy;
 
 #else
 
-char *eembded_diy_strcpy(char *dest, const char *src)
+char *eembedd_diy_strcpy(char *dest, const char *src)
 {
 	return eembed_strncpy(dest, src, SIZE_MAX);
 }
 
-char *(*eembed_strcpy)(char *dest, const char *src) = eembded_diy_strcpy;
+char *(*eembed_strcpy)(char *dest, const char *src) = eembedd_diy_strcpy;
 
 char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 {
