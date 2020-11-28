@@ -77,6 +77,7 @@ extern char *(*eembed_strstr)(const char *haystack, const char *needle);
 extern void *(*eembed_calloc)(size_t nmemb, size_t size);
 extern void *(*eembed_malloc)(size_t size);
 extern void *(*eembed_realloc)(void *ptr, size_t size);
+extern void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size);
 extern void (*eembde_free)(void *ptr);
 
 Eembed_end_C_functions

@@ -6,6 +6,19 @@
 #include "eembed-hosted.h"
 #include <stddef.h>
 
+#if (EEMBED_HOSTED && (_DEFAULT_SOURCE || _GNU_SOURCE))
+#define EEMBED_HAVE_HOSTED_REALLOC_ARRAY 1
+#else
+#define EEMBED_HAVE_HOSTED_REALLOC_ARRAY 0
+void *eembed_diy_reallocarray(void *ptr, size_t nmemb, size_t size)
+{
+	return eembed_realloc(ptr, (nmemb * size));
+}
+
+void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) =
+    eembed_diy_reallocarray;
+#endif
+
 #if EEMBED_HOSTED
 
 #include <stdlib.h>
@@ -14,6 +27,9 @@ void *(*eembed_malloc)(size_t size) = malloc;
 void *(*eembed_realloc)(void *ptr, size_t size) = realloc;
 void *(*eembed_calloc)(size_t nmemb, size_t size) = calloc;
 void (*eembed_free)(void *ptr) = free;
+#if EEMBED_HAVE_HOSTED_REALLOC_ARRAY
+void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) = reallocarray;
+#endif
 
 #else
 
