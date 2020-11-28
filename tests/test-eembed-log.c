@@ -5,7 +5,7 @@ unsigned int test_eembed_log(void)
 {
 	size_t buf_len = 250;
 	char buf[250];
-	struct eembed_buf_context bctx;
+	struct eembed_str_buf bctx;
 	struct eembed_log llog;
 	struct eembed_log *log = NULL;
 	int diff = 0;

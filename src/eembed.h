@@ -41,13 +41,13 @@ struct eembed_log {
 	void (*append_eol)(struct eembed_log *log);
 };
 
-struct eembed_buf_context {
+struct eembed_str_buf {
 	char *buf;
 	size_t len;
 };
 
 struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
-					    struct eembed_buf_context *ctx,
+					    struct eembed_str_buf *ctx,
 					    char *buf, size_t len);
 
 extern void (*eembed_assert_crash)(void);

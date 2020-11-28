@@ -118,13 +118,13 @@ struct eembed_log *eembed_err_log = &eembed_default_fprintf_log;
 
 void eembed_sprintf_append(struct eembed_log *log, const char *format, ...)
 {
-	struct eembed_buf_context *ctx = NULL;
+	struct eembed_str_buf *ctx = NULL;
 	size_t used = 0;
 	char *buf = NULL;
 	size_t len = 0;
 	va_list ap;
 
-	ctx = log ? (struct eembed_buf_context *)log->context : NULL;
+	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
 	if (!ctx || !ctx->buf || !ctx->len) {
 		return;
 	}
@@ -179,7 +179,7 @@ void eembed_sprintf_append_eol(struct eembed_log *log)
 }
 
 struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
-					    struct eembed_buf_context *ctx,
+					    struct eembed_str_buf *ctx,
 					    char *buf, size_t len)
 {
 	if (!log) {
@@ -358,9 +358,9 @@ void eembed_ctx_strcpy_append_s(struct eembed_log *log, const char *str)
 	size_t len = 0;
 	size_t len2 = 0;
 	size_t min = 0;
-	struct eembed_buf_context *ctx = NULL;
+	struct eembed_str_buf *ctx = NULL;
 
-	ctx = log ? (struct eembed_buf_context *)log->context : NULL;
+	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
 	if (!ctx || !ctx->buf || !ctx->len) {
 		return;
 	}
@@ -425,7 +425,7 @@ void eembed_ctx_strcpy_append_eol(struct eembed_log *log)
 }
 
 struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
-					    struct eembed_buf_context *ctx,
+					    struct eembed_str_buf *ctx,
 					    char *buf, size_t len)
 {
 	if (!log) {

@@ -199,7 +199,7 @@ tidy:
 		-T FILE \
 		-T size_t \
 		-T eembed_log \
-		-T eembed_buf_context \
+		-T eembed_str_buf \
 		-T eembed_allocator \
 		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
 		echeck_tests_arduino/echeck_tests_arduino.ino \

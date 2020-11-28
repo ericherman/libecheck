@@ -8,7 +8,7 @@
 
 #define echeck_test_mem_log_len 1024
 char echeck_test_mem_log[echeck_test_mem_log_len];
-struct eembed_buf_context echeck_test_buf_context;
+struct eembed_str_buf echeck_test_buf_context;
 struct eembed_log echeck_test_buf_log;
 
 struct eembed_log *echeck_test_log_capture(void)
