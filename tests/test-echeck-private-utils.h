@@ -7,8 +7,6 @@
 
 #include "echeck.h"
 
-#define EEMBED_TEST_MAIN
-
 extern struct eembed_log echeck_test_buf_log;
 
 struct eembed_log *echeck_test_log_capture(void);
@@ -19,6 +17,14 @@ int echeck_test_err_log_contains(const char *expected[], size_t expected_len);
 
 void echeck_test_debug_print_failures(unsigned failures, const char *where);
 
+#if FAUX_FREESTANDING
+void eembed_faux_freestanding_system_print(const char *str);
+#define eembed_test_init() \
+	eembed_system_print = eembed_faux_freestanding_system_print
+#else
+#define eembed_test_init() EEMBED_NOP()
+#endif
+
 #ifndef ECHECK_TEST_MAIN
 #if (!EEMBED_HOSTED && !FAUX_FREESTANDING)
 #define ECHECK_TEST_MAIN(pfunc, filename)	/* skip */
@@ -27,6 +33,7 @@ void echeck_test_debug_print_failures(unsigned failures, const char *where);
 int main(void) \
 { \
 	unsigned failures = 0; \
+	eembed_test_init(); \
 	failures += pfunc(); \
 	if (failures) { \
 		echeck_test_debug_print_failures(failures, filename); \

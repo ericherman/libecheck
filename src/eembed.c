@@ -830,25 +830,26 @@ int echeck_diy_strcmp(const char *s1, const char *s2)
 
 int (*eembed_strcmp)(const char *s1, const char *s2) = echeck_diy_strcmp;
 
-int echeck_diy_strncmp(const char *s1, const char *s2, size_t n)
+int echeck_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 {
-	size_t i = 0;
+	size_t i;
+	int d;
 
-	if (s1 == s2) {
+	if (s1 == s2 || max_len == 0) {
 		return 0;
-	} else if (s1 == NULL) {
-		return -1;
-	} else if (s2 == NULL) {
-		return 1;
 	}
-
-	for (i = 0; i < n && s1[i] && s2[i]; ++i) {
-		if (s1[i] != s2[i]) {
-			break;
+	if (!s1 || !s2) {
+		return s1 ? 1 : -1;
+	}
+	for (i = 0; i < max_len; ++i) {
+		d = s1[i] - s2[i];
+		if (d) {
+			return d;
+		} else if (s1[i] == '\0') {
+			return 0;
 		}
 	}
-
-	return s1[i] - s2[i];
+	return 0;
 }
 
 int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) =

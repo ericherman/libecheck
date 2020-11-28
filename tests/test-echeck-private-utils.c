@@ -67,3 +67,11 @@ void echeck_test_debug_print_failures(unsigned failures, const char *where)
 	eembed_system_print(where);
 	eembed_system_println();
 }
+
+#if FAUX_FREESTANDING
+#include <stdio.h>
+void eembed_faux_freestanding_system_print(const char *str)
+{
+	printf(str);
+}
+#endif

@@ -1,4 +1,4 @@
-#include "eembed.h"
+#include "test-echeck-private-utils.h"
 
 unsigned int test_eembed_log(void)
 {
@@ -41,31 +41,4 @@ unsigned int test_eembed_log(void)
 	return failures;
 }
 
-#if FAUX_FREESTANDING
-#include <stdio.h>
-void eembed_faux_freestanding_system_print(const char *str)
-{
-	printf(str);
-}
-
-void eembed_system_system_println(void)
-{
-	printf("\n");
-}
-#endif
-
-#if (EEMBED_HOSTED || FAUX_FREESTANDING)
-int main(void)
-{
-	unsigned int failures = 0;
-
-#if FAUX_FREESTANDING
-	eembed_system_print = eembed_faux_freestanding_system_print;
-	eembed_system_println = eembed_system_system_println;
-#endif
-
-	failures += test_eembed_log();
-
-	return (failures) ? 1 : 0;
-}
-#endif
+ECHECK_TEST_MAIN(test_eembed_log, __FILE__)
