@@ -15,6 +15,7 @@ libeembed_la_SOURCES=\
  src/eembed.h \
  src/eembed-hosted.h \
  src/eembed-io.c \
+ src/eembed-malloc-free.c \
  src/eembed-memcmp.c \
  src/eembed-memcpy.c \
  src/eembed-memset.c \

@@ -73,6 +73,12 @@ extern size_t (*eembed_strnlen)(const char *s, size_t maxlen);
 
 extern char *(*eembed_strstr)(const char *haystack, const char *needle);
 
+/* default to "no op" versions if not EEMBED_HOSTED */
+extern void *(*eembed_calloc)(size_t nmemb, size_t size);
+extern void *(*eembed_malloc)(size_t size);
+extern void *(*eembed_realloc)(void *ptr, size_t size);
+extern void (*eembde_free)(void *ptr);
+
 Eembed_end_C_functions
 #undef Eembed_end_C_functions
 #endif /* EEMBED_H */

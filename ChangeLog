@@ -1,5 +1,13 @@
 echeck Changelog
 
+2020-11-28  Eric Herman <eric@freesa.org>
+
+	* src/eembed.h: add eembed_malloc / free pointers
+	* src/eembed-malloc-free.c: wrapper functions
+	* README: doc that freestanding defaults to no-op
+	* configure.ac: 2.0.2
+	* Makefile.am: src/eembed-malloc-free.c
+
 2020-11-27  Eric Herman <eric@freesa.org>
 
 	extract E(asy)Embed for E(asy)Check 2.0.0

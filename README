@@ -179,6 +179,15 @@ functions are provided:
 
 	char *(*eembed_strstr)(const char *haystack, const char *needle);
 
+The default malloc/free functions are wrapped in the HOSTED case. In the
+freestanding case, eembed_malloc and eembed_calloc default to functions
+which return a NULL pointer:
+
+	void *(*eembed_calloc)(size_t nmemb, size_t size);
+	void *(*eembed_malloc)(size_t size);
+	void *(*eembed_realloc)(void *ptr, size_t size);
+	void (*eembde_free)(void *ptr);
+
 Since "assert.h" is not in the list of freestanding headers,
 "eembed-assert.h" can be used.  In the standard hosted case,
 "eembed_assert(expression)" is defined to be "assert(expression)",
