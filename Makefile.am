@@ -9,13 +9,16 @@ lib_LTLIBRARIES=libecheck.la libeembed.la
 
 libecheck_la_SOURCES=\
  src/echeck.h \
- src/echeck.c
+ src/echeck-err-injecting-malloc.h \
+ src/echeck.c \
+ src/echeck-err-injecting-malloc.c
 
 libeembed_la_SOURCES=\
  src/eembed.h \
  src/eembed-hosted.h \
  src/eembed-io.c \
  src/eembed-malloc-free.c \
+ src/eembed-system-alloc.c \
  src/eembed-memcmp.c \
  src/eembed-memcpy.c \
  src/eembed-memset.c \
@@ -197,6 +200,7 @@ tidy:
 		-T size_t \
 		-T eembed_log \
 		-T eembed_buf_context \
+		-T eembed_allocator \
 		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino

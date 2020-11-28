@@ -78,7 +78,20 @@ extern void *(*eembed_calloc)(size_t nmemb, size_t size);
 extern void *(*eembed_malloc)(size_t size);
 extern void *(*eembed_realloc)(void *ptr, size_t size);
 extern void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size);
-extern void (*eembde_free)(void *ptr);
+extern void (*eembed_free)(void *ptr);
+
+struct eembed_allocator;
+extern struct eembed_allocator *eembed_global_alloctor;
+
+struct eembed_allocator {
+	void *context;
+	void *(*malloc)(struct eembed_allocator *ea, size_t size);
+	void *(*calloc)(struct eembed_allocator *ea, size_t nmemb, size_t size);
+	void *(*realloc)(struct eembed_allocator *ea, void *ptr, size_t size);
+	void *(*reallocarray)(struct eembed_allocator *ea, void *ptr,
+			      size_t nmemb, size_t size);
+	void (*free)(struct eembed_allocator *ea, void *ptr);
+};
 
 Eembed_end_C_functions
 #undef Eembed_end_C_functions
