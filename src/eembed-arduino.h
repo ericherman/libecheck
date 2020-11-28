@@ -8,6 +8,8 @@
 #include "eembed.h"
 #include "eembed-assert.h"
 
+extern unsigned long eembed_die_delay;
+
 void eembed_arduino_serial_log_init(void);
 
 #endif /* EEMBED_ARDUINO_H */
