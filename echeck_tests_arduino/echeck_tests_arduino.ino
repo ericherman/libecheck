@@ -14,6 +14,9 @@
  * becase these are normally called by individual programs in parallel, but
  * we need these exported because this firmware will run the tests from each
  * test compilation unit */
+unsigned test_eembed_log(void);
+unsigned test_eembed_memcmp(void);
+
 unsigned test_check_byte_array(void);
 unsigned test_check_byte_array_m(void);
 unsigned test_check_char(void);
@@ -25,6 +28,7 @@ unsigned test_check_long(void);
 unsigned test_check_long_m(void);
 unsigned test_check_ptr(void);
 unsigned test_check_ptr_m(void);
+unsigned test_check_ptr_not_null(void);
 unsigned test_check_size_t(void);
 unsigned test_check_size_t_m(void);
 unsigned test_check_status(void);
@@ -35,8 +39,6 @@ unsigned test_check_unsigned_int(void);
 unsigned test_check_unsigned_int_m(void);
 unsigned test_check_unsigned_long(void);
 unsigned test_check_unsigned_long_m(void);
-
-unsigned test_eembed_log(void);
 
 /* setup/loop globals */
 uint32_t loop_count;
@@ -89,6 +91,9 @@ void loop(void)
 	Serial.println("test_eembed_log");
 	failures += test_eembed_log();
 
+	Serial.println("test_eembed_memcmp");
+	failures += test_eembed_memcmp();
+
 	Serial.println("test_check_byte_array");
 	failures += test_check_byte_array();
 
@@ -121,6 +126,9 @@ void loop(void)
 
 	Serial.println("test_check_ptr_m");
 	failures += test_check_ptr_m();
+
+	Serial.println("test_check_ptr_not_null");
+	failures += test_check_ptr_not_null();
 
 	Serial.println("test_check_size_t");
 	failures += test_check_size_t();

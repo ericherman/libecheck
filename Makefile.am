@@ -44,6 +44,7 @@ check_PROGRAMS=\
  test_check_long_m \
  test_check_ptr \
  test_check_ptr_m \
+ test_check_ptr_not_null \
  test_check_size_t \
  test_check_size_t_m \
  test_check_str \
@@ -109,6 +110,10 @@ test_check_ptr_LDADD=$(T_LDADD)
 test_check_ptr_m_SOURCES=tests/test_check_ptr_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_ptr_m_LDADD=$(T_LDADD)
+
+test_check_ptr_not_null_SOURCES=tests/test_check_ptr.c \
+ $(TESTS_COMMON_SOURCES)
+test_check_ptr_not_null_LDADD=$(T_LDADD)
 
 test_check_size_t_SOURCES=tests/test_check_size_t.c \
  $(TESTS_COMMON_SOURCES)
@@ -229,6 +234,9 @@ vg-test_check_ptr: test_check_ptr
 vg-test_check_ptr_m: test_check_ptr_m
 	./libtool --mode=execute valgrind -q ./test_check_ptr_m
 
+vg-test_check_ptr_not_null: test_check_ptr_not_null
+	./libtool --mode=execute valgrind -q ./test_check_ptr_not_null
+
 vg-test_check_size_t: test_check_size_t
 	./libtool --mode=execute valgrind -q ./test_check_size_t
 
@@ -277,6 +285,7 @@ valgrind: \
 	vg-test_check_long_m \
 	vg-test_check_ptr \
 	vg-test_check_ptr_m \
+	vg-test_check_ptr_not_null \
 	vg-test_check_size_t \
 	vg-test_check_size_t_m \
 	vg-test_check_status \

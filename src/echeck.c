@@ -298,6 +298,24 @@ unsigned char echeck_ptr_m(struct eembed_log *err, const char *func,
 	return 1;
 }
 
+unsigned char echeck_ptr_not_null_m(struct eembed_log *err, const char *func,
+				    const char *file, int line,
+				    const void *actual, const char *msg)
+{
+	if (actual) {
+		return 0;
+	}
+
+	err = echeck_ensure_log(err);
+
+	echeck_append_fail(err, msg);
+	err->append_s(err, " Expected non-NULL pointer ");
+	echeck_append_func_file_line(err, func, file, line);
+	err->append_eol(err);
+
+	return 1;
+}
+
 char echeck_status_m(struct eembed_log *err, const char *func, const char *file,
 		     int line, int val, const char *msg)
 {

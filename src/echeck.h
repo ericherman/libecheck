@@ -26,7 +26,7 @@ Echeck_begin_C_functions
 #undef Echeck_begin_C_functions
 #include <stddef.h>		/* for size_t */
 #include <float.h>		/* for DBL_EPSILON */
-#include "eembed.h"		/* struct eembed_log */
+#include "eembed.h"		/* struct eembed_log, struct eembed_allocator */
 /*check char*/
 unsigned char echeck_char_m(struct eembed_log *err, const char *func,
 			    const char *file, int line, char actual,
@@ -130,6 +130,27 @@ unsigned char echeck_ptr_m(struct eembed_log *err, const char *func,
 #define check_ptr(actual, expected)\
 	echeck_ptr_m(NULL, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, expected, #actual)
+
+/* check ptr not null*/
+unsigned char echeck_ptr_not_null_m(struct eembed_log *err, const char *func,
+				    const char *file, int line,
+				    const void *actual, const char *msg);
+
+#define lcheck_ptr_not_null_m(log, actual, msg)\
+	echeck_ptr_not_null_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, msg)
+
+#define check_ptr_not_null_m(actual, msg)\
+	echeck_ptr_not_null_m(NULL, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, msg)
+
+#define lcheck_ptr_not_null(log, actual)\
+	echeck_ptr_not_null_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, #actual)
+
+#define check_ptr_not_null(actual)\
+	echeck_ptr_not_null_m(NULL, ECHECK_FUNC, __FILE__, __LINE__,\
+		 actual, #actual)
 
 /* check unsigned long */
 unsigned char echeck_unsigned_long_m(struct eembed_log *err, const char *func,
