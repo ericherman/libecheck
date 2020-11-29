@@ -9,6 +9,7 @@ test-eembed-float-to-str
 test-eembed-memcmp
 test-eembed-memcpy
 test-eembed-memmove
+test-eembed-memset
 test_check_status
 test_check_byte_array
 test_check_byte_array_m

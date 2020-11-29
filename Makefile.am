@@ -40,6 +40,7 @@ check_PROGRAMS=\
  test-eembed-memcmp \
  test-eembed-memcpy \
  test-eembed-memmove \
+ test-eembed-memset \
  test_check_status \
  test_check_byte_array \
  test_check_byte_array_m \
@@ -100,6 +101,10 @@ test_eembed_memcpy_LDADD=$(T_LDADD)
 
 test_eembed_memmove_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-memmove.c
 test_eembed_memmove_LDADD=$(T_LDADD)
+
+test_eembed_memset_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-memset.c
+test_eembed_memset_LDADD=$(T_LDADD)
+
 #---------
 
 test_check_status_SOURCES=tests/test_check_status.c \
@@ -251,6 +256,9 @@ vg-test-eembed-memcpy: test-eembed-memcpy
 vg-test-eembed-memmove: test-eembed-memmove
 	./libtool --mode=execute valgrind -q ./test-eembed-memmove
 
+vg-test-eembed-memset: test-eembed-memset
+	./libtool --mode=execute valgrind -q ./test-eembed-memset
+
 vg-test_check_status: test_check_status
 	./libtool --mode=execute valgrind -q ./test_check_status
 
@@ -329,6 +337,7 @@ valgrind: \
 	vg-test-eembed-memcmp \
 	vg-test-eembed-memcpy \
 	vg-test-eembed-memmove \
+	vg-test-eembed-memset \
 	vg-test_check_byte_array \
 	vg-test_check_byte_array_m \
 	vg-test_check_char \

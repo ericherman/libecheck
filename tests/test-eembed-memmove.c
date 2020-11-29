@@ -4,7 +4,6 @@
 
 #include "test-echeck-private-utils.h"
 
-
 unsigned test_eembed_memmove(void)
 {
 	unsigned char actual[20];
