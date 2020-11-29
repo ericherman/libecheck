@@ -23,7 +23,8 @@ unsigned check_ulong_to_hex(unsigned long ul, const char *ulhex)
 
 	rv = eembed_ulong_to_hex(buf, 30, ul);
 	failures += check_ptr_m(rv, buf, ulhex);
-	failures += check_ptr_not_null_m(eembed_strstr(buf, ulhex), ulhex);
+	failures += check_str_contains(buf, "0x");
+	failures += check_str_contains(buf, ulhex);
 	return failures;
 }
 
@@ -32,8 +33,8 @@ unsigned int test_eembed_ulong_to_hex(void)
 	unsigned failures = 0;
 
 	failures += check_ulong_to_hex(0, "0x00");
-	failures += check_ulong_to_hex(2147483000, "0x7ffffd78");
-	failures += check_ulong_to_hex(4294967295, "0xffffffff");
+	failures += check_ulong_to_hex(2147483000, "7FFFFD78");
+	failures += check_ulong_to_hex(4294967295, "FFFFFFFF");
 
 	check_ulong_to_hex_nothing_explodes();
 

@@ -257,7 +257,7 @@ char *eembed_ulong_to_str(char *buf, size_t len, unsigned long ul)
 
 char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long ul)
 {
-	return eembed_sprintf_to_str(buf, len, "0x%02lx", ul);
+	return eembed_sprintf_to_str(buf, len, "0x%02lX", ul);
 }
 
 char *eembed_float_to_str(char *buf, size_t len, double f)
@@ -578,8 +578,25 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, double f)
 	char c;
 	unsigned long ul = 0;
 
+	if (!buf || !len) {
+		return NULL;
+	}
+
 	buf[0] = '\0';
 	buf[len - 1] = '\0';
+	if (f != f) {
+		if (pos < len) {
+			buf[pos++] = 'n';
+		}
+		if (pos < len) {
+			buf[pos++] = 'a';
+		}
+		if (pos < len) {
+			buf[pos++] = 'n';
+		}
+		buf[pos] = '\0';
+		return buf;
+	}
 	if (f < 0.0) {
 		buf[pos++] = '-';
 		f = -f;
@@ -947,20 +964,27 @@ char *(*eembed_strstr)(const char *haystack, const char *needle) = strstr;
 #else
 char *eembed_diy_strstr(const char *haystack, const char *needle)
 {
-	size_t i, j, found, len;
+	size_t i = 0;
+	size_t j = 0;
+	size_t found = 0;
+	size_t nlen = 0;
+	size_t hlen = 0;
 
-	if (!haystack) {
+	if (!haystack || !needle) {
 		return NULL;
 	}
 
-	len = 0;
-	if (!needle || !needle[0]) {
-		return (char *)haystack;
+	nlen = eembed_strlen(needle);
+	if (!nlen) {
+		return (char *)(haystack);
 	}
-
-	for (i = 0; haystack[i]; ++i) {
+	hlen = eembed_strlen(haystack);
+	if (nlen > hlen) {
+		return NULL;
+	}
+	for (i = 0; i < (hlen - (nlen - 1)); ++i) {
 		found = 1;
-		for (j = 0; found && j < len; ++j) {
+		for (j = 0; found && j < nlen; ++j) {
 			if (haystack[i + j] != needle[j]) {
 				found = 0;
 			}

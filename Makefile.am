@@ -36,6 +36,7 @@ check_PROGRAMS=\
  test-eembed-long-to-str \
  test-eembed-ulong-to-str \
  test-eembed-ulong-to-hex \
+ test-eembed-float-to-str \
  test-eembed-memcmp \
  test_check_status \
  test_check_byte_array \
@@ -84,6 +85,10 @@ test_eembed_ulong_to_str_LDADD=$(T_LDADD)
 test_eembed_ulong_to_hex_SOURCES=$(TESTS_COMMON_SOURCES) \
  tests/test-eembed-ulong-to-hex.c
 test_eembed_ulong_to_hex_LDADD=$(T_LDADD)
+
+test_eembed_float_to_str_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-float-to-str.c
+test_eembed_float_to_str_LDADD=$(T_LDADD)
 
 test_eembed_memcmp_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-memcmp.c
 test_eembed_memcmp_LDADD=$(T_LDADD)
@@ -227,6 +232,9 @@ vg-test-eembed-ulong-to-str: test-eembed-ulong-to-str
 vg-test-eembed-ulong-to-hex: test-eembed-ulong-to-hex
 	./libtool --mode=execute valgrind -q ./test-eembed-ulong-to-hex
 
+vg-test-eembed-float-to-str: test-eembed-float-to-str
+	./libtool --mode=execute valgrind -q ./test-eembed-float-to-str
+
 vg-test-eembed-memcmp: test-eembed-memcmp
 	./libtool --mode=execute valgrind -q ./test-eembed-memcmp
 
@@ -304,6 +312,7 @@ valgrind: \
 	vg-test-eembed-long-to-str \
 	vg-test-eembed-ulong-to-str \
 	vg-test-eembed-ulong-to-hex \
+	vg-test-eembed-float-to-str \
 	vg-test-eembed-memcmp \
 	vg-test_check_byte_array \
 	vg-test_check_byte_array_m \

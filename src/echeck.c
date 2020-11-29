@@ -177,6 +177,46 @@ unsigned char echeck_str_m(struct eembed_log *err, const char *func,
 	return 1;
 }
 
+unsigned char echeck_str_contains_m(struct eembed_log *err, const char *func,
+				    const char *file, int line,
+				    const char *haystack, const char *needle,
+				    const char *msg)
+{
+	if (haystack == needle) {
+		return 0;
+	}
+
+	if (haystack != NULL && needle != NULL
+	    && eembed_strstr(haystack, needle) != NULL) {
+		return 0;
+	}
+
+	err = echeck_ensure_log(err);
+
+	echeck_append_fail(err, msg);
+	err->append_s(err, " Did not locate ");
+	if (needle) {
+		err->append_s(err, "'");
+		err->append_s(err, needle);
+		err->append_s(err, "'");
+	} else {
+		err->append_s(err, "(null)");
+	}
+	err->append_s(err, " in ");
+	if (haystack) {
+		err->append_s(err, "'");
+		err->append_s(err, haystack);
+		err->append_s(err, "'");
+	} else {
+		err->append_s(err, "(null)");
+	}
+	err->append_s(err, " ");
+	echeck_append_func_file_line(err, func, file, line);
+	err->append_eol(err);
+
+	return 1;
+}
+
 unsigned char echeck_byte_array_m(struct eembed_log *err, const char *func,
 				  const char *file, int line,
 				  const unsigned char *actual,

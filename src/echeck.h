@@ -110,6 +110,28 @@ unsigned char echeck_str_m(struct eembed_log *err, const char *func,
 	echeck_str_m(NULL, ECHECK_FUNC, __FILE__, __LINE__,\
 		 actual, expected, #actual)
 
+/* check str contains*/
+unsigned char echeck_str_contains_m(struct eembed_log *err, const char *func,
+				    const char *file, int line,
+				    const char *haystack, const char *needle,
+				    const char *msg);
+
+#define lcheck_str_contains_m(log, haystack, needle, msg)\
+	echeck_str_contains_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 haystack, needle, msg)
+
+#define check_str_contains_m(haystack, needle, msg)\
+	echeck_str_contains_m(NULL, ECHECK_FUNC, __FILE__, __LINE__,\
+		 haystack, needle, msg)
+
+#define lcheck_str_contains(log, haystack, needle)\
+	echeck_str_contains_m(log, ECHECK_FUNC, __FILE__, __LINE__,\
+		 haystack, needle, #haystack)
+
+#define check_str_contains(haystack, needle)\
+	echeck_str_contains_m(NULL, ECHECK_FUNC, __FILE__, __LINE__,\
+		 haystack, needle, #haystack)
+
 /* check ptr */
 unsigned char echeck_ptr_m(struct eembed_log *err, const char *func,
 			   const char *file, int line, const void *actual,
