@@ -4,7 +4,8 @@
 
 #include "test-echeck-private-utils.h"
 
-void fill_array(void *dest, size_t len, unsigned char c, unsigned char term)
+static void fill_array(void *dest, size_t len, unsigned char c,
+		       unsigned char term)
 {
 	size_t i = 0;
 	unsigned char *chars = NULL;
