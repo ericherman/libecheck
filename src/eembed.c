@@ -257,7 +257,7 @@ char *eembed_ulong_to_str(char *buf, size_t len, unsigned long ul)
 
 char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long ul)
 {
-	return eembed_sprintf_to_str(buf, len, "%lx", ul);
+	return eembed_sprintf_to_str(buf, len, "0x%02lx", ul);
 }
 
 char *eembed_float_to_str(char *buf, size_t len, double f)
@@ -465,6 +465,7 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 char *eembed_long_to_str(char *buf, size_t len, long l)
 {
 	char *b;
+	char *out;
 	size_t blen = 0;
 	unsigned long ul = 0;
 
@@ -485,7 +486,8 @@ char *eembed_long_to_str(char *buf, size_t len, long l)
 	if (blen) {
 		b[0] = '\0';
 	}
-	return eembed_ulong_to_str(b, blen, ul);
+	out = eembed_ulong_to_str(b, blen, ul);
+	return out ? buf : NULL;
 }
 
 char *eembed_ulong_to_str(char *buf, size_t len, unsigned long ul)
@@ -542,6 +544,10 @@ char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long z)
 	size_t i = 0;
 	size_t pos = 0;
 	size_t ul_bytes = sizeof(unsigned long);
+
+	if (!buf) {
+		return NULL;
+	}
 
 	if (len < (2 + (2 * ul_bytes) + 1)) {
 		return NULL;

@@ -32,6 +32,11 @@ endif
 
 TESTS=$(check_PROGRAMS)
 check_PROGRAMS=\
+ test-eembed-log \
+ test-eembed-long-to-str \
+ test-eembed-ulong-to-str \
+ test-eembed-ulong-to-hex \
+ test-eembed-memcmp \
  test_check_status \
  test_check_byte_array \
  test_check_byte_array_m \
@@ -54,9 +59,7 @@ check_PROGRAMS=\
  test_check_unsigned_int_m \
  test_check_unsigned_long \
  test_check_unsigned_long_m \
- test_hosted \
- test-eembed-memcmp \
- test-eembed-log
+ test_hosted
 
 TESTS_COMMON_SOURCES=\
  tests/test-echeck-private-utils.h \
@@ -66,6 +69,26 @@ TESTS_COMMON_SOURCES=\
  src/echeck.h
 
 T_LDADD=libecheck.la -lecheck libeembed.la -leembed
+
+test_eembed_log_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-log.c
+test_eembed_log_LDADD=$(T_LDADD)
+
+test_eembed_long_to_str_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-long-to-str.c
+test_eembed_long_to_str_LDADD=$(T_LDADD)
+
+test_eembed_ulong_to_str_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-ulong-to-str.c
+test_eembed_ulong_to_str_LDADD=$(T_LDADD)
+
+test_eembed_ulong_to_hex_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-ulong-to-hex.c
+test_eembed_ulong_to_hex_LDADD=$(T_LDADD)
+
+test_eembed_memcmp_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-memcmp.c
+test_eembed_memcmp_LDADD=$(T_LDADD)
+
+#---------
 
 test_check_status_SOURCES=tests/test_check_status.c \
  $(TESTS_COMMON_SOURCES)
@@ -164,12 +187,6 @@ test_hosted_CFLAGS=-std=c11 \
  -pipe
 test_hosted_LDADD=$(T_LDADD)
 
-test_eembed_log_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-log.c
-test_eembed_log_LDADD=$(T_LDADD)
-
-test_eembed_memcmp_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-memcmp.c
-test_eembed_memcmp_LDADD=$(T_LDADD)
-
 EXTRA_DIST=COPYING.LESSER
 
 ACLOCAL_AMFLAGS=-I m4 --install
@@ -197,6 +214,21 @@ tidy:
 		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino
+
+vg-test-eembed-log: test-eembed-log
+	./libtool --mode=execute valgrind -q ./test-eembed-log
+
+vg-test-eembed-long-to-str: test-eembed-long-to-str
+	./libtool --mode=execute valgrind -q ./test-eembed-long-to-str
+
+vg-test-eembed-ulong-to-str: test-eembed-ulong-to-str
+	./libtool --mode=execute valgrind -q ./test-eembed-ulong-to-str
+
+vg-test-eembed-ulong-to-hex: test-eembed-ulong-to-hex
+	./libtool --mode=execute valgrind -q ./test-eembed-ulong-to-hex
+
+vg-test-eembed-memcmp: test-eembed-memcmp
+	./libtool --mode=execute valgrind -q ./test-eembed-memcmp
 
 vg-test_check_status: test_check_status
 	./libtool --mode=execute valgrind -q ./test_check_status
@@ -267,13 +299,12 @@ vg-test_check_unsigned_long_m: test_check_unsigned_long_m
 vg-test_hosted: test_hosted
 	./libtool --mode=execute valgrind -q ./test_hosted
 
-vg-test-eembed-log: test-eembed-log
-	./libtool --mode=execute valgrind -q ./test-eembed-log
-
-vg-test-eembed-memcmp: test-eembed-memcmp
-	./libtool --mode=execute valgrind -q ./test-eembed-memcmp
-
 valgrind: \
+	vg-test-eembed-log \
+	vg-test-eembed-long-to-str \
+	vg-test-eembed-ulong-to-str \
+	vg-test-eembed-ulong-to-hex \
+	vg-test-eembed-memcmp \
 	vg-test_check_byte_array \
 	vg-test_check_byte_array_m \
 	vg-test_check_char \
@@ -296,8 +327,6 @@ valgrind: \
 	vg-test_check_unsigned_int_m \
 	vg-test_check_unsigned_long \
 	vg-test_check_unsigned_long_m \
-	vg-test-eembed-log \
-	vg-test-eembed-memcmp \
 	vg-test_hosted
 	echo "valgrind complete"
 

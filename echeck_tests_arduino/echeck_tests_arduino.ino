@@ -15,6 +15,9 @@
  * we need these exported because this firmware will run the tests from each
  * test compilation unit */
 unsigned test_eembed_log(void);
+unsigned test_eembed_long_to_str(void);
+unsigned test_eembed_ulong_to_str(void);
+unsigned test_eembed_ulong_to_hex(void);
 unsigned test_eembed_memcmp(void);
 
 unsigned test_check_byte_array(void);
@@ -76,6 +79,18 @@ void setup(void)
 	loop_count = 0;
 }
 
+unsigned run_test(unsigned (*pfunc)(void), const char *name)
+{
+	unsigned failures = 0;
+	Serial.print(name);
+	Serial.print(" ... ");
+	failures += pfunc();
+	Serial.println(failures ? "FAIL!" : "ok");
+	return failures;
+}
+
+#define Run_test(func) run_test(func, #func)
+
 void loop(void)
 {
 	++loop_count;
@@ -88,77 +103,35 @@ void loop(void)
 
 	unsigned failures = 0;
 
-	Serial.println("test_eembed_log");
-	failures += test_eembed_log();
+	failures += Run_test(test_eembed_log);
+	failures += Run_test(test_eembed_long_to_str);
+	failures += Run_test(test_eembed_ulong_to_str);
+	failures += Run_test(test_eembed_ulong_to_hex);
+	failures += Run_test(test_eembed_memcmp);
 
-	Serial.println("test_eembed_memcmp");
-	failures += test_eembed_memcmp();
-
-	Serial.println("test_check_byte_array");
-	failures += test_check_byte_array();
-
-	Serial.println("test_check_byte_array_m");
-	failures += test_check_byte_array_m();
-
-	Serial.println("test_check_char");
-	failures += test_check_char();
-
-	Serial.println("test_check_char_m");
-	failures += test_check_char_m();
-
-	Serial.println("test_check_double");
-	failures += test_check_double();
-
-	Serial.println("test_check_int");
-	failures += test_check_int();
-
-	Serial.println("test_check_int_m");
-	failures += test_check_int_m();
-
-	Serial.println("test_check_long");
-	failures += test_check_long();
-
-	Serial.println("test_check_long_m");
-	failures += test_check_long_m();
-
-	Serial.println("test_check_ptr");
-	failures += test_check_ptr();
-
-	Serial.println("test_check_ptr_m");
-	failures += test_check_ptr_m();
-
-	Serial.println("test_check_ptr_not_null");
-	failures += test_check_ptr_not_null();
-
-	Serial.println("test_check_size_t");
-	failures += test_check_size_t();
-
-	Serial.println("test_check_size_t_m");
-	failures += test_check_size_t_m();
-
-	Serial.println("test_check_status");
-	failures += test_check_status();
-
-	Serial.println("test_check_str");
-	failures += test_check_str();
-
-	Serial.println("test_check_str_m");
-	failures += test_check_str_m();
-
-	Serial.println("test_check_str_null_ptr");
-	failures += test_check_str_null_ptr();
-
-	Serial.println("test_check_unsigned_int");
-	failures += test_check_unsigned_int();
-
-	Serial.println("test_check_unsigned_int_m");
-	failures += test_check_unsigned_int_m();
-
-	Serial.println("test_check_unsigned_long");
-	failures += test_check_unsigned_long();
-
-	Serial.println("test_check_unsigned_long_m");
-	failures += test_check_unsigned_long_m();
+	Serial.println();
+	failures += Run_test(test_check_byte_array);
+	failures += Run_test(test_check_byte_array_m);
+	failures += Run_test(test_check_char);
+	failures += Run_test(test_check_char_m);
+	failures += Run_test(test_check_double);
+	failures += Run_test(test_check_int);
+	failures += Run_test(test_check_int_m);
+	failures += Run_test(test_check_long);
+	failures += Run_test(test_check_long_m);
+	failures += Run_test(test_check_ptr);
+	failures += Run_test(test_check_ptr_m);
+	failures += Run_test(test_check_ptr_not_null);
+	failures += Run_test(test_check_size_t);
+	failures += Run_test(test_check_size_t_m);
+	failures += Run_test(test_check_status);
+	failures += Run_test(test_check_str);
+	failures += Run_test(test_check_str_m);
+	failures += Run_test(test_check_str_null_ptr);
+	failures += Run_test(test_check_unsigned_int);
+	failures += Run_test(test_check_unsigned_int_m);
+	failures += Run_test(test_check_unsigned_long);
+	failures += Run_test(test_check_unsigned_long_m);
 
 	Serial.println();
 	if (failures == 1) {

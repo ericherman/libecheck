@@ -2,6 +2,9 @@
 # compiled tests
 ################
 test-eembed-log
+test-eembed-long-to-str
+test-eembed-ulong-to-hex
+test-eembed-ulong-to-str
 test-eembed-memcmp
 test_check_status
 test_check_byte_array

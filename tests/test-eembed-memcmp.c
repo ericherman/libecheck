@@ -49,7 +49,7 @@ unsigned int test_eembed_memcmp(void)
 	rv2 = eembed_strncmp(s1, s2, 20 - 10);
 	failures += check_int(rv1, rv2);
 
-	return check_status(failures);
+	return failures;
 }
 
 ECHECK_TEST_MAIN(test_eembed_memcmp, __FILE__)
