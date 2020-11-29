@@ -20,6 +20,8 @@ unsigned test_eembed_ulong_to_str(void);
 unsigned test_eembed_ulong_to_hex(void);
 unsigned test_eembed_float_to_str(void);
 unsigned test_eembed_memcmp(void);
+unsigned test_eembed_memcpy(void);
+unsigned test_eembed_memmove(void);
 
 unsigned test_check_byte_array(void);
 unsigned test_check_byte_array_m(void);
@@ -110,6 +112,8 @@ void loop(void)
 	failures += Run_test(test_eembed_ulong_to_hex);
 	failures += Run_test(test_eembed_float_to_str);
 	failures += Run_test(test_eembed_memcmp);
+	failures += Run_test(test_eembed_memcpy);
+	failures += Run_test(test_eembed_memmove);
 
 	Serial.println();
 	failures += Run_test(test_check_byte_array);

@@ -7,6 +7,8 @@ test-eembed-ulong-to-hex
 test-eembed-ulong-to-str
 test-eembed-float-to-str
 test-eembed-memcmp
+test-eembed-memcpy
+test-eembed-memmove
 test_check_status
 test_check_byte_array
 test_check_byte_array_m
