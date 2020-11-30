@@ -23,6 +23,10 @@ unsigned test_eembed_memcmp(void);
 unsigned test_eembed_memcpy(void);
 unsigned test_eembed_memmove(void);
 unsigned test_eembed_memset(void);
+unsigned test_eembed_strcat(void);
+unsigned test_eembed_strcpy(void);
+unsigned test_eembed_strlen(void);
+unsigned test_eembed_strstr(void);
 
 unsigned test_check_byte_array(void);
 unsigned test_check_byte_array_m(void);
@@ -116,6 +120,10 @@ void loop(void)
 	failures += Run_test(test_eembed_memcpy);
 	failures += Run_test(test_eembed_memmove);
 	failures += Run_test(test_eembed_memset);
+	failures += Run_test(test_eembed_strcat);
+	failures += Run_test(test_eembed_strcpy);
+	failures += Run_test(test_eembed_strlen);
+	failures += Run_test(test_eembed_strstr);
 
 	Serial.println();
 	failures += Run_test(test_check_byte_array);

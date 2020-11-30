@@ -10,6 +10,10 @@ test-eembed-memcmp
 test-eembed-memcpy
 test-eembed-memmove
 test-eembed-memset
+test-eembed-strcat
+test-eembed-strcpy
+test-eembed-strlen
+test-eembed-strstr
 test_check_status
 test_check_byte_array
 test_check_byte_array_m
