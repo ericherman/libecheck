@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 # Makefile: "E(asy)Check" boiler-plate to make simple testing easier
-# Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org>
+# Copyright (C) 2016, 2017, 2018, 2019, 2020 Eric Herman <eric@freesa.org>
+
+BROWSER=firefox
 
 CSTD_CFLAGS=-std=c89
 NOISY_CFLAGS=-Wall -Wextra -pedantic -Werror
@@ -48,6 +50,7 @@ check_PROGRAMS=\
  test_check_status \
  test_check_byte_array \
  test_check_byte_array_m \
+ test_check_byte_array_m2 \
  test_check_char \
  test_check_char_m \
  test_check_double \
@@ -69,12 +72,7 @@ check_PROGRAMS=\
  test_check_unsigned_long_m \
  test_hosted
 
-TESTS_COMMON_SOURCES=\
- tests/test-echeck-private-utils.h \
- tests/test-echeck-private-utils.c \
- src/eembed.h \
- src/eembed-hosted.h \
- src/echeck.h
+TESTS_COMMON_SOURCES=src/eembed.h src/echeck.h
 
 T_LDADD=libecheck.la -lecheck libeembed.la -leembed
 
@@ -134,6 +132,10 @@ test_check_byte_array_LDADD=$(T_LDADD)
 test_check_byte_array_m_SOURCES=tests/test_check_byte_array_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_byte_array_m_LDADD=$(T_LDADD)
+
+test_check_byte_array_m2_SOURCES=tests/test_check_byte_array_m2.c \
+ $(TESTS_COMMON_SOURCES)
+test_check_byte_array_m2_LDADD=$(T_LDADD)
 
 test_check_char_SOURCES=tests/test_check_char.c \
  $(TESTS_COMMON_SOURCES)
@@ -296,6 +298,9 @@ vg-test_check_byte_array: test_check_byte_array
 vg-test_check_byte_array_m: test_check_byte_array_m
 	./libtool --mode=execute valgrind -q ./test_check_byte_array_m
 
+vg-test_check_byte_array_m2: test_check_byte_array_m2
+	./libtool --mode=execute valgrind -q ./test_check_byte_array_m2
+
 vg-test_check_char: test_check_char
 	./libtool --mode=execute valgrind -q ./test_check_char
 
@@ -372,6 +377,7 @@ valgrind: \
 	vg-test-eembed-strstr \
 	vg-test_check_byte_array \
 	vg-test_check_byte_array_m \
+	vg-test_check_byte_array_m2 \
 	vg-test_check_char \
 	vg-test_check_char_m \
 	vg-test_check_double \
@@ -395,6 +401,19 @@ valgrind: \
 	vg-test_hosted
 	echo "valgrind complete"
 
+line-cov: check
+	lcov	--checksum \
+		--capture \
+		--base-directory . \
+		--directory . \
+		--output-file coverage.info
+
+html-report: line-cov
+	mkdir -pv ./coverage_html
+	genhtml coverage.info --output-directory coverage_html
+
+coverage: html-report
+	$(BROWSER) ./coverage_html/src/index.html
 
 spotless:
 	rm -rf `cat .gitignore | sed -e 's/#.*//'`

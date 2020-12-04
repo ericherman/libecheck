@@ -4,7 +4,7 @@
 
 #include "echeck.h"
 
-unsigned test_check_long(void)
+unsigned test_check_byte_array_m_2(void)
 {
 	struct eembed_log *orig = eembed_err_log;
 	struct eembed_str_buf log_ctx;
@@ -15,21 +15,23 @@ unsigned test_check_long(void)
 	const char *strs[2];
 	unsigned failures = 0;
 
-	strs[0] = "5";
-	strs[1] = "-5";
+	unsigned char bytes_a[3] = { 0x13, 0x10, 0x00 };
+	unsigned char bytes_b[4] = { 0x13, 0x10, 0x00, 0x7F };
 
-	failures += check_long(5L, 5L);
+	strs[0] = "length mis-match";
+	strs[1] = "contextual";
 
 	eembed_memset(mem_buf, 0x00, mem_buf_len);
 	eembed_err_log =
 	    eembed_char_buf_log_init(&buf_log, &log_ctx, mem_buf, mem_buf_len);
-	if (0 == check_long(5L, -5L)) {
+	if (0 == check_byte_array_m(bytes_a, 3, bytes_b, 4, "contextual")) {
 		failures++;
 	}
 	eembed_err_log = orig;
+
 	failures += check_str_contains_all(mem_buf, strs, 2);
 
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_check_long)
+ECHECK_TEST_MAIN(test_check_byte_array_m_2)

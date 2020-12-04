@@ -2,7 +2,7 @@
 /* test-eembed-mempy.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
 static void fill_array(unsigned char *a, size_t len, char c, char term)
 {
@@ -25,7 +25,7 @@ unsigned test_eembed_memcpy(void)
 	failures = 0;
 	fill_array(actual, 20, '\0', '\0');
 	fill_array(expect, 20, 'Y', '\0');
-	rv = eembed_memcpy(actual, expect, 20);
+	rv = (char *)eembed_memcpy(actual, expect, 20);
 	failures += check_byte_array(actual, 20, expect, 20);
 	failures += check_ptr(rv, actual);
 
@@ -41,4 +41,4 @@ unsigned test_eembed_memcpy(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_eembed_memcpy, __FILE__)
+ECHECK_TEST_MAIN(test_eembed_memcpy)

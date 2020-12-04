@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
-/* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2016, 2017, 2018, 2019, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
 static void fill_buf(char *buf, size_t buflen, int in, char expected)
 {
@@ -38,7 +38,12 @@ static void fill_buf(char *buf, size_t buflen, int in, char expected)
 
 unsigned test_check_status(void)
 {
-	struct eembed_log *orig = NULL;
+	struct eembed_log *orig = eembed_err_log;
+	struct eembed_str_buf log_ctx;
+	struct eembed_log buf_log;
+	const size_t mem_buf_len = 1024;
+	char mem_buf[1024];
+
 	unsigned failures = 0;
 	char actual = '\0';
 	char expected = '\0';
@@ -63,36 +68,36 @@ unsigned test_check_status(void)
 
 	expected = 127;
 	for (i = expected; i < 260; ++i) {
-		orig = echeck_test_log_capture();
+		eembed_memset(mem_buf, 0x00, mem_buf_len);
+		eembed_err_log =
+		    eembed_char_buf_log_init(&buf_log,
+					     &log_ctx, mem_buf, mem_buf_len);
 		actual = check_status_m(i, "127 < 260");
-		echeck_test_log_release(orig);
+		eembed_err_log = orig;
 		eembed_ulong_to_str(buf, 80, i);
 		if (i != expected) {
-			failures +=
-			    echeck_test_err_log_contains(expected_strs, 1);
+			failures += check_str_contains_all(mem_buf,
+							   expected_strs, 1);
 		}
 		failures += check_int_m(actual, expected, buf);
 	}
 
 	expected = -128;
 	for (i = expected; i < -260; --i) {
-		echeck_test_log_release(orig);
+		eembed_err_log = orig;
 		actual = check_status(i);
-		echeck_test_log_release(orig);
+		eembed_err_log = orig;
 		buf[0] = '-';
 		buf[1] = '\0';
 		eembed_ulong_to_str(buf + 1, 80 - 1, (unsigned long)(-i));
 		if (i != expected) {
-			failures +=
-			    echeck_test_err_log_contains(expected_strs, 1);
+			failures += check_str_contains_all(mem_buf,
+							   expected_strs, 1);
 		}
 		failures += check_int_m(actual, expected, buf);
 	}
 
-	if (failures) {
-		echeck_test_debug_print_failures(failures, "test_check_status");
-	}
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_check_status, __FILE__)
+ECHECK_TEST_MAIN(test_check_status)

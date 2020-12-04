@@ -2,7 +2,7 @@
 /* test-eembed-ulong-to-hex.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 #include <limits.h>
 
 void check_ulong_to_hex_nothing_explodes(void)
@@ -41,4 +41,4 @@ unsigned int test_eembed_ulong_to_hex(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_eembed_ulong_to_hex, __FILE__)
+ECHECK_TEST_MAIN(test_eembed_ulong_to_hex)

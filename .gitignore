@@ -17,6 +17,7 @@ test-eembed-strstr
 test_check_status
 test_check_byte_array
 test_check_byte_array_m
+test_check_byte_array_m2
 test_check_char
 test_check_char_m
 test_check_double

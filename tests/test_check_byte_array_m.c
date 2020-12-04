@@ -1,12 +1,17 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
-/* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2016, 2017, 2018, 2019, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
-unsigned test_check_byte_array_m_1(void)
+unsigned test_check_byte_array_m(void)
 {
-	struct eembed_log *orig = NULL;
+	struct eembed_log *orig = eembed_err_log;
+	struct eembed_str_buf log_ctx;
+	struct eembed_log buf_log;
+	const size_t mem_buf_len = 1024;
+	char mem_buf[1024];
+
 	const char *strs[3];
 	unsigned failures = 0;
 
@@ -21,52 +26,16 @@ unsigned test_check_byte_array_m_1(void)
 	failures +=
 	    check_byte_array_m(bytes_a, 2, bytes_b, 2, "contextual info");
 
-	orig = echeck_test_log_capture();
+	eembed_memset(mem_buf, 0x00, mem_buf_len);
+	eembed_err_log =
+	    eembed_char_buf_log_init(&buf_log, &log_ctx, mem_buf, mem_buf_len);
 	if (0 == check_byte_array_m(bytes_b, 2, bytes_c, 2, "contextual info")) {
 		failures++;
 	}
-	echeck_test_log_release(orig);
-	failures += echeck_test_err_log_contains(strs, 3);
+	eembed_err_log = orig;
+	failures += check_str_contains_all(mem_buf, strs, 3);
 
-	if (failures) {
-		echeck_test_debug_print_failures(failures,
-						 "test_check_byte_array_m_1");
-	}
 	return failures;
 }
 
-unsigned test_check_byte_array_m_2(void)
-{
-	struct eembed_log *orig = NULL;
-	const char *strs[2];
-	unsigned failures = 0;
-
-	unsigned char bytes_a[3] = { 0x13, 0x10, 0x00 };
-	unsigned char bytes_b[4] = { 0x13, 0x10, 0x00, 0x7F };
-
-	strs[0] = "length mis-match";
-	strs[1] = "contextual";
-
-	orig = echeck_test_log_capture();
-	if (0 == check_byte_array_m(bytes_a, 3, bytes_b, 4, "contextual")) {
-		failures++;
-	}
-	echeck_test_log_release(orig);
-
-	failures += echeck_test_err_log_contains(strs, 2);
-	if (failures) {
-		echeck_test_debug_print_failures(failures,
-						 "test_check_byte_array_m_2");
-	}
-	return failures;
-}
-
-unsigned test_check_byte_array_m(void)
-{
-	unsigned failures = 0;
-	failures += test_check_byte_array_m_1();
-	failures += test_check_byte_array_m_2();
-	return failures;
-}
-
-ECHECK_TEST_MAIN(test_check_byte_array_m, __FILE__)
+ECHECK_TEST_MAIN(test_check_byte_array_m)

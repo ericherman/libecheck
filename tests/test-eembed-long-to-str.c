@@ -2,7 +2,7 @@
 /* test-eembed-long-to-str.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 #include <limits.h>
 
 void check_long_to_str_nothing_explodes(void)
@@ -44,4 +44,4 @@ unsigned int test_eembed_long_to_str(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_eembed_long_to_str, __FILE__)
+ECHECK_TEST_MAIN(test_eembed_long_to_str)

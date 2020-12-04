@@ -8,8 +8,6 @@
 
 #include "eembed-arduino.h"
 
-#include "test-echeck-private-utils.h"
-
 /* prototypes for the test functions, are not needed in the hosted case
  * becase these are normally called by individual programs in parallel, but
  * we need these exported because this firmware will run the tests from each
@@ -30,6 +28,7 @@ unsigned test_eembed_strstr(void);
 
 unsigned test_check_byte_array(void);
 unsigned test_check_byte_array_m(void);
+unsigned test_check_byte_array_m_2(void);
 unsigned test_check_char(void);
 unsigned test_check_char_m(void);
 unsigned test_check_double(void);
@@ -128,6 +127,7 @@ void loop(void)
 	Serial.println();
 	failures += Run_test(test_check_byte_array);
 	failures += Run_test(test_check_byte_array_m);
+	failures += Run_test(test_check_byte_array_m_2);
 	failures += Run_test(test_check_char);
 	failures += Run_test(test_check_char_m);
 	failures += Run_test(test_check_double);

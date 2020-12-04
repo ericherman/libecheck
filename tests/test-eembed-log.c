@@ -1,4 +1,4 @@
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
 unsigned int test_eembed_log(void)
 {
@@ -41,4 +41,4 @@ unsigned int test_eembed_log(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_eembed_log, __FILE__)
+ECHECK_TEST_MAIN(test_eembed_log)

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
-/* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2016, 2017, 2018, 2019, 2020 Eric Herman <eric@freesa.org> */
 
 #include "echeck.h"
 
@@ -215,6 +215,24 @@ unsigned char echeck_str_contains_m(struct eembed_log *err, const char *func,
 	err->append_eol(err);
 
 	return 1;
+}
+
+size_t echeck_str_contains_all_m(struct eembed_log *err, const char *func,
+				 const char *file, int line,
+				 const char *haystack, const char **needles,
+				 size_t needles_len, const char *msg)
+{
+	size_t i = 0;
+	size_t missing = 0;
+	const char *needle = NULL;
+
+	for (i = 0; i < needles_len; ++i) {
+		needle = needles ? needles[i] : NULL;
+		missing +=
+		    echeck_str_contains_m(err, func, file, line, haystack,
+					  needle, msg);
+	}
+	return missing;
 }
 
 unsigned char echeck_byte_array_m(struct eembed_log *err, const char *func,

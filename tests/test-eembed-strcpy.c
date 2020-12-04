@@ -2,7 +2,7 @@
 /* test-eembed-strcat.c */
 /* Copyright (C) 2016, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
 static void fill_str(char *str, size_t len, char c)
 {
@@ -37,4 +37,4 @@ unsigned test_eembed_strcpy(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_eembed_strcpy, __FILE__)
+ECHECK_TEST_MAIN(test_eembed_strcpy)

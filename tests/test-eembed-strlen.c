@@ -2,7 +2,7 @@
 /* test-eembed-strlen.c */
 /* Copyright (C) 2016, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
 unsigned test_eembed_strlen(void)
 {
@@ -23,4 +23,4 @@ unsigned test_eembed_strlen(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_eembed_strlen, __FILE__)
+ECHECK_TEST_MAIN(test_eembed_strlen)

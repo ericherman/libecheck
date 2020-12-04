@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
-/* Copyright (C) 2016, 2017, 2018, 2019 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2016, 2017, 2018, 2019, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
-#if EEMBED_HOSTED || FAUX_FREESTANDING
+#if EEMBED_HOSTED
 
 #include <stdio.h>
 /* _POSIX_C_SOURCE >= 200809L || _GNU_SOURCE */
@@ -17,10 +17,10 @@ int main(int argc, char *argv[])
 	FILE *orig = NULL;
 	unsigned failures = 0;
 
-	fprintf(stderr, "ECHECK_FUNC: '%s'\n", (char *)ECHECK_FUNC);
-
 	(void)argc;
 	(void)argv;
+
+	eembed_memset(logbuf, 0x00, 255);
 
 	memlogfile = fmemopen(logbuf, 255, "w+");
 
@@ -44,14 +44,22 @@ int main(int argc, char *argv[])
 
 	fflush(memlogfile);
 
-	echeck_test_buf_contains(logbuf, "memlogfile");
-	echeck_test_buf_contains(logbuf, "0x4BADC0DE");
-	echeck_test_buf_contains(logbuf, "4211");
-	echeck_test_buf_contains(logbuf, "5.7");
+	failures += check_str_contains(logbuf, "memlogfile");
+	failures += check_str_contains(logbuf, "0x4BADC0DE");
+	failures += check_str_contains(logbuf, "4211");
+	failures += check_str_contains(logbuf, "5.7");
 
 	if (failures) {
-		echeck_test_debug_print_failures(failures, __FILE__);
+		eembed_err_log->append_ul(eembed_err_log, failures);
+		eembed_err_log->append_s(eembed_err_log, " failures in ");
+		eembed_err_log->append_s(eembed_err_log, __FILE__);
+		eembed_err_log->append_eol(eembed_err_log);
 	}
 	return check_status(failures);
+}
+#elif FAUX_FREESTANDING
+int main(void)
+{
+	return 0;
 }
 #endif

@@ -2,7 +2,7 @@
 /* test-eembed-memcmp.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "test-echeck-private-utils.h"
+#include "echeck.h"
 
 static void fill_array(void *dest, size_t len, unsigned char c,
 		       unsigned char term)
@@ -53,4 +53,4 @@ unsigned int test_eembed_memcmp(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_eembed_memcmp, __FILE__)
+ECHECK_TEST_MAIN(test_eembed_memcmp)
