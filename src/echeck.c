@@ -428,6 +428,7 @@ void *echeck_err_injecting_malloc(struct eembed_allocator *ea, size_t size)
 	eembed_memcpy(tracking_buffer, &size, sizeof(size_t));
 	++ctx->allocs;
 	ctx->alloc_bytes += size;
+	/* LCOV_EXCL_START */
 	if (ctx->free_bytes > ctx->alloc_bytes) {
 		log = ctx->log;
 		log->append_s(log, __FILE__);
@@ -439,8 +440,10 @@ void *echeck_err_injecting_malloc(struct eembed_allocator *ea, size_t size)
 		log->append_s(log, " > ");
 		log->append_ul(log, ctx->alloc_bytes);
 		log->append_s(log, ")");
+		log->append_s(log, " CONTEXT DATA CORRUPTION!");
 		log->append_eol(log);
 	}
+	/* LCOV_EXCL_STOP */
 	used = ctx->alloc_bytes - ctx->free_bytes;
 	if (used > ctx->max_used) {
 		ctx->max_used = used;
@@ -503,12 +506,13 @@ void echeck_err_injecting_free(struct eembed_allocator *ea, void *ptr)
 	unsigned char *tracking_buffer = NULL;
 	size_t size = 0;
 
+	ctx = (struct echeck_err_injecting_context *)ea->context;
+
 	if (ptr == NULL) {
 		++ctx->fails;
 		return;
 	}
 
-	ctx = (struct echeck_err_injecting_context *)ea->context;
 	tracking_buffer = ((unsigned char *)ptr) - sizeof(size_t);
 	eembed_memcpy(&size, tracking_buffer, sizeof(size_t));
 
@@ -517,6 +521,7 @@ void echeck_err_injecting_free(struct eembed_allocator *ea, void *ptr)
 
 	ctx->free_bytes += size;
 	++ctx->frees;
+	/* LCOV_EXCL_START */
 	if (ctx->free_bytes > ctx->alloc_bytes) {
 		log = ctx->log;
 		log->append_s(log, __FILE__);
@@ -528,8 +533,10 @@ void echeck_err_injecting_free(struct eembed_allocator *ea, void *ptr)
 		log->append_s(log, " > ");
 		log->append_ul(log, ctx->alloc_bytes);
 		log->append_s(log, ")");
+		log->append_s(log, " CONTEXT DATA CORRUPTION!");
 		log->append_eol(log);
 	}
+	/* LCOV_EXCL_STOP */
 }
 
 int echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,
@@ -549,6 +556,8 @@ int echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,
 	eembed_memset(c, 0x00, sizeof(struct echeck_err_injecting_context));
 	c->real = real;
 	c->log = log;
+
+	with_errs->context = c;
 
 	with_errs->malloc = echeck_err_injecting_malloc;
 	with_errs->calloc = echeck_err_injecting_calloc;

@@ -47,6 +47,9 @@ check_PROGRAMS=\
  test-eembed-strcpy \
  test-eembed-strlen \
  test-eembed-strstr \
+ test-eembed-chunk-alloc \
+ test-eembed-chunk-realloc \
+ test-eembed-malloc-free \
  test_check_status \
  test_check_byte_array \
  test_check_byte_array_m \
@@ -70,7 +73,9 @@ check_PROGRAMS=\
  test_check_unsigned_int_m \
  test_check_unsigned_long \
  test_check_unsigned_long_m \
- test_hosted
+ test_out_of_memory \
+ test_echeck_err_log
+
 
 TESTS_COMMON_SOURCES=src/eembed.h src/echeck.h
 
@@ -119,6 +124,17 @@ test_eembed_strlen_LDADD=$(T_LDADD)
 test_eembed_strstr_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-strstr.c
 test_eembed_strstr_LDADD=$(T_LDADD)
 
+test_eembed_chunk_alloc_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-chunk-alloc.c
+test_eembed_chunk_alloc_LDADD=$(T_LDADD)
+
+test_eembed_chunk_realloc_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-chunk-realloc.c
+test_eembed_chunk_realloc_LDADD=$(T_LDADD)
+
+test_eembed_malloc_free_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-malloc-free.c
+test_eembed_malloc_free_LDADD=$(T_LDADD)
 #---------
 
 test_check_status_SOURCES=tests/test_check_status.c \
@@ -169,7 +185,7 @@ test_check_ptr_m_SOURCES=tests/test_check_ptr_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_ptr_m_LDADD=$(T_LDADD)
 
-test_check_ptr_not_null_SOURCES=tests/test_check_ptr.c \
+test_check_ptr_not_null_SOURCES=tests/test_check_ptr_not_null.c \
  $(TESTS_COMMON_SOURCES)
 test_check_ptr_not_null_LDADD=$(T_LDADD)
 
@@ -212,15 +228,19 @@ test_check_unsigned_long_m_SOURCES=tests/test_check_unsigned_long_m.c \
  $(TESTS_COMMON_SOURCES)
 test_check_unsigned_long_m_LDADD=$(T_LDADD)
 
-test_hosted_SOURCES=tests/test_hosted.c $(TESTS_COMMON_SOURCES)
-test_hosted_CFLAGS=-std=c11 \
+test_out_of_memory_SOURCES=tests/test_out_of_memory.c \
+ $(TESTS_COMMON_SOURCES)
+test_out_of_memory_LDADD=$(T_LDADD)
+
+test_echeck_err_log_SOURCES=tests/test_echeck_err_log.c $(TESTS_COMMON_SOURCES)
+test_echeck_err_log_CFLAGS=-std=c11 \
  $(BUILD_ENV_CFLAGS) \
  $(BUILD_TYPE_CFLAGS) \
  $(NOISY_CFLAGS) \
  -I./src \
  -fPIC \
  -pipe
-test_hosted_LDADD=$(T_LDADD)
+test_echeck_err_log_LDADD=$(T_LDADD)
 
 EXTRA_DIST=COPYING.LESSER
 
@@ -247,6 +267,7 @@ tidy:
 		-T eembed_str_buf \
 		-T eembed_allocator \
 		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
+		eembed_arduino_demo/eembed_arduino_demo.ino \
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino
 
@@ -288,6 +309,15 @@ vg-test-eembed-strlen: test-eembed-strlen
 
 vg-test-eembed-strstr: test-eembed-strstr
 	./libtool --mode=execute valgrind -q ./test-eembed-strstr
+
+vg-test-eembed-chunk-alloc: test-eembed-chunk-alloc
+	./libtool --mode=execute valgrind -q ./test-eembed-chunk-alloc
+
+vg-test-eembed-chunk-realloc: test-eembed-chunk-realloc
+	./libtool --mode=execute valgrind -q ./test-eembed-chunk-realloc
+
+vg-test-eembed-malloc-free: test-eembed-malloc-free
+	./libtool --mode=execute valgrind -q ./test-eembed-malloc-free
 
 vg-test_check_status: test_check_status
 	./libtool --mode=execute valgrind -q ./test_check_status
@@ -358,8 +388,11 @@ vg-test_check_unsigned_long: test_check_unsigned_long
 vg-test_check_unsigned_long_m: test_check_unsigned_long_m
 	./libtool --mode=execute valgrind -q ./test_check_unsigned_long_m
 
-vg-test_hosted: test_hosted
-	./libtool --mode=execute valgrind -q ./test_hosted
+vg-test_out_of_memory: test_out_of_memory
+	./libtool --mode=execute valgrind -q ./test_out_of_memory
+
+vg-test_echeck_err_log: test_echeck_err_log
+	./libtool --mode=execute valgrind -q ./test_echeck_err_log
 
 valgrind: \
 	vg-test-eembed-log \
@@ -375,6 +408,9 @@ valgrind: \
 	vg-test-eembed-strcpy \
 	vg-test-eembed-strlen \
 	vg-test-eembed-strstr \
+	vg-test-eembed-chunk-alloc \
+	vg-test-eembed-chunk-realloc \
+	vg-test-eembed-malloc-free \
 	vg-test_check_byte_array \
 	vg-test_check_byte_array_m \
 	vg-test_check_byte_array_m2 \
@@ -398,7 +434,8 @@ valgrind: \
 	vg-test_check_unsigned_int_m \
 	vg-test_check_unsigned_long \
 	vg-test_check_unsigned_long_m \
-	vg-test_hosted
+	vg-test_out_of_memory \
+	vg-test_echeck_err_log
 	echo "valgrind complete"
 
 line-cov: check

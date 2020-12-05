@@ -50,6 +50,12 @@ unsigned int test_eembed_memcmp(void)
 	rv2 = eembed_strncmp(s1, s2, 20 - 10);
 	failures += check_int(rv1, rv2);
 
+#if (!EEMBED_HOSTED)
+	/* glibc explodes on NULL */
+	rv1 = eembed_memcmp(NULL, s2, 20);
+	failures += check_int(rv1 == 0 ? 0 : 1, 1);
+#endif
+
 	return failures;
 }
 

@@ -17,10 +17,14 @@
 #endif
 
 #if EEMBED_HOSTED
+/* LCOV_EXCL_START */
 void eembed_exit_failure(void)
 {
+	/* assertion failed, now we crash */
 	exit(EXIT_FAILURE);
 }
+
+/* LCOV_EXCL_STOP */
 
 void (*eembed_assert_crash)(void) = eembed_exit_failure;
 #else
@@ -66,10 +70,12 @@ void (*eembed_system_println)(void) = eembed_stdout_println;
 static FILE *eembed_fprintf_context(struct eembed_log *log)
 {
 	FILE *stream = log->context ? (FILE *)log->context : stderr;
+	/* LCOV_EXCL_START */
 	if (stream == stderr && !eembed_posix1_2017_2_5_1) {
 		fflush(stdout);
 		eembed_posix1_2017_2_5_1 = 1;
 	}
+	/* LCOV_EXCL_STOP */
 	return stream;
 }
 
@@ -133,9 +139,12 @@ void eembed_sprintf_append(struct eembed_log *log, const char *format, ...)
 	va_list ap;
 
 	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
+	/* LCOV_EXCL_START */
+	/* this would be a programmer error */
 	if (!ctx || !ctx->buf || !ctx->len) {
 		return;
 	}
+	/* LCOV_EXCL_STOP */
 	used = eembed_strnlen(ctx->buf, ctx->len);
 	if (used < (ctx->len - 1)) {
 		buf = ctx->buf + used;
@@ -236,10 +245,13 @@ char *eembed_sprintf_to_str(char *buf, size_t len, const char *format, ...)
 #endif
 	va_end(ap);
 
+	/* LCOV_EXCL_START */
+	/* Something *very* strange is afoot, bail out! */
 	if (printed < 0) {
 		buf[0] = '\0';
 		return NULL;
 	}
+	/* LCOV_EXCL_STOP */
 
 	buf[len - 1] = '\0';
 	return buf;
@@ -642,67 +654,37 @@ char *eembed_float_to_str(char *buf, size_t len, double f)
 }
 #endif
 
-#if (EEMBED_HOSTED && (_DEFAULT_SOURCE || _GNU_SOURCE))
-#define EEMBED_HAVE_HOSTED_REALLOC_ARRAY 1
-#else
-#define EEMBED_HAVE_HOSTED_REALLOC_ARRAY 0
-void *eembed_diy_reallocarray(void *ptr, size_t nmemb, size_t size)
+void *eembed_malloc(size_t size)
 {
-	return eembed_realloc(ptr, (nmemb * size));
+	struct eembed_allocator *ea = eembed_global_alloctor;
+	return ea ? ea->malloc(ea, size) : NULL;
 }
 
-void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) =
-    eembed_diy_reallocarray;
-#endif
-
-#if EEMBED_HOSTED
-
-void *(*eembed_malloc)(size_t size) = malloc;
-void *(*eembed_realloc)(void *ptr, size_t size) = realloc;
-void *(*eembed_calloc)(size_t nmemb, size_t size) = calloc;
-void (*eembed_free)(void *ptr) = free;
-#if EEMBED_HAVE_HOSTED_REALLOC_ARRAY
-void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size) =
-    reallocarray;
-#endif
-
-#else
-
-void *eembed_noop_malloc(size_t size)
+void *eembed_realloc(void *ptr, size_t size)
 {
-	(void)size;
-	return NULL;
+	struct eembed_allocator *ea = eembed_global_alloctor;
+	return ea ? ea->realloc(ea, ptr, size) : NULL;
 }
 
-void *(*eembed_malloc)(size_t size) = eembed_noop_malloc;
-
-/* It is a programmer error if this is called with a non-NULL pointer */
-void *eembed_noop_realloc(void *ptr, size_t size)
+void *eembed_calloc(size_t nmemb, size_t size)
 {
-	(void)ptr;
-	(void)size;
-	return NULL;
+	struct eembed_allocator *ea = eembed_global_alloctor;
+	return ea ? ea->calloc(ea, nmemb, size) : NULL;
 }
 
-void *(*eembed_realloc)(void *ptr, size_t size) = eembed_noop_realloc;
-
-void *eembed_noop_calloc(size_t nmemb, size_t size)
+void *eembed_reallocarray(void *ptr, size_t nmemb, size_t size)
 {
-	(void)nmemb;
-	(void)size;
-	return NULL;
+	struct eembed_allocator *ea = eembed_global_alloctor;
+	return ea ? ea->reallocarray(ea, ptr, nmemb, size) : NULL;
 }
 
-void *(*eembed_calloc)(size_t nmemb, size_t size) = eembed_noop_calloc;
-
-/* It is a programmer error if this is called with a non-NULL pointer */
-void eembed_noop_free(void *ptr)
+void eembed_free(void *ptr)
 {
-	(void)ptr;
+	struct eembed_allocator *ea = eembed_global_alloctor;
+	if (ea) {
+		ea->free(ea, ptr);
+	}
 }
-
-void (*eembed_free)(void *ptr) = eembed_noop_free;
-#endif
 
 #if EEMBED_HOSTED
 
@@ -721,9 +703,12 @@ int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 		return 0;
 	}
 
+	/* LCOV_EXCL_START */
+	/* glibc explodes on NULL */
 	if (!a1 || !a2) {
 		return a1 ? 1 : -1;
 	}
+	/* LCOV_EXCL_STOP */
 
 	s1 = (unsigned char *)a1;
 	s2 = (unsigned char *)a2;
@@ -861,9 +846,13 @@ int echeck_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 	if (s1 == s2 || max_len == 0) {
 		return 0;
 	}
+	/* LCOV_EXCL_START */
+	/* glibc explodes on NULL */
 	if (!s1 || !s2) {
 		return s1 ? 1 : -1;
 	}
+	/* LCOV_EXCL_STOP */
+
 	for (i = 0; i < max_len; ++i) {
 		d = s1[i] - s2[i];
 		if (d) {
@@ -1000,36 +989,318 @@ char *(*eembed_strstr)(const char *haystack, const char *needle) =
     eembed_diy_strstr;
 #endif
 
+struct eembed_alloc_chunk {
+	unsigned char *start;
+	size_t available_length;
+	unsigned char in_use;
+	struct eembed_alloc_chunk *prev;
+	struct eembed_alloc_chunk *next;
+};
+
+static struct eembed_alloc_chunk *eembed_alloc_chunk_init(unsigned char *bytes,
+							  size_t
+							  available_length)
+{
+	struct eembed_alloc_chunk *chunk = (struct eembed_alloc_chunk *)bytes;
+	size_t size = eembed_align(sizeof(struct eembed_alloc_chunk));
+
+	if (!bytes || available_length < size) {
+		return NULL;
+	}
+	chunk->start = bytes + size;
+	chunk->available_length = available_length - size;
+	chunk->in_use = 0;
+	chunk->prev = (struct eembed_alloc_chunk *)NULL;
+	chunk->next = (struct eembed_alloc_chunk *)NULL;
+
+	return chunk;
+}
+
+static void eembed_alloc_chunk_split(struct eembed_alloc_chunk *from,
+				     size_t request)
+{
+	size_t remaining_available_length = 0;
+	size_t aligned_request = 0;
+	struct eembed_alloc_chunk *orig_next = NULL;
+	size_t min_size = eembed_align(sizeof(struct eembed_alloc_chunk)) +
+	    eembed_align(sizeof(size_t)) + eembed_align(1);
+
+	aligned_request = eembed_align(request);
+	from->in_use = 1;
+
+	if ((aligned_request + min_size) >= from->available_length) {
+		return;
+	}
+
+	remaining_available_length = from->available_length - aligned_request;
+	if (remaining_available_length <= min_size) {
+		return;
+	}
+
+	from->available_length = aligned_request;
+	orig_next = from->next;
+	from->next =
+	    eembed_alloc_chunk_init((from->start + from->available_length),
+				    remaining_available_length);
+	from->next->prev = from;
+	if (orig_next) {
+		from->next->next = orig_next;
+		orig_next->prev = from->next;
+	} else {
+		from->next->next = NULL;
+	}
+}
+
+void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
+{
+	struct eembed_alloc_chunk *chunk =
+	    (struct eembed_alloc_chunk *)ea->context;
+
+	if (!chunk || !size) {
+		return NULL;
+	}
+
+	while (chunk != NULL) {
+		if (chunk->in_use == 0) {
+			if (chunk->available_length >= size) {
+				eembed_alloc_chunk_split(chunk, size);
+				return chunk->start;
+			}
+		}
+		chunk = chunk->next;
+	}
+
+	return NULL;
+}
+
+static void eembed_alloc_chunk_join_next(struct eembed_alloc_chunk *chunk)
+{
+	struct eembed_alloc_chunk *next = NULL;
+	size_t additional_available_length = 0;
+
+	next = chunk->next;
+	if (!next) {
+		return;
+	}
+
+	if (next->in_use) {
+		return;
+	}
+
+	chunk->next = next->next;
+	additional_available_length =
+	    eembed_align(sizeof(struct eembed_alloc_chunk)) +
+	    next->available_length;
+	chunk->available_length += additional_available_length;
+	if (chunk->next) {
+		chunk->next->prev = chunk;
+	}
+	if (!chunk->in_use) {
+		eembed_memset(chunk->start, 0x00, chunk->available_length);
+	}
+}
+
+/* The  realloc()  function  changes  the  size  of  the memory
+ * chunk pointed to by ptr to size bytes.  The contents will be
+ * unchanged in the range from the start of the region up to the
+ * minimum of the old and new sizes.  If the new size is larger
+ * than the old size, the added memory will not be initialized.
+ * If ptr is NULL, then the call is equivalent to malloc(size),
+ * for all values of size; if size is equal to zero, and ptr is
+ * not NULL, then the call is equivalent to  free(ptr).   Unless
+ * ptr is NULL, it must have been returned by an earlier call to
+ * malloc(), calloc() or realloc().  If the area pointed to was
+ * moved, a free(ptr) is done.  */
+void *eembed_chunk_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
+{
+	struct eembed_alloc_chunk *chunk =
+	    (struct eembed_alloc_chunk *)ea->context;
+	size_t old_size = 0;
+	int found = 0;
+	void *new_ptr = NULL;
+
+	if (!chunk) {
+		return NULL;
+	}
+
+	if (!ptr) {
+		return ea->malloc(ea, size);
+	}
+	if (size == 0) {
+		ea->free(ea, ptr);
+		return NULL;
+	}
+
+	found = 0;
+	while (chunk != NULL && !found) {
+		if (ptr == chunk->start) {
+			found = 1;
+			old_size = chunk->available_length;
+		} else {
+			chunk = chunk->next;
+		}
+	}
+
+	if (!found) {
+		return NULL;
+	}
+
+	if (old_size >= size) {
+		eembed_alloc_chunk_split(chunk, size);
+		return ptr;
+	}
+
+	if (chunk->next && chunk->next->in_use == 0) {
+		eembed_alloc_chunk_join_next(chunk);
+		if (chunk->available_length >= size) {
+			eembed_memset(((unsigned char *)ptr) + old_size, 0x00,
+				      chunk->available_length - old_size);
+			eembed_alloc_chunk_split(chunk, size);
+			return ptr;
+		}
+	}
+
+	new_ptr = ea->malloc(ea, size);
+	if (!new_ptr) {
+		return NULL;
+	}
+	eembed_memset(new_ptr, 0x00, size);
+	eembed_memcpy(new_ptr, ptr, old_size <= size ? old_size : size);
+
+	ea->free(ea, ptr);
+
+	return new_ptr;
+}
+
+void *eembed_chunk_calloc(struct eembed_allocator *ea, size_t nmemb,
+			  size_t size)
+{
+	/* this could overflow, but we elect to not care */
+	size_t len = nmemb * size;
+	void *ptr = NULL;
+	ptr = len ? ea->malloc(ea, len) : NULL;
+	if (ptr) {
+		eembed_memset(ptr, 0x00, len);
+	}
+	return ptr;
+}
+
+void *eembed_chunk_reallocarray(struct eembed_allocator *ea, void *ptr,
+				size_t nmemb, size_t size)
+{
+	/* this could overflow, but we elect to not care */
+	size_t len = nmemb * size;
+	return len ? ea->realloc(ea, ptr, len) : NULL;
+}
+
+void eembed_chunk_free(struct eembed_allocator *ea, void *ptr)
+{
+	struct eembed_alloc_chunk *chunk =
+	    (struct eembed_alloc_chunk *)ea->context;
+	size_t len = 0;
+
+	if (!chunk || !ptr) {
+		return;
+	}
+
+	while (chunk != NULL) {
+		if (chunk->start == ptr) {
+			chunk->in_use = 0;
+			eembed_alloc_chunk_join_next(chunk);
+			while (chunk->prev && chunk->prev->in_use == 0) {
+				chunk = chunk->prev;
+				eembed_alloc_chunk_join_next(chunk);
+			}
+			len = chunk->available_length;
+			eembed_memset(chunk->start, 0x00, len);
+			return;
+		}
+		chunk = chunk->next;
+	}
+}
+
+struct eembed_allocator eembed_null_chunk_allocator = {
+	NULL,
+	eembed_chunk_malloc,
+	eembed_chunk_calloc,
+	eembed_chunk_realloc,
+	eembed_chunk_reallocarray,
+	eembed_chunk_free
+};
+
+struct eembed_allocator *eembed_null_allocator = &eembed_null_chunk_allocator;
+
+struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
+						size_t len)
+{
+	struct eembed_allocator *ea = NULL;
+	struct eembed_alloc_chunk *chunk = NULL;
+	size_t used = 0;
+	size_t min_buf_size =
+	    eembed_align(sizeof(struct eembed_allocator)) +
+	    eembed_align(sizeof(struct eembed_alloc_chunk)) +
+	    eembed_align(sizeof(size_t)) + eembed_align(1);
+
+	if (!bytes || len < min_buf_size) {
+		return NULL;
+	}
+
+	ea = (struct eembed_allocator *)bytes;
+	used = eembed_align(sizeof(struct eembed_allocator));
+
+	chunk = eembed_alloc_chunk_init(bytes + used, len - used);
+
+	ea->context = chunk;
+
+	ea->malloc = eembed_chunk_malloc;
+	ea->calloc = eembed_chunk_calloc;
+	ea->realloc = eembed_chunk_realloc;
+	ea->reallocarray = eembed_chunk_reallocarray;
+	ea->free = eembed_chunk_free;
+
+	return ea;
+}
+
+#if EEMBED_HOSTED
 void *eembed_system_malloc(struct eembed_allocator *ea, size_t size)
 {
 	(void)ea;
-	return eembed_malloc(size);
+	return size ? malloc(size) : NULL;
 }
 
 void *eembed_system_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
 {
 	(void)ea;
-	return eembed_realloc(ptr, size);
+	return realloc(ptr, size);
 }
 
 void *eembed_system_calloc(struct eembed_allocator *ea, size_t nmemb,
 			   size_t size)
 {
 	(void)ea;
-	return eembed_calloc(nmemb, size);
+	return size ? calloc(nmemb, size) : NULL;
 }
 
 void *eembed_system_reallocarray(struct eembed_allocator *ea, void *ptr,
 				 size_t nmemb, size_t size)
 {
+	size_t len;
+
 	(void)ea;
-	return eembed_realloc(ptr, nmemb * size);
+#if (_DEFAULT_SOURCE || _GNU_SOURCE)
+	(void)len;
+	return reallocarray(ptr, nmemb, size);
+#else
+	/* this could overflow, but we elect to not care */
+	len = nmemb * size;
+	return len ? realloc(ptr, len) : NULL;
+#endif
 }
 
 void eembed_system_free(struct eembed_allocator *ea, void *ptr)
 {
 	(void)ea;
-	eembed_free(ptr);
+	free(ptr);
 }
 
 struct eembed_allocator eembed_system_alloctor = {
@@ -1042,3 +1313,9 @@ struct eembed_allocator eembed_system_alloctor = {
 };
 
 struct eembed_allocator *eembed_global_alloctor = &eembed_system_alloctor;
+
+#else
+
+struct eembed_allocator *eembed_global_alloctor = &eembed_null_chunk_allocator;
+
+#endif

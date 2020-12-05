@@ -23,10 +23,11 @@ unsigned test_check_ptr_not_null(void)
 	eembed_memset(mem_buf, 0x00, mem_buf_len);
 	eembed_err_log =
 	    eembed_char_buf_log_init(&buf_log, &log_ctx, mem_buf, mem_buf_len);
-	str = NULL;
-	if (0 == check_ptr_not_null(str)) {
+
+	if (0 == check_ptr_not_null(NULL)) {
 		failures++;
 	}
+
 	eembed_err_log = orig;
 	str = "NULL";
 	strs[0] = str;
@@ -35,4 +36,4 @@ unsigned test_check_ptr_not_null(void)
 	return failures;
 }
 
-ECHECK_TEST_MAIN(test_check_ptr)
+ECHECK_TEST_MAIN(test_check_ptr_not_null)

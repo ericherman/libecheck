@@ -11,6 +11,7 @@ void check_ulong_to_str_nothing_explodes(void)
 
 	eembed_ulong_to_str(buf, 3, ULONG_MAX);
 	eembed_ulong_to_str(buf, 0, ULONG_MAX);
+	eembed_ulong_to_str(buf, 1, ULONG_MAX);
 	eembed_ulong_to_str(NULL, 30, ULONG_MAX);
 	eembed_ulong_to_str(buf, 30, ULONG_MAX);
 }

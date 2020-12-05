@@ -14,6 +14,9 @@ test-eembed-strcat
 test-eembed-strcpy
 test-eembed-strlen
 test-eembed-strstr
+test-eembed-chunk-alloc
+test-eembed-chunk-realloc
+test-eembed-malloc-free
 test_check_status
 test_check_byte_array
 test_check_byte_array_m
@@ -37,7 +40,8 @@ test_check_unsigned_int
 test_check_unsigned_int_m
 test_check_unsigned_long
 test_check_unsigned_long_m
-test_hosted
+test_out_of_memory
+test_echeck_err_log
 
 ###################
 # backup files

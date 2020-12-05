@@ -12,6 +12,13 @@ unsigned int test_eembed_log(void)
 	const char *expected = NULL;
 
 	buf[0] = '\0';
+	log = eembed_char_buf_log_init(NULL, &bctx, buf, buf_len);
+	failures += check_ptr(log, NULL);
+
+	log = eembed_char_buf_log_init(&llog, &bctx, NULL, buf_len);
+	failures += check_ptr(log, NULL);
+
+	buf[0] = '\0';
 	log = eembed_char_buf_log_init(&llog, &bctx, buf, buf_len);
 	if (!log) {
 		++failures;

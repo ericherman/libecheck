@@ -108,6 +108,21 @@ The goal of this library is to make it straight-forward to develop
 libraries which are useful in both freestanding and hosted
 applications.
 
+Since "assert.h" is not in the list of freestanding headers,
+"eembed-assert.h" can be used.  In the standard hosted case,
+"eembed_assert(expression)" is defined to be "assert(expression)",
+in the freestanding case, it is defined to make use of
+"eembed_system_print" and then call the function:
+
+	void (*eembed_assert_crash)(void);
+
+By default, in the hosted case, this calls exit(EXIT_FAILURE) and in
+the freestanding case, it is a null function pointer which it can be
+redefined if other action is needed to reset the firmware. Then it
+can be used just like "assert" and also honors NDEBUG:
+
+	eembed_assert(a == b);
+
 In a hosted environment, the global eembed_err_log is a wrapper
 for fprintf(stderr). In a freestanding environment, it may be NULL
 unless the it is initialized by the firmware.
@@ -183,30 +198,139 @@ The default malloc/free functions are wrapped in the HOSTED case. In the
 freestanding case, eembed_malloc and eembed_calloc default to functions
 which return a NULL pointer:
 
-	void *(*eembed_calloc)(size_t nmemb, size_t size);
-	void *(*eembed_malloc)(size_t size);
-	void *(*eembed_realloc)(void *ptr, size_t size);
-	void (*eembde_free)(void *ptr);
+	void *eembed_malloc(size_t size);
+	void *eembed_calloc(size_t nmemb, size_t size);
+	void *eembed_realloc(void *ptr, size_t size);
+	void *eembed_reallocarray(void *ptr, size_t nmemb, size_t size);
+	void eembed_free(void *ptr);
 
-Since "assert.h" is not in the list of freestanding headers,
-"eembed-assert.h" can be used.  In the standard hosted case,
-"eembed_assert(expression)" is defined to be "assert(expression)",
-in the freestanding case, it is defined to make use of
-"eembed_system_print" and then call the function:
+Especially important for testing and for the embedded case, the allocator
+is plug-able with this structure:
 
-	void (*eembed_assert_crash)(void);
+	struct eembed_allocator {
+		void *context;
+		void *(*malloc)(struct eembed_allocator *ea, size_t size);
+		void *(*calloc)(struct eembed_allocator *ea, size_t nmemb,
+				size_t size);
+		void *(*realloc)(struct eembed_allocator *ea, void *ptr,
+				size_t size);
+		void *(*reallocarray)(struct eembed_allocator *ea, void *ptr,
+				size_t nmemb, size_t size);
+		void (*free)(struct eembed_allocator *ea, void *ptr);
+	};
 
-By default, it is a null function pointer, but it can be redefined if
-other action is needed to reset the firmware.
+	extern struct eembed_allocator *eembed_global_alloctor;
+
+The eembed_malloc/free functions make use of the eembed_global_alloctor.
+Especially for the embedded case, eembed.h includes a simple allocator
+which can be constructed from a byte array which can be provided during
+firmware initialization:
+
+	/* globals */
+	unsigned char bytes[1024];
+
+	void setup(void)
+	{
+		eembed_global_alloctor = eembed_bytes_allocator(bytes, 1024);
+	}
+
+If programs are written using eembed_malloc/free functions, they can be
+tested for robustness in the face of memory allocation failures using
+the error injection facilities of EasyCheck. In echeck.h is a structure
+for tracking memory allocation/frees:
+
+	struct echeck_err_injecting_context {
+		unsigned long allocs;
+		unsigned long alloc_bytes;
+		unsigned long frees;
+		unsigned long free_bytes;
+		unsigned long fails;
+		unsigned long max_used;
+		unsigned long attempts;
+		unsigned long attempts_to_fail_bitmask;
+
+		struct eembed_allocator *real;
+		struct eembed_log *log;
+	};
+
+Tests can then make assertions such as the number of frees matches the
+number of allocs, and the alloc_bytes equals the free_bytes. It may be
+useful to assert that the max_used never exceeded some threshold.
+
+The "attempts_to_fail_bitmask" is used to intercept allocation attempts
+and return NULL instead of attempting to call the allocation function.
+The obvious shortcoming of this approach is that it does not currently
+support failures for more than 32-ish (bits of unsigned long) attempts
+to allocate. Experience so far has shown that this is plenty, but if
+this may need to be extended in the future.
+
+To use EasyCheck's error injection, create a structure for the allocator,
+and a structure for the context, and pass in references to the logger
+and the real allocator, e.g.:
+
+	struct eembed_allocator our_allocator;
+	struct echeck_err_injecting_context our_context;
 
 
-License
--------
-GNU Lesser General Public License (LGPL), version 3 or later.
-See COPYING, COPYING.LESSER for details.
+	echeck_err_injecting_allocator_init(&our_allocator,
+					    eembed_global_alloctor,
+					    &our_context,
+					    eembed_err_log);
+
+Firmware Testing
+----------------
+Firmware testing can be tedious. To enable easier early testing of
+firmware, EasyCheck and EasyEmbed can be "faked" into a building
+almost as if in a freestanding environment. Try this:
+
+	./configure --enable-faux-freestanding
+	make check
+
+Or if hand-rolling, you can set the #defines yourself, a bit like:
+
+	gcc -DEEMBED_HOSTED=0 -DFAUX_FREESTANDING=1 \
+		-I$(ECHECK_SRC) $(ECHECK_SRC)/*.c \
+		src/the_firmware.c \
+		src/the_firmware_test.c \
+		-o the_firmware_test
+
+The tests in the tests/ directory use echeck.h (and eembed) themselves,
+thus these can serve as examples for how to make use of the library.
+
+The very popular Arduino embedded platform has a notoriously restrictive
+build. As such, a little extra work has gone into supporting it. Try the
+'eembed_arduino_demo' to see how to use the 'eembed_bytes_allocator' and
+the 'eembed_strlen' functions.
+
+The tests for echeck and eembed also can be run on the Arudio with the
+'echeck_tests_arduino' sketch.
+
+Additionally, a bit of documentation of echeck is provided in the form
+of the 'echeck_arduino_demo' sketch.
+
+
+Contributing
+------------
+Patches welcome! Bug reports are also appreciated.
+
+The scope of functions to include in core eembed is limited to those
+which are nearly essential for testing and reporting. That said, if
+experience shows that another function would be useful, perhaps it
+will get added. Compilers tend to be good about not including code
+which is not used.
+
+Code should have tests demonstrating the use and have test coverage
+via:
+	./configure --enable-debug
+	make coverage
+
 
 Packaging
 ---------
+Typically for embedded including the git repo as a submodule is
+the way to go. Alternatively, one can use autotools for creating
+tarball releases:
+
 autoreconf -iv &&
  ./configure &&
  make &&

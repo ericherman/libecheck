@@ -73,15 +73,17 @@ extern size_t (*eembed_strnlen)(const char *s, size_t maxlen);
 
 extern char *(*eembed_strstr)(const char *haystack, const char *needle);
 
-/* default to "no op" versions if not EEMBED_HOSTED */
-extern void *(*eembed_calloc)(size_t nmemb, size_t size);
-extern void *(*eembed_malloc)(size_t size);
-extern void *(*eembed_realloc)(void *ptr, size_t size);
-extern void *(*eembed_reallocarray)(void *ptr, size_t nmemb, size_t size);
-extern void (*eembed_free)(void *ptr);
-
 struct eembed_allocator;
+/* eembed_global_alloctor may be the null_allocator, if not EEMBED_HOSTED */
 extern struct eembed_allocator *eembed_global_alloctor;
+extern struct eembed_allocator *eembed_null_allocator;
+
+/* default to "no op" versions if eembed_global_alloctor is NULL */
+void *eembed_malloc(size_t size);
+void *eembed_calloc(size_t nmemb, size_t size);
+void *eembed_realloc(void *ptr, size_t size);
+void *eembed_reallocarray(void *ptr, size_t nmemb, size_t size);
+void eembed_free(void *ptr);
 
 struct eembed_allocator {
 	void *context;
@@ -92,6 +94,9 @@ struct eembed_allocator {
 			      size_t nmemb, size_t size);
 	void (*free)(struct eembed_allocator *ea, void *ptr);
 };
+
+struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
+						size_t len);
 
 #ifndef EEMBED_HOSTED
 #ifdef ARDUINO
@@ -150,21 +155,48 @@ struct eembed_allocator {
 		if (expression) { \
 			EEMBED_NOP(); \
 		} else { \
-			char _eembed_itoa_buf[25]; \
-			eembed_ulong_to_str(_eembed_itoa_buf, 25, __LINE__); \
-			eembed_system_print(__FILE__); \
-			eembed_system_print(":"); \
-			eembed_system_print(_eembed_itoa_buf); \
-			eembed_system_print(": ASSERTION assert("); \
-			eembed_system_print(#expression); \
-			eembed_system_print(") FAILED"); \
-			eembed_system_println(); \
+			struct eembed_log *el = eembed_err_log; \
+			if (el) { \
+				el->append_s(el, __FILE__); \
+				el->append_s(el, ":"); \
+				el->append_ul(el, __LINE__); \
+				el->append_s(el, ": ASSERTION assert("); \
+				el->append_s(el, #expression); \
+				el->append_s(el, ") FAILED"); \
+				el->append_eol(el); \
+			} \
 			eembed_assert_crash(); \
 		} \
 	} while (0)
 #endif
 #endif
 #endif
+
+#ifndef EEMBED_CHAR_BIT
+#ifdef CHAR_BIT
+#define EEMBED_CHAR_BIT CHAR_BIT
+#else
+#define EEMBED_CHAR_BIT 8
+#endif
+#endif
+
+#ifndef EEMBED_WORD_LEN
+#ifdef __WORDSIZE
+#if (__WORDSIZE >= EEMBED_CHAR_BIT)
+#define EEMBED_WORD_LEN (__WORDSIZE / EEMBED_CHAR_BIT)
+#endif
+#endif
+#endif
+
+#ifndef EEMBED_WORD_LEN
+#define EEMBED_WORD_LEN (sizeof(size_t))
+#endif
+
+#define eembed_align_to(x, y) \
+		(((x) + ((y) - 1)) \
+		     & ~((y) - 1))
+
+#define eembed_align(x) eembed_align_to(x, EEMBED_WORD_LEN)
 
 Eembed_end_C_functions
 #undef Eembed_end_C_functions
