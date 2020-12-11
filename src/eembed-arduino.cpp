@@ -39,10 +39,10 @@ void serial_log_print_s(struct eembed_log *log, const char *s)
 	Serial.print(s);
 }
 
-void serial_log_print_ul(struct eembed_log *log, unsigned long ul)
+void serial_log_print_ul(struct eembed_log *log, uint64_t ul)
 {
 	(void)log;
-	Serial.print(ul);
+	Serial.print((unsigned long)ul);
 }
 
 void serial_log_print_z(struct eembed_log *log, size_t z)
@@ -51,16 +51,16 @@ void serial_log_print_z(struct eembed_log *log, size_t z)
 	Serial.print(z);
 }
 
-void serial_log_print_l(struct eembed_log *log, long l)
+void serial_log_print_l(struct eembed_log *log, int64_t l)
 {
 	(void)log;
-	Serial.print(l);
+	Serial.print((long)l);
 }
 
-void serial_log_print_f(struct eembed_log *log, double f)
+void serial_log_print_f(struct eembed_log *log, long double f)
 {
 	(void)log;
-	Serial.print(f);
+	Serial.print((double)f);
 }
 
 void serial_log_print_vp(struct eembed_log *log, const void *v)

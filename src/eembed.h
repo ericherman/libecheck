@@ -22,10 +22,10 @@ Eembed_begin_C_functions
 extern void (*eembed_system_print)(const char *str);
 extern void (*eembed_system_println)(void);
 
-char *eembed_long_to_str(char *buf, size_t len, long l);
-char *eembed_ulong_to_str(char *buf, size_t len, unsigned long ul);
-char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long z);
-char *eembed_float_to_str(char *buf, size_t len, double f);
+char *eembed_long_to_str(char *buf, size_t len, int64_t l);
+char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul);
+char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z);
+char *eembed_float_to_str(char *buf, size_t len, long double f);
 
 struct eembed_log;
 extern struct eembed_log *eembed_err_log;
@@ -33,10 +33,10 @@ extern struct eembed_log *eembed_err_log;
 struct eembed_log {
 	void *context;
 	void (*append_s)(struct eembed_log *log, const char *str);
-	void (*append_ul)(struct eembed_log *log, unsigned long ul);
+	void (*append_ul)(struct eembed_log *log, uint64_t ul);
 	void (*append_z)(struct eembed_log *log, size_t z);
-	void (*append_l)(struct eembed_log *log, long l);
-	void (*append_f)(struct eembed_log *log, double f);
+	void (*append_l)(struct eembed_log *log, int64_t l);
+	void (*append_f)(struct eembed_log *log, long double f);
 	void (*append_vp)(struct eembed_log *log, const void *ptr);
 	void (*append_eol)(struct eembed_log *log);
 };

@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #if EEMBED_HOSTED
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,24 +85,24 @@ void eembed_fprintf_append_s(struct eembed_log *log, const char *str)
 	fprintf(eembed_fprintf_context(log), "%s", str);
 }
 
-void eembed_fprintf_append_ul(struct eembed_log *log, unsigned long ul)
+void eembed_fprintf_append_ul(struct eembed_log *log, uint64_t ul)
 {
-	fprintf(eembed_fprintf_context(log), "%lu", ul);
+	fprintf(eembed_fprintf_context(log), "%" PRIu64, ul);
 }
 
 void eembed_fprintf_append_z(struct eembed_log *log, size_t z)
 {
-	fprintf(eembed_fprintf_context(log), "%lu", (unsigned long)z);
+	fprintf(eembed_fprintf_context(log), "%" PRIu64, (uint64_t) z);
 }
 
-void eembed_fprintf_append_l(struct eembed_log *log, long l)
+void eembed_fprintf_append_l(struct eembed_log *log, int64_t l)
 {
-	fprintf(eembed_fprintf_context(log), "%ld", l);
+	fprintf(eembed_fprintf_context(log), "%" PRId64, l);
 }
 
-void eembed_fprintf_append_f(struct eembed_log *log, double f)
+void eembed_fprintf_append_f(struct eembed_log *log, long double f)
 {
-	fprintf(eembed_fprintf_context(log), "%g", f);
+	fprintf(eembed_fprintf_context(log), "%Lg", f);
 }
 
 void eembed_fprintf_append_vp(struct eembed_log *log, const void *ptr)
@@ -165,24 +166,24 @@ void eembed_sprintf_append_s(struct eembed_log *log, const char *str)
 	eembed_sprintf_append(log, "%s", str);
 }
 
-void eembed_sprintf_append_ul(struct eembed_log *log, unsigned long ul)
+void eembed_sprintf_append_ul(struct eembed_log *log, uint64_t ul)
 {
-	eembed_sprintf_append(log, "%lu", ul);
+	eembed_sprintf_append(log, "%" PRIu64, ul);
 }
 
 void eembed_sprintf_append_z(struct eembed_log *log, size_t z)
 {
-	eembed_sprintf_append(log, "%lu", (unsigned long)z);
+	eembed_sprintf_append(log, "%" PRIu64, (uint64_t) z);
 }
 
-void eembed_sprintf_append_l(struct eembed_log *log, long l)
+void eembed_sprintf_append_l(struct eembed_log *log, int64_t l)
 {
-	eembed_sprintf_append(log, "%ld", l);
+	eembed_sprintf_append(log, "%" PRId64, l);
 }
 
-void eembed_sprintf_append_f(struct eembed_log *log, double f)
+void eembed_sprintf_append_f(struct eembed_log *log, long double f)
 {
-	eembed_sprintf_append(log, "%g", f);
+	eembed_sprintf_append(log, "%Lg", f);
 }
 
 void eembed_sprintf_append_vp(struct eembed_log *log, const void *ptr)
@@ -257,24 +258,24 @@ char *eembed_sprintf_to_str(char *buf, size_t len, const char *format, ...)
 	return buf;
 }
 
-char *eembed_long_to_str(char *buf, size_t len, long l)
+char *eembed_long_to_str(char *buf, size_t len, int64_t l)
 {
-	return eembed_sprintf_to_str(buf, len, "%ld", l);
+	return eembed_sprintf_to_str(buf, len, "%" PRId64, l);
 }
 
-char *eembed_ulong_to_str(char *buf, size_t len, unsigned long ul)
+char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul)
 {
-	return eembed_sprintf_to_str(buf, len, "%lu", ul);
+	return eembed_sprintf_to_str(buf, len, "%" PRIu64, ul);
 }
 
-char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long ul)
+char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t ul)
 {
-	return eembed_sprintf_to_str(buf, len, "0x%02lX", ul);
+	return eembed_sprintf_to_str(buf, len, "0x%02" PRIX64, ul);
 }
 
-char *eembed_float_to_str(char *buf, size_t len, double f)
+char *eembed_float_to_str(char *buf, size_t len, long double f)
 {
-	return eembed_sprintf_to_str(buf, len, "%g", f);
+	return eembed_sprintf_to_str(buf, len, "%Lg", f);
 }
 
 #else /* #if EEMBED_HOSTED */
@@ -299,7 +300,7 @@ void eembed_sys_print_str_append_s(struct eembed_log *log, const char *str)
 	eembed_system_print(str);
 }
 
-void eembed_sys_print_str_append_ul(struct eembed_log *log, unsigned long ul)
+void eembed_sys_print_str_append_ul(struct eembed_log *log, uint64_t ul)
 {
 	char buf[25];
 
@@ -319,7 +320,7 @@ void eembed_sys_print_str_append_z(struct eembed_log *log, size_t z)
 	eembed_system_print(eembed_ulong_to_str(buf, 25, z));
 }
 
-void eembed_sys_print_str_append_l(struct eembed_log *log, long l)
+void eembed_sys_print_str_append_l(struct eembed_log *log, int64_t l)
 {
 	char buf[25];
 
@@ -329,7 +330,7 @@ void eembed_sys_print_str_append_l(struct eembed_log *log, long l)
 	eembed_system_print(eembed_long_to_str(buf, 25, l));
 }
 
-void eembed_sys_print_str_append_f(struct eembed_log *log, double f)
+void eembed_sys_print_str_append_f(struct eembed_log *log, long double f)
 {
 	char buf[25];
 
@@ -396,7 +397,7 @@ void eembed_ctx_strcpy_append_s(struct eembed_log *log, const char *str)
 	ctx->buf[ctx->len - 1] = '\0';
 }
 
-void eembed_ctx_strcpy_append_ul(struct eembed_log *log, unsigned long ul)
+void eembed_ctx_strcpy_append_ul(struct eembed_log *log, uint64_t ul)
 {
 	char buf[25];
 
@@ -412,7 +413,7 @@ void eembed_ctx_strcpy_append_z(struct eembed_log *log, size_t z)
 	eembed_ctx_strcpy_append_s(log, eembed_ulong_to_str(buf, 25, z));
 }
 
-void eembed_ctx_strcpy_append_l(struct eembed_log *log, long l)
+void eembed_ctx_strcpy_append_l(struct eembed_log *log, int64_t l)
 {
 	char buf[25];
 
@@ -420,7 +421,7 @@ void eembed_ctx_strcpy_append_l(struct eembed_log *log, long l)
 	eembed_ctx_strcpy_append_s(log, eembed_long_to_str(buf, 25, l));
 }
 
-void eembed_ctx_strcpy_append_f(struct eembed_log *log, double f)
+void eembed_ctx_strcpy_append_f(struct eembed_log *log, long double f)
 {
 	char buf[25];
 
@@ -474,12 +475,12 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 	return ctx->len ? log : NULL;
 }
 
-char *eembed_long_to_str(char *buf, size_t len, long l)
+char *eembed_long_to_str(char *buf, size_t len, int64_t l)
 {
 	char *b;
 	char *out;
 	size_t blen = 0;
-	unsigned long ul = 0;
+	uint64_t ul = 0;
 
 	if (!buf || !len) {
 		return buf;
@@ -502,7 +503,7 @@ char *eembed_long_to_str(char *buf, size_t len, long l)
 	return out ? buf : NULL;
 }
 
-char *eembed_ulong_to_str(char *buf, size_t len, unsigned long ul)
+char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul)
 {
 	char tmp[22];
 	size_t i = 0;
@@ -551,11 +552,11 @@ static void eembed_byte_to_hex_chars(char *hi, char *lo, unsigned char byte)
 	*lo = eembed_nibble_to_hex((byte & 0x0F));
 }
 
-char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long z)
+char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z)
 {
 	size_t i = 0;
 	size_t pos = 0;
-	size_t ul_bytes = sizeof(unsigned long);
+	size_t ul_bytes = sizeof(uint64_t);
 
 	if (!buf) {
 		return NULL;
@@ -582,13 +583,13 @@ char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long z)
 	return buf;
 }
 
-char *eembed_bogus_float_to_str(char *buf, size_t len, double f)
+char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 {
 	size_t pos = 0;
 	size_t i = 0;
 	size_t max = 5;
 	char c;
-	unsigned long ul = 0;
+	uint64_t ul = 0;
 
 	if (!buf || !len) {
 		return NULL;
@@ -613,7 +614,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, double f)
 		buf[pos++] = '-';
 		f = -f;
 	}
-	if (f > (double)ULONG_MAX) {
+	if (f > (long double)ULONG_MAX) {
 		if (pos < len) {
 			buf[pos++] = 'b';
 		}
@@ -627,10 +628,10 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, double f)
 		return buf;
 	}
 
-	ul = (unsigned long)f;
+	ul = (uint64_t) f;
 	eembed_ulong_to_str(buf + pos, len - pos, ul);
 	pos = eembed_strnlen(buf, len);
-	f = f - (double)ul;
+	f = f - (long double)ul;
 	if (pos < len) {
 		buf[pos++] = '.';
 	}
@@ -639,7 +640,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, double f)
 	}
 	for (i = 0; i < max; ++i) {
 		f = f * 10;
-		ul = (unsigned long)f;
+		ul = (uint64_t) f;
 		c = '0' + (ul % 10);
 		buf[pos++] = c;
 		buf[pos] = '\0';
@@ -648,7 +649,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, double f)
 	return buf;
 }
 
-char *eembed_float_to_str(char *buf, size_t len, double f)
+char *eembed_float_to_str(char *buf, size_t len, long double f)
 {
 	return eembed_bogus_float_to_str(buf, len, f);
 }
