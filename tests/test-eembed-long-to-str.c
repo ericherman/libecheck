@@ -9,21 +9,21 @@ void check_long_to_str_nothing_explodes(void)
 {
 	char buf[30];
 
-	eembed_long_to_str(buf, 3, ULONG_MAX);
-	eembed_long_to_str(buf, 0, ULONG_MAX);
-	eembed_long_to_str(NULL, 30, ULONG_MAX);
-	eembed_long_to_str(buf, 30, ULONG_MAX);
+	eembed_long_to_str(buf, 3, LONG_MAX);
+	eembed_long_to_str(buf, 0, LONG_MAX);
+	eembed_long_to_str(NULL, 30, LONG_MAX);
+	eembed_long_to_str(buf, 30, LONG_MAX);
 }
 
-unsigned check_long_to_str(unsigned long ul, const char *ulstr)
+unsigned check_long_to_str(long l, const char *lstr)
 {
 	unsigned failures = 0;
 	char buf[30];
 	char *rv;
 
-	rv = eembed_long_to_str(buf, 30, ul);
-	failures += check_ptr_m(rv, buf, ulstr);
-	failures += check_str_m(buf, ulstr, ulstr);
+	rv = eembed_long_to_str(buf, 30, l);
+	failures += check_ptr_m(rv, buf, lstr);
+	failures += check_str_m(buf, lstr, lstr);
 	return failures;
 }
 

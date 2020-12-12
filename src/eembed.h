@@ -74,11 +74,11 @@ extern size_t (*eembed_strnlen)(const char *s, size_t maxlen);
 extern char *(*eembed_strstr)(const char *haystack, const char *needle);
 
 struct eembed_allocator;
-/* eembed_global_alloctor may be the null_allocator, if not EEMBED_HOSTED */
-extern struct eembed_allocator *eembed_global_alloctor;
+/* eembed_global_allocator may be the null_allocator, if not EEMBED_HOSTED */
+extern struct eembed_allocator *eembed_global_allocator;
 extern struct eembed_allocator *eembed_null_allocator;
 
-/* default to "no op" versions if eembed_global_alloctor is NULL */
+/* default to "no op" versions if eembed_global_allocator is NULL */
 void *eembed_malloc(size_t size);
 void *eembed_calloc(size_t nmemb, size_t size);
 void *eembed_realloc(void *ptr, size_t size);

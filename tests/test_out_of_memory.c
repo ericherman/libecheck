@@ -8,7 +8,7 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 	struct eembed_allocator with_errs;
 	struct echeck_err_injecting_context mctx;
 	struct eembed_allocator *real = NULL;
-	struct eembed_allocator *orig = eembed_global_alloctor;
+	struct eembed_allocator *orig = eembed_global_allocator;
 	size_t i = 0;
 	size_t j = 0;
 	char *message = NULL;
@@ -21,10 +21,10 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 
 	eembed_memset(messages, 0x00, 40 * sizeof(char *));
 
-	if (eembed_global_alloctor == NULL) {
+	if (eembed_global_allocator == NULL) {
 		real = eembed_bytes_allocator(bytes, bytes_len);
 	} else {
-		real = eembed_global_alloctor;
+		real = eembed_global_allocator;
 	}
 
 	failures +=
@@ -33,7 +33,7 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 	if (failures) {
 		return 1;
 	}
-	eembed_global_alloctor = &with_errs;
+	eembed_global_allocator = &with_errs;
 
 	mctx.attempts_to_fail_bitmask = malloc_fail_bitmask;
 
@@ -87,7 +87,7 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 	failures += ((mctx.frees == mctx.allocs) ? 0 : 1);
 	failures += ((mctx.free_bytes == mctx.alloc_bytes) ? 0 : 1);
 
-	eembed_global_alloctor = orig;
+	eembed_global_allocator = orig;
 
 	return failures;
 }

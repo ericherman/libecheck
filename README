@@ -219,9 +219,9 @@ is plug-able with this structure:
 		void (*free)(struct eembed_allocator *ea, void *ptr);
 	};
 
-	extern struct eembed_allocator *eembed_global_alloctor;
+	extern struct eembed_allocator *eembed_global_allocator;
 
-The eembed_malloc/free functions make use of the eembed_global_alloctor.
+The eembed_malloc/free functions make use of the eembed_global_allocator.
 Especially for the embedded case, eembed.h includes a simple allocator
 which can be constructed from a byte array which can be provided during
 firmware initialization:
@@ -231,7 +231,7 @@ firmware initialization:
 
 	void setup(void)
 	{
-		eembed_global_alloctor = eembed_bytes_allocator(bytes, 1024);
+		eembed_global_allocator = eembed_bytes_allocator(bytes, 1024);
 	}
 
 If programs are written using eembed_malloc/free functions, they can be
@@ -273,7 +273,7 @@ and the real allocator, e.g.:
 
 
 	echeck_err_injecting_allocator_init(&our_allocator,
-					    eembed_global_alloctor,
+					    eembed_global_allocator,
 					    &our_context,
 					    eembed_err_log);
 

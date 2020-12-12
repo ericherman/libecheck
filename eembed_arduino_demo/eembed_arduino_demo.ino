@@ -41,7 +41,7 @@ void setup(void)
 	struct eembed_allocator *ea =
 	    eembed_bytes_allocator(global_buffer, global_buffer_len);
 	if (ea) {
-		eembed_global_alloctor = ea;
+		eembed_global_allocator = ea;
 	}
 
 	loops_completed = 0;

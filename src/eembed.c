@@ -657,31 +657,31 @@ char *eembed_float_to_str(char *buf, size_t len, long double f)
 
 void *eembed_malloc(size_t size)
 {
-	struct eembed_allocator *ea = eembed_global_alloctor;
+	struct eembed_allocator *ea = eembed_global_allocator;
 	return ea ? ea->malloc(ea, size) : NULL;
 }
 
 void *eembed_realloc(void *ptr, size_t size)
 {
-	struct eembed_allocator *ea = eembed_global_alloctor;
+	struct eembed_allocator *ea = eembed_global_allocator;
 	return ea ? ea->realloc(ea, ptr, size) : NULL;
 }
 
 void *eembed_calloc(size_t nmemb, size_t size)
 {
-	struct eembed_allocator *ea = eembed_global_alloctor;
+	struct eembed_allocator *ea = eembed_global_allocator;
 	return ea ? ea->calloc(ea, nmemb, size) : NULL;
 }
 
 void *eembed_reallocarray(void *ptr, size_t nmemb, size_t size)
 {
-	struct eembed_allocator *ea = eembed_global_alloctor;
+	struct eembed_allocator *ea = eembed_global_allocator;
 	return ea ? ea->reallocarray(ea, ptr, nmemb, size) : NULL;
 }
 
 void eembed_free(void *ptr)
 {
-	struct eembed_allocator *ea = eembed_global_alloctor;
+	struct eembed_allocator *ea = eembed_global_allocator;
 	if (ea) {
 		ea->free(ea, ptr);
 	}
@@ -1313,10 +1313,10 @@ struct eembed_allocator eembed_system_alloctor = {
 	eembed_system_free
 };
 
-struct eembed_allocator *eembed_global_alloctor = &eembed_system_alloctor;
+struct eembed_allocator *eembed_global_allocator = &eembed_system_alloctor;
 
 #else
 
-struct eembed_allocator *eembed_global_alloctor = &eembed_null_chunk_allocator;
+struct eembed_allocator *eembed_global_allocator = &eembed_null_chunk_allocator;
 
 #endif

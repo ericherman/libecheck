@@ -7,7 +7,7 @@ unsigned test_eembed_malloc_free(void)
 {
 	const size_t bytes_len = 500 * sizeof(size_t);
 	unsigned char bytes[500 * sizeof(size_t)];
-	struct eembed_allocator *orig = eembed_global_alloctor;
+	struct eembed_allocator *orig = eembed_global_allocator;
 	struct eembed_allocator *ea = NULL;
 	size_t i = 0;
 	size_t j = 0;
@@ -22,7 +22,7 @@ unsigned test_eembed_malloc_free(void)
 		if (check_ptr_not_null(ea)) {
 			return 1;
 		}
-		eembed_global_alloctor = ea;
+		eembed_global_allocator = ea;
 	}
 
 	message = (char *)eembed_malloc(0);
@@ -76,7 +76,7 @@ unsigned test_eembed_malloc_free(void)
 	}
 
 	if (!EEMBED_HOSTED) {
-		eembed_global_alloctor = orig;
+		eembed_global_allocator = orig;
 	}
 
 	return failures;
