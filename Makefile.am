@@ -262,10 +262,13 @@ LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
 tidy:
 	$(LINDENT) \
 		-T FILE \
-		-T size_t \
+		-T ssize_t  -T  int8_t  -T  int16_t  -T  int32_t  -T  int64_t \
+		-T  size_t  -T uint8_t  -T uint16_t  -T uint32_t  -T uint64_t \
+		-T echeck_err_injecting_context \
+		-T eembed_allocator \
+		-T eembed_alloc_chunk \
 		-T eembed_log \
 		-T eembed_str_buf \
-		-T eembed_allocator \
 		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
 		eembed_arduino_demo/eembed_arduino_demo.ino \
 		echeck_tests_arduino/echeck_tests_arduino.ino \
