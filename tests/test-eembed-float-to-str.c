@@ -40,6 +40,9 @@ unsigned int test_eembed_float_to_str(void)
 	failures += check_float_to_str(eembed_zero, "0");
 	failures += check_float_to_str(1.0 / 16.0, "0.0625");
 	failures += check_float_to_str(-600.0 / 32, "-18.75");
+	failures += check_float_to_str(1.2, "1.2");
+	failures += check_float_to_str(-0.5, "-0.5");
+	failures += check_float_to_str(-0.6, "-0.6");
 	failures += check_float_to_str(eembed_nan, "nan");
 
 	check_float_to_str_nothing_explodes();

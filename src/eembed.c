@@ -5,6 +5,7 @@
 
 #include "eembed.h"
 
+#include <float.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -586,67 +587,84 @@ char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z)
 char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 {
 	size_t pos = 0;
+	size_t avail = 0;
 	size_t i = 0;
 	size_t max_digits = 6;
 	long double min_to_print = 0.000001;
 	long double add_for_rounding = (min_to_print / 2.0);
-	char c;
+	char c[2];
 	unsigned long ul = 0;
 
-	if (!buf || !len) {
-		return NULL;
+	c[0] = 0;
+	c[1] = 0;
+	if (buf && len) {
+		buf[0] = '\0';
+		buf[len - 1] = '\0';
 	}
 
-	buf[0] = '\0';
-	buf[len - 1] = '\0';
+	if (!buf || len < 2) {
+		return NULL;
+	}
+	avail = len - 1;
+
 	if (f != f) {
-		if (pos < len) {
-			buf[pos++] = 'n';
-		}
-		if (pos < len) {
-			buf[pos++] = 'a';
-		}
-		if (pos < len) {
-			buf[pos++] = 'n';
-		}
-		buf[pos] = '\0';
-		return buf;
+		eembed_strncat(buf, "nan", len < 3 ? avail : 3);
+		return avail < 3 ? NULL : buf;
+	} else if (f == 0.0) {
+		eembed_strncat(buf, "0.0", avail < 3 ? avail : 3);
+		return avail < 3 ? NULL : buf;
 	}
+
 	if (f < 0.0) {
-		buf[pos++] = '-';
+		eembed_strcat(buf, "-");
 		f = -f;
+		--avail;
+		if (!avail) {
+			return NULL;
+		}
 	}
+
+	if (f == FLT_MAX || f == DBL_MAX || f == LDBL_MAX) {
+		eembed_strncat(buf, "max", avail < 3 ? avail : 3);
+		return avail < 3 ? NULL : buf;
+	} else if (f == FLT_MIN || f == DBL_MIN || f == LDBL_MIN) {
+		eembed_strncat(buf, "min", avail < 3 ? avail : 3);
+		return avail < 3 ? NULL : buf;
+	}
+
 	if ((f - (long double)ULONG_MAX) >= 1.0) {
-		if (pos < len) {
-			buf[pos++] = 'b';
-		}
-		if (pos < len) {
-			buf[pos++] = 'i';
-		}
-		if (pos < len) {
-			buf[pos++] = 'g';
-		}
-		buf[pos] = '\0';
-		return buf;
+		eembed_strncat(buf, "big", avail < 3 ? avail : 3);
+		return avail < 3 ? NULL : buf;
+	} else if (f < min_to_print) {
+		eembed_strncat(buf, "wee", avail < 3 ? avail : 3);
+		return avail < 3 ? NULL : buf;
 	}
 
 	ul = (unsigned long)f;
-	eembed_ulong_to_str(buf + pos, len - pos, ul);
 	pos = eembed_strnlen(buf, len);
+	avail = (pos > len) ? 0 : len - pos;
+	eembed_ulong_to_str(buf + pos, avail, ul);
 	f = f - (long double)ul;
-	if (pos < len) {
-		buf[pos++] = '.';
+	if (eembed_strnlen(buf, len) < (len - 1)) {
+		eembed_strncat(buf, ".", 1);
+	} else {
+		return f > min_to_print ? NULL : buf;
 	}
-	if ((len - pos) < max_digits) {
-		max_digits = len - pos;
+	pos = eembed_strnlen(buf, len);
+	avail = (pos > (len - 1)) ? 0 : (len - 1) - pos;
+	if (!avail) {
+		return f > min_to_print ? NULL : buf;
+	}
+
+	if (max_digits > avail) {
+		max_digits = avail;
 	}
 	f += add_for_rounding;
 	for (i = 0; (i < max_digits) && (i == 0 || f >= min_to_print); ++i) {
 		f = f * 10;
 		ul = (unsigned long)f;
-		c = '0' + (ul % 10);
-		buf[pos++] = c;
-		buf[pos] = '\0';
+		c[0] = '0' + (ul % 10);
+		eembed_strncat(buf, c, 1);
 		f = f - ul;
 		min_to_print = min_to_print * 10;
 	}
