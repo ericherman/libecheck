@@ -92,7 +92,7 @@ void eembed_fprintf_append_ul(struct eembed_log *log, uint64_t ul)
 
 void eembed_fprintf_append_z(struct eembed_log *log, size_t z)
 {
-	fprintf(eembed_fprintf_context(log), "%" PRIu64, (uint64_t) z);
+	fprintf(eembed_fprintf_context(log), "%" PRIu64, (uint64_t)z);
 }
 
 void eembed_fprintf_append_l(struct eembed_log *log, int64_t l)
@@ -173,7 +173,7 @@ void eembed_sprintf_append_ul(struct eembed_log *log, uint64_t ul)
 
 void eembed_sprintf_append_z(struct eembed_log *log, size_t z)
 {
-	eembed_sprintf_append(log, "%" PRIu64, (uint64_t) z);
+	eembed_sprintf_append(log, "%" PRIu64, (uint64_t)z);
 }
 
 void eembed_sprintf_append_l(struct eembed_log *log, int64_t l)
@@ -587,9 +587,11 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 {
 	size_t pos = 0;
 	size_t i = 0;
-	size_t max = 5;
+	size_t max_digits = 6;
+	long double min_to_print = 0.000001;
+	long double add_for_rounding = (min_to_print / 2.0);
 	char c;
-	uint64_t ul = 0;
+	unsigned long ul = 0;
 
 	if (!buf || !len) {
 		return NULL;
@@ -614,7 +616,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 		buf[pos++] = '-';
 		f = -f;
 	}
-	if (f > (long double)ULONG_MAX) {
+	if ((f - (long double)ULONG_MAX) >= 1.0) {
 		if (pos < len) {
 			buf[pos++] = 'b';
 		}
@@ -628,23 +630,25 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 		return buf;
 	}
 
-	ul = (uint64_t) f;
+	ul = (unsigned long)f;
 	eembed_ulong_to_str(buf + pos, len - pos, ul);
 	pos = eembed_strnlen(buf, len);
 	f = f - (long double)ul;
 	if (pos < len) {
 		buf[pos++] = '.';
 	}
-	if ((len - pos) < max) {
-		max = len - pos;
+	if ((len - pos) < max_digits) {
+		max_digits = len - pos;
 	}
-	for (i = 0; i < max; ++i) {
+	f += add_for_rounding;
+	for (i = 0; (i < max_digits) && (i == 0 || f >= min_to_print); ++i) {
 		f = f * 10;
-		ul = (uint64_t) f;
+		ul = (unsigned long)f;
 		c = '0' + (ul % 10);
 		buf[pos++] = c;
 		buf[pos] = '\0';
 		f = f - ul;
+		min_to_print = min_to_print * 10;
 	}
 	return buf;
 }
