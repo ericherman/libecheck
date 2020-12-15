@@ -10,13 +10,23 @@ void check_float_to_str_nothing_explodes(void)
 	char buf[30];
 	double d = 1.0 / 16.0;
 
-	eembed_float_to_str(buf, 3, d);
-	eembed_float_to_str(buf, 0, d);
 	eembed_float_to_str(NULL, 30, d);
+
+	eembed_float_to_str(buf, 0, d);
+	eembed_float_to_str(buf, 1, d);
+	eembed_float_to_str(buf, 2, d);
+	eembed_float_to_str(buf, 3, d);
+	eembed_float_to_str(buf, 4, d);
+	eembed_float_to_str(buf, 5, d);
+	eembed_float_to_str(buf, 6, d);
+
 	eembed_float_to_str(buf, 30, DBL_MAX);
 	eembed_float_to_str(buf, 30, -DBL_MAX);
 	eembed_float_to_str(buf, 30, DBL_MIN);
 	eembed_float_to_str(buf, 30, -DBL_MIN);
+
+	eembed_float_to_str(buf, 30, LDBL_MAX / 2);
+	eembed_float_to_str(buf, 30, LDBL_MAX * 2);
 }
 
 unsigned check_float_to_str(double d, const char *fltstr)

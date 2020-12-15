@@ -608,7 +608,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 	avail = len - 1;
 
 	if (f != f) {
-		eembed_strncat(buf, "nan", len < 3 ? avail : 3);
+		eembed_strncat(buf, "nan", avail < 3 ? avail : 3);
 		return avail < 3 ? NULL : buf;
 	} else if (f == 0.0) {
 		eembed_strncat(buf, "0.0", avail < 3 ? avail : 3);
@@ -629,6 +629,11 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 		return avail < 3 ? NULL : buf;
 	} else if (f == FLT_MIN || f == DBL_MIN || f == LDBL_MIN) {
 		eembed_strncat(buf, "min", avail < 3 ? avail : 3);
+		return avail < 3 ? NULL : buf;
+	}
+
+	if ((f / 2) == f) {
+		eembed_strncat(buf, "inf", avail < 3 ? avail : 3);
 		return avail < 3 ? NULL : buf;
 	}
 
