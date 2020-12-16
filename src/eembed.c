@@ -108,7 +108,7 @@ void eembed_fprintf_append_f(struct eembed_log *log, long double f)
 
 void eembed_fprintf_append_vp(struct eembed_log *log, const void *ptr)
 {
-	fprintf(eembed_fprintf_context(log), "%p", (void *)ptr);
+	fprintf(eembed_fprintf_context(log), "%p", ptr);
 }
 
 void eembed_fprintf_append_eol(struct eembed_log *log)
@@ -189,7 +189,7 @@ void eembed_sprintf_append_f(struct eembed_log *log, long double f)
 
 void eembed_sprintf_append_vp(struct eembed_log *log, const void *ptr)
 {
-	eembed_sprintf_append(log, "%p", (void *)ptr);
+	eembed_sprintf_append(log, "%p", ptr);
 }
 
 void eembed_sprintf_append_eol(struct eembed_log *log)
@@ -738,8 +738,8 @@ int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 	}
 	/* LCOV_EXCL_STOP */
 
-	s1 = (unsigned char *)a1;
-	s2 = (unsigned char *)a2;
+	s1 = (const unsigned char *)a1;
+	s2 = (const unsigned char *)a2;
 	for (i = 0; i < n; ++i) {
 		d = s1[i] - s2[i];
 		if (d) {
@@ -979,6 +979,20 @@ size_t (*eembed_strnlen)(const char *s, size_t maxlen) = eembed_diy_strnlen;
 #if EEMBED_HOSTED
 char *(*eembed_strstr)(const char *haystack, const char *needle) = strstr;
 #else
+
+#if __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+static char *embed_ignore_const_s(const char *str)
+{
+	return (char *)(str);
+}
+
+#if __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 char *eembed_diy_strstr(const char *haystack, const char *needle)
 {
 	size_t i = 0;
@@ -993,7 +1007,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 
 	nlen = eembed_strlen(needle);
 	if (!nlen) {
-		return (char *)(haystack);
+		return embed_ignore_const_s(haystack);
 	}
 	hlen = eembed_strlen(haystack);
 	if (nlen > hlen) {
@@ -1007,7 +1021,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 			}
 		}
 		if (found) {
-			return (char *)(haystack + i);
+			return embed_ignore_const_s(haystack + i);
 		}
 	}
 	return NULL;
