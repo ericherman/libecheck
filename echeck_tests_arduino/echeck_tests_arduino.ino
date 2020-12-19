@@ -25,6 +25,8 @@ unsigned test_eembed_strcat(void);
 unsigned test_eembed_strcpy(void);
 unsigned test_eembed_strlen(void);
 unsigned test_eembed_strstr(void);
+unsigned test_eembed_malloc_free(void);
+unsigned test_eembed_alloca_freea(void);
 
 unsigned test_check_byte_array(void);
 unsigned test_check_byte_array_m(void);
@@ -49,10 +51,6 @@ unsigned test_check_unsigned_int(void);
 unsigned test_check_unsigned_int_m(void);
 unsigned test_check_unsigned_long(void);
 unsigned test_check_unsigned_long_m(void);
-
-/* setup/loop globals */
-uint32_t loop_count;
-uint16_t loop_delay_ms = (2 * 1000);
 
 void setup(void)
 {
@@ -82,8 +80,6 @@ void setup(void)
 	Serial.println(EEMBED_HOSTED);
 	Serial.println();
 	Serial.println("Begin");
-
-	loop_count = 0;
 }
 
 unsigned run_test(unsigned (*pfunc)(void), const char *name)
@@ -100,12 +96,8 @@ unsigned run_test(unsigned (*pfunc)(void), const char *name)
 
 void loop(void)
 {
-	++loop_count;
-	eembed_assert(loop_count < 5);
-
 	Serial.println("==================================================");
-	Serial.print("Starting test run #");
-	Serial.println(loop_count);
+	Serial.print("Starting test run");
 	Serial.println("==================================================");
 
 	unsigned failures = 0;
@@ -123,6 +115,8 @@ void loop(void)
 	failures += Run_test(test_eembed_strcpy);
 	failures += Run_test(test_eembed_strlen);
 	failures += Run_test(test_eembed_strstr);
+	failures += Run_test(test_eembed_malloc_free);
+	failures += Run_test(test_eembed_alloca_freea);
 
 	Serial.println();
 	failures += Run_test(test_check_byte_array);
@@ -159,13 +153,17 @@ void loop(void)
 		Serial.println(" failures.");
 		Serial.println("FAIL");
 	} else {
+		eembed_assert(1);
 		Serial.println("SUCCESS!");
 	}
+
 	Serial.println("==================================================");
 
-	for (int i = 0; i < 50; ++i) {
+	uint16_t loop_delay_ms = 3 * 1000;
+	size_t dots = 50;
+	for (size_t i = 0; i < dots; ++i) {
 		Serial.print(".");
-		uint16_t delay_ms = loop_delay_ms / 50;
+		uint16_t delay_ms = loop_delay_ms / dots;
 		if (failures) {
 			delay_ms *= 10;
 		}
@@ -173,4 +171,15 @@ void loop(void)
 	}
 
 	Serial.println();
+	Serial.println();
+	Serial.println("TESTING eembed_assert(false), EXPECT A CRASH!");
+	for (size_t i = 5; i; --i) {
+		Serial.println(i);
+		delay(1000);
+	}
+	eembed_assert(1 == 0);
+
+	Serial.println("Wait ... how did we get here?");
+	delay(10 * 1000);
+
 }
