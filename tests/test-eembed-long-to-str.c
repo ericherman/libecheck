@@ -19,11 +19,16 @@ unsigned check_long_to_str(long l, const char *lstr)
 {
 	unsigned failures = 0;
 	char buf[30];
-	char *rv;
+	char *rv = NULL;
+	long rl = 0;
 
 	rv = eembed_long_to_str(buf, 30, l);
 	failures += check_ptr_m(rv, buf, lstr);
 	failures += check_str_m(buf, lstr, lstr);
+
+	rl = eembed_str_to_long(rv, NULL);
+	failures += check_long(rl, l);
+
 	return failures;
 }
 

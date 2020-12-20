@@ -21,10 +21,15 @@ unsigned check_ulong_to_str(unsigned long ul, const char *ulstr)
 	unsigned failures = 0;
 	char buf[30];
 	char *rv;
+	unsigned long rul = 0;
 
 	rv = eembed_ulong_to_str(buf, 30, ul);
 	failures += check_ptr_m(rv, buf, ulstr);
 	failures += check_str_m(buf, ulstr, ulstr);
+
+	rul = eembed_str_to_ulong(rv, NULL);
+	failures += check_unsigned_long(rul, ul);
+
 	return failures;
 }
 

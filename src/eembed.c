@@ -701,6 +701,152 @@ char *eembed_float_to_str(char *buf, size_t len, long double f)
 }
 #endif
 
+#if __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+static char *eembed_ignore_const_s(const char *str)
+{
+	return (char *)(str);
+}
+
+#if __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
+#ifndef Eembed_use_diy_str_to_64
+#if (LONG_MAX <= INT64_MAX)
+#if (!(_ISOC99_SOURCEA))
+#define Eembed_use_diy_str_to_64 1
+#endif
+#endif
+#endif
+
+#ifndef Eembed_use_diy_str_to_64
+#define Eembed_use_diy_str_to_64 (!(EEMBED_HOSTED))
+#endif
+
+#if Eembed_use_diy_str_to_64
+uint64_t eembed_diy_str_to_u64(const char *str, char **endptr, int pbase)
+{
+	uint64_t base = (uint64_t)pbase;
+	uint64_t val = 0;
+	unsigned end = 0;
+	char ascii_end1 = 0;
+	char ascii_end2 = 0;
+	char ascii_end3 = 0;
+
+	/* LCOV_EXCL_START */
+	if (!str || base < 2 || base > 36) {
+		if (endptr) {
+			*endptr = NULL;
+		}
+		return 0;
+	}
+	/* LCOV_EXCL_STOP */
+
+	if (base <= 10) {
+		ascii_end1 = '0' + (base - 1);
+		ascii_end2 = 0;
+		ascii_end3 = 0;
+	} else {
+		ascii_end1 = '9';
+		ascii_end2 = 'A' + (base - 11);
+		ascii_end3 = 'a' + (base - 11);
+	}
+
+	end = 0;
+	val = 0;
+	while (*str && !end) {
+		if (*str >= '0' && *str <= ascii_end1) {
+			val = val * base;
+			val = val + (*str - '0');
+			++str;
+		} else if (*str >= 'A' && *str <= ascii_end2) {
+			val = val * base;
+			val = val + 10 + (*str - 'A');
+			++str;
+		} else if (*str >= 'a' && *str <= ascii_end3) {
+			val = val * base;
+			val = val + 10 + (*str - 'a');
+			++str;
+		} else {
+			end = 1;
+		}
+	}
+
+	if (endptr) {
+		*endptr = eembed_ignore_const_s(str);
+	}
+	return val;
+}
+
+int64_t eembed_diy_str_to_i64(const char *str, char **endptr, int base)
+{
+	int64_t val = 0;
+	int negate = 0;
+
+	/* LCOV_EXCL_START */
+	if (!str || base < 2 || base > 36) {
+		if (endptr) {
+			*endptr = NULL;
+		}
+		return 0;
+	}
+	/* LCOV_EXCL_STOP */
+
+	if (*str == '-') {
+		str++;
+		negate = -1;
+	} else {
+		negate = 0;
+	}
+
+	val = eembed_diy_str_to_u64(str, endptr, base);
+	return negate ? -val : val;
+}
+#endif
+
+int64_t eembed_str_to_i64(const char *str, char **endptr, int base)
+{
+#if ((EEMBED_HOSTED) || (Eembed_use_diy_str_to_64))
+	return eembed_diy_str_to_i64(str, endptr, base);
+#elif (ULONG_MAX >= UINT64_MAX)
+	return strtol(str, endptr, base);
+#else
+	return strtoll(str, endptr, base);
+#endif
+}
+
+uint64_t eembed_str_to_u64(const char *str, char **endptr, int base)
+{
+#if ((EEMBED_HOSTED) || (Eembed_use_diy_str_to_64))
+	return eembed_diy_str_to_u64(str, endptr, base);
+#elif (ULONG_MAX >= UINT64_MAX)
+	return strtoul(str, endptr, base);
+#else
+	return strtoull(str, endptr, base);
+#endif
+}
+
+int64_t eembed_str_to_long(const char *str, char **endptr)
+{
+	int base10 = 10;
+	return eembed_str_to_i64(str, endptr, base10);
+}
+
+uint64_t eembed_str_to_ulong(const char *str, char **endptr)
+{
+	int base10 = 10;
+	return eembed_str_to_u64(str, endptr, base10);
+}
+
+uint64_t eembed_hex_to_ulong(const char *str, char **endptr)
+{
+	int base16 = 16;
+	return eembed_str_to_u64(str, endptr, base16);
+}
+
 void *eembed_malloc(size_t size)
 {
 	struct eembed_allocator *ea = eembed_global_allocator;
@@ -999,19 +1145,6 @@ size_t (*eembed_strnlen)(const char *s, size_t maxlen) = eembed_diy_strnlen;
 char *(*eembed_strstr)(const char *haystack, const char *needle) = strstr;
 #else
 
-#if __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#endif
-static char *embed_ignore_const_s(const char *str)
-{
-	return (char *)(str);
-}
-
-#if __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
 char *eembed_diy_strstr(const char *haystack, const char *needle)
 {
 	size_t i = 0;
@@ -1026,7 +1159,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 
 	nlen = eembed_strlen(needle);
 	if (!nlen) {
-		return embed_ignore_const_s(haystack);
+		return eembed_ignore_const_s(haystack);
 	}
 	hlen = eembed_strlen(haystack);
 	if (nlen > hlen) {
@@ -1040,7 +1173,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 			}
 		}
 		if (found) {
-			return embed_ignore_const_s(haystack + i);
+			return eembed_ignore_const_s(haystack + i);
 		}
 	}
 	return NULL;

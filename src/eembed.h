@@ -28,6 +28,10 @@ char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul);
 char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z);
 char *eembed_float_to_str(char *buf, size_t len, long double f);
 
+int64_t eembed_str_to_long(const char *str, char **endptr);
+uint64_t eembed_str_to_ulong(const char *str, char **endptr);
+uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
+
 struct eembed_log;
 extern struct eembed_log *eembed_err_log;
 
