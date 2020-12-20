@@ -97,7 +97,7 @@ unsigned run_test(unsigned (*pfunc)(void), const char *name)
 void loop(void)
 {
 	Serial.println("==================================================");
-	Serial.print("Starting test run");
+	Serial.println("Starting test run");
 	Serial.println("==================================================");
 
 	unsigned failures = 0;
