@@ -19,6 +19,7 @@ Eembed_begin_C_functions
 #include <stddef.h>		/* for size_t */
 #include <stdint.h>		/* for uint64_t */
 /* these wrap stdout in a hosted, NULL in freesetanding */
+extern void (*eembed_system_printc)(char c);
 extern void (*eembed_system_print)(const char *str);
 extern void (*eembed_system_println)(void);
 
@@ -32,9 +33,9 @@ extern struct eembed_log *eembed_err_log;
 
 struct eembed_log {
 	void *context;
+	void (*append_c)(struct eembed_log *log, char c);
 	void (*append_s)(struct eembed_log *log, const char *str);
 	void (*append_ul)(struct eembed_log *log, uint64_t ul);
-	void (*append_z)(struct eembed_log *log, size_t z);
 	void (*append_l)(struct eembed_log *log, int64_t l);
 	void (*append_f)(struct eembed_log *log, long double f);
 	void (*append_vp)(struct eembed_log *log, const void *ptr);

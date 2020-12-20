@@ -21,6 +21,11 @@ void die(void)
 	call_null_pointer_to_crash_and_reboot();
 }
 
+void serial_print_c(char c)
+{
+	Serial.print(c);
+}
+
 void serial_print_s(const char *s)
 {
 	Serial.print(s);
@@ -33,6 +38,12 @@ void serial_println(void)
 
 struct eembed_log serial_log;
 
+void serial_log_print_c(struct eembed_log *log, char c)
+{
+	(void)log;
+	Serial.print(c);
+}
+
 void serial_log_print_s(struct eembed_log *log, const char *s)
 {
 	(void)log;
@@ -43,12 +54,6 @@ void serial_log_print_ul(struct eembed_log *log, uint64_t ul)
 {
 	(void)log;
 	Serial.print((unsigned long)ul);
-}
-
-void serial_log_print_z(struct eembed_log *log, size_t z)
-{
-	(void)log;
-	Serial.print(z);
 }
 
 void serial_log_print_l(struct eembed_log *log, int64_t l)
@@ -78,15 +83,16 @@ void serial_log_print_eol(struct eembed_log *log)
 void eembed_arduino_serial_log_init(void)
 {
 	serial_log.context = NULL;
+	serial_log.append_c = serial_log_print_c;
 	serial_log.append_s = serial_log_print_s;
 	serial_log.append_ul = serial_log_print_ul;
-	serial_log.append_z = serial_log_print_z;
 	serial_log.append_l = serial_log_print_l;
 	serial_log.append_f = serial_log_print_f;
 	serial_log.append_vp = serial_log_print_vp;
 	serial_log.append_eol = serial_log_print_eol;
 	eembed_err_log = &serial_log;
 
+	eembed_system_printc = serial_print_c;
 	eembed_system_print = serial_print_s;
 	eembed_system_println = serial_println;
 

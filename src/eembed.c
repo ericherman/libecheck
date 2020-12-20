@@ -61,6 +61,13 @@ void eembed_stdout_print(const char *str)
 
 void (*eembed_system_print)(const char *str) = eembed_stdout_print;
 
+void eembed_stdout_printc(char c)
+{
+	fprintf(stdout, "%c", c);
+}
+
+void (*eembed_system_printc)(char c) = eembed_stdout_printc;
+
 void eembed_stdout_println(void)
 {
 	fprintf(stdout, "\n");
@@ -81,6 +88,11 @@ static FILE *eembed_fprintf_context(struct eembed_log *log)
 	return stream;
 }
 
+void eembed_fprintf_append_c(struct eembed_log *log, char c)
+{
+	fprintf(eembed_fprintf_context(log), "%c", c);
+}
+
 void eembed_fprintf_append_s(struct eembed_log *log, const char *str)
 {
 	fprintf(eembed_fprintf_context(log), "%s", str);
@@ -89,11 +101,6 @@ void eembed_fprintf_append_s(struct eembed_log *log, const char *str)
 void eembed_fprintf_append_ul(struct eembed_log *log, uint64_t ul)
 {
 	fprintf(eembed_fprintf_context(log), "%" PRIu64, ul);
-}
-
-void eembed_fprintf_append_z(struct eembed_log *log, size_t z)
-{
-	fprintf(eembed_fprintf_context(log), "%" PRIu64, (uint64_t)z);
 }
 
 void eembed_fprintf_append_l(struct eembed_log *log, int64_t l)
@@ -121,9 +128,9 @@ void eembed_fprintf_append_eol(struct eembed_log *log)
 
 struct eembed_log eembed_default_fprintf_log = {
 	NULL,
+	eembed_fprintf_append_c,
 	eembed_fprintf_append_s,
 	eembed_fprintf_append_ul,
-	eembed_fprintf_append_z,
 	eembed_fprintf_append_l,
 	eembed_fprintf_append_f,
 	eembed_fprintf_append_vp,
@@ -162,6 +169,11 @@ void eembed_sprintf_append(struct eembed_log *log, const char *format, ...)
 	}
 }
 
+void eembed_sprintf_append_c(struct eembed_log *log, char c)
+{
+	eembed_sprintf_append(log, "%c", c);
+}
+
 void eembed_sprintf_append_s(struct eembed_log *log, const char *str)
 {
 	eembed_sprintf_append(log, "%s", str);
@@ -170,11 +182,6 @@ void eembed_sprintf_append_s(struct eembed_log *log, const char *str)
 void eembed_sprintf_append_ul(struct eembed_log *log, uint64_t ul)
 {
 	eembed_sprintf_append(log, "%" PRIu64, ul);
-}
-
-void eembed_sprintf_append_z(struct eembed_log *log, size_t z)
-{
-	eembed_sprintf_append(log, "%" PRIu64, (uint64_t)z);
 }
 
 void eembed_sprintf_append_l(struct eembed_log *log, int64_t l)
@@ -206,9 +213,9 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 	}
 
 	log->context = ctx;
+	log->append_c = eembed_sprintf_append_c;
 	log->append_s = eembed_sprintf_append_s;
 	log->append_ul = eembed_sprintf_append_ul;
-	log->append_z = eembed_sprintf_append_z;
 	log->append_l = eembed_sprintf_append_l;
 	log->append_f = eembed_sprintf_append_f;
 	log->append_vp = eembed_sprintf_append_vp;
@@ -288,12 +295,32 @@ void eembed_no_op_print(const char *str)
 
 void (*eembed_system_print)(const char *str) = eembed_no_op_print;
 
+void eembed_sys_print_printc(char c)
+{
+	char str[2];
+	str[0] = c;
+	str[1] = '\0';
+	eembed_system_print(str);
+}
+
+void (*eembed_system_printc)(char c) = eembed_sys_print_printc;
+
 void eembed_sys_print_println(void)
 {
 	eembed_system_print("\n");
 }
 
 void (*eembed_system_println)(void) = eembed_sys_print_println;
+
+void eembed_sys_print_str_append_c(struct eembed_log *log, char c)
+{
+	char str[2];
+
+	(void)log;
+	str[0] = c;
+	str[1] = '\0';
+	eembed_system_print(str);
+}
 
 void eembed_sys_print_str_append_s(struct eembed_log *log, const char *str)
 {
@@ -309,16 +336,6 @@ void eembed_sys_print_str_append_ul(struct eembed_log *log, uint64_t ul)
 	buf[0] = '\0';
 
 	eembed_system_print(eembed_ulong_to_str(buf, 25, ul));
-}
-
-void eembed_sys_print_str_append_z(struct eembed_log *log, size_t z)
-{
-	char buf[25];
-
-	(void)log;
-	buf[0] = '\0';
-
-	eembed_system_print(eembed_ulong_to_str(buf, 25, z));
 }
 
 void eembed_sys_print_str_append_l(struct eembed_log *log, int64_t l)
@@ -360,9 +377,9 @@ void eembed_sys_print_str_append_eol(struct eembed_log *log)
 
 struct eembed_log eembed_default_sys_print_str_log = {
 	NULL,
+	eembed_sys_print_str_append_c,
 	eembed_sys_print_str_append_s,
 	eembed_sys_print_str_append_ul,
-	eembed_sys_print_str_append_z,
 	eembed_sys_print_str_append_l,
 	eembed_sys_print_str_append_f,
 	eembed_sys_print_str_append_vp,
@@ -398,20 +415,22 @@ void eembed_ctx_strcpy_append_s(struct eembed_log *log, const char *str)
 	ctx->buf[ctx->len - 1] = '\0';
 }
 
+void eembed_ctx_strcpy_append_c(struct eembed_log *log, char c)
+{
+	char str[2];
+
+	str[0] = c;
+	str[1] = '\0';
+
+	eembed_ctx_strcpy_append_s(log, str);
+}
+
 void eembed_ctx_strcpy_append_ul(struct eembed_log *log, uint64_t ul)
 {
 	char buf[25];
 
 	buf[0] = '\0';
 	eembed_ctx_strcpy_append_s(log, eembed_ulong_to_str(buf, 25, ul));
-}
-
-void eembed_ctx_strcpy_append_z(struct eembed_log *log, size_t z)
-{
-	char buf[25];
-
-	buf[0] = '\0';
-	eembed_ctx_strcpy_append_s(log, eembed_ulong_to_str(buf, 25, z));
 }
 
 void eembed_ctx_strcpy_append_l(struct eembed_log *log, int64_t l)
@@ -453,9 +472,9 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 	}
 
 	log->context = ctx;
+	log->append_c = eembed_ctx_strcpy_append_c;
 	log->append_s = eembed_ctx_strcpy_append_s;
 	log->append_ul = eembed_ctx_strcpy_append_ul;
-	log->append_z = eembed_ctx_strcpy_append_z;
 	log->append_l = eembed_ctx_strcpy_append_l;
 	log->append_f = eembed_ctx_strcpy_append_f;
 	log->append_vp = eembed_ctx_strcpy_append_vp;

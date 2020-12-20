@@ -131,11 +131,11 @@ This is the structure of the eembed_log:
 
 	struct eembed_log {
 		void *context;
+		void (*append_c)(struct eembed_log *log, char c);
 		void (*append_s)(struct eembed_log *log, const char *str);
-		void (*append_ul)(struct eembed_log *log, unsigned long ul);
-		void (*append_z)(struct eembed_log *log, size_t z);
-		void (*append_l)(struct eembed_log *log, long l);
-		void (*append_f)(struct eembed_log *log, double f);
+		void (*append_ul)(struct eembed_log *log, uint64_t ul);
+		void (*append_l)(struct eembed_log *log, int64_t l);
+		void (*append_f)(struct eembed_log *log, long double f);
 		void (*append_vp)(struct eembed_log *log, const void *ptr);
 		void (*append_eol)(struct eembed_log *log);
 	}

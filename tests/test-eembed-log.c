@@ -26,10 +26,15 @@ unsigned int test_eembed_log(void)
 	}
 
 	log->append_s(log, "foo ");
-	log->append_z(log, 4);
+	log->append_ul(log, 4);
 	log->append_s(log, " bar");
+	log->append_c(log, ' ');
+	log->append_c(log, 'z');
+	log->append_ul(log, 23);
+	log->append_l(log, -2);
+	log->append_ul(log, 4);
 	log->append_eol(log);
-	expected = "foo 4 bar\n";
+	expected = "foo 4 bar z23-24\n";
 
 	diff = eembed_strncmp(expected, buf, buf_len);
 	if (diff) {

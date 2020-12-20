@@ -47,8 +47,10 @@ unsigned test_echeck_err_log(void)
 	eembed_no_op_print(" WE SHOULD NOT SEE THIS OUTPUT!\n");
 #endif
 
+	eembed_err_log->append_c(eembed_err_log, '(');
 	eembed_system_print("ECHECK_FUNC == ");
 	eembed_system_print(ECHECK_FUNC);
+	eembed_system_printc(')');
 	eembed_system_println();
 
 	eembed_memset(logbuf, 0x00, logbuf_len);

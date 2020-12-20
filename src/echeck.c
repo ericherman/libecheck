@@ -41,7 +41,6 @@ unsigned char echeck_char_m(struct eembed_log *err, const char *func,
 			    const char *file, int line, char actual,
 			    char expected, const char *msg)
 {
-	char buf[2];
 	if (expected == actual) {
 		return 0;
 	}
@@ -51,17 +50,13 @@ unsigned char echeck_char_m(struct eembed_log *err, const char *func,
 	echeck_append_fail(err, msg);
 	err->append_s(err, " Expected '");
 	if (expected) {
-		buf[0] = expected;
-		buf[1] = '\0';
-		err->append_s(err, buf);
+		err->append_c(err, expected);
 	} else {
 		err->append_s(err, "\\0");
 	}
 	err->append_s(err, "' but was '");
 	if (actual) {
-		buf[0] = actual;
-		buf[1] = '\0';
-		err->append_s(err, buf);
+		err->append_c(err, actual);
 	} else {
 		err->append_s(err, "\\0");
 	}
@@ -129,9 +124,9 @@ unsigned char echeck_size_t_m(struct eembed_log *err, const char *func,
 
 	echeck_append_fail(err, msg);
 	err->append_s(err, " Expected ");
-	err->append_z(err, expected);
+	err->append_ul(err, expected);
 	err->append_s(err, " but was ");
-	err->append_z(err, actual);
+	err->append_ul(err, actual);
 	err->append_s(err, " ");
 	echeck_append_func_file_line(err, func, file, line);
 	err->append_eol(err);
