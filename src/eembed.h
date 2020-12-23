@@ -25,8 +25,11 @@ extern void (*eembed_system_println)(void);
 
 char *eembed_long_to_str(char *buf, size_t len, int64_t l);
 char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul);
-char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z);
 char *eembed_float_to_str(char *buf, size_t len, long double f);
+
+char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z);
+char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
+			  size_t bytes_len);
 
 int64_t eembed_str_to_long(const char *str, char **endptr);
 uint64_t eembed_str_to_ulong(const char *str, char **endptr);
@@ -77,6 +80,8 @@ extern size_t (*eembed_strlen)(const char *s);
 extern size_t (*eembed_strnlen)(const char *s, size_t maxlen);
 
 extern char *(*eembed_strstr)(const char *haystack, const char *needle);
+
+extern int (*eembed_random_bytes)(unsigned char *buf, size_t len);
 
 struct eembed_allocator;
 /* eembed_global_allocator may be the null_allocator, if not EEMBED_HOSTED */

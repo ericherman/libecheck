@@ -11,11 +11,18 @@
 #include <stdint.h>
 
 #if EEMBED_HOSTED
+#include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
+#include <linux/random.h>	/* #define RNDGETENTCNT */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>		/* read() POSIX.1-2001 */
 #endif
 
 #if EEMBED_HOSTED
@@ -557,50 +564,18 @@ char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul)
 	return buf;
 }
 
-static char eembed_nibble_to_hex(unsigned char nibble)
-{
-	if (nibble < 10) {
-		return '0' + nibble;
-	}
-
-	return 'A' + (nibble - 10);
-}
-
-static void eembed_byte_to_hex_chars(char *hi, char *lo, unsigned char byte)
-{
-	*hi = eembed_nibble_to_hex((byte & 0xF0) >> 4);
-	*lo = eembed_nibble_to_hex((byte & 0x0F));
-}
-
 char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z)
 {
+	const size_t ul_bytes_len = sizeof(uint64_t);
+	unsigned char ul_bytes[sizeof(uint64_t)];
 	size_t i = 0;
-	size_t pos = 0;
-	size_t ul_bytes = sizeof(uint64_t);
 
-	if (!buf) {
-		return NULL;
-	}
-
-	if (len < (2 + (2 * ul_bytes) + 1)) {
-		return NULL;
-	}
-
-	buf[pos++] = '0';
-	buf[pos++] = 'x';
-
-	for (i = 0; i < ul_bytes; ++i) {
-		char h = 0;
-		char l = 0;
+	for (i = 0; i < sizeof(uint64_t); ++i) {
 		unsigned char byte = 0;
-
-		byte = (0xFF & (z >> (8 * ((ul_bytes - 1) - i))));
-		eembed_byte_to_hex_chars(&h, &l, byte);
-		buf[pos++] = h;
-		buf[pos++] = l;
+		byte = (0xFF & (z >> (8 * ((sizeof(uint64_t) - 1) - i))));
+		ul_bytes[i] = byte;
 	}
-	buf[pos] = '\0';
-	return buf;
+	return eembed_bytes_to_hex(buf, len, ul_bytes, ul_bytes_len);
 }
 
 char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
@@ -700,6 +675,49 @@ char *eembed_float_to_str(char *buf, size_t len, long double f)
 	return eembed_bogus_float_to_str(buf, len, f);
 }
 #endif
+
+static char eembed_nibble_to_hex(unsigned char nibble)
+{
+	if (nibble < 10) {
+		return '0' + nibble;
+	}
+
+	return 'A' + (nibble - 10);
+}
+
+static void eembed_byte_to_hex_chars(char *hi, char *lo, unsigned char byte)
+{
+	*hi = eembed_nibble_to_hex((byte & 0xF0) >> 4);
+	*lo = eembed_nibble_to_hex((byte & 0x0F));
+}
+
+char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
+			  size_t bytes_len)
+{
+	size_t i = 0;
+	size_t pos = 0;
+
+	if (!buf) {
+		return NULL;
+	}
+
+	if (buf_len < (2 + (2 * bytes_len) + 1)) {
+		return NULL;
+	}
+
+	buf[pos++] = '0';
+	buf[pos++] = 'x';
+
+	for (i = 0; i < bytes_len; ++i) {
+		char h = 0;
+		char l = 0;
+		eembed_byte_to_hex_chars(&h, &l, bytes[i]);
+		buf[pos++] = h;
+		buf[pos++] = l;
+	}
+	buf[pos] = '\0';
+	return buf;
+}
 
 #if __GNUC__
 #pragma GCC diagnostic push
@@ -1024,14 +1042,14 @@ int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) = strncmp;
 
 #else
 
-int echeck_diy_strcmp(const char *s1, const char *s2)
+int eembed_diy_strcmp(const char *s1, const char *s2)
 {
 	return eembed_strncmp(s1, s2, SIZE_MAX);
 }
 
-int (*eembed_strcmp)(const char *s1, const char *s2) = echeck_diy_strcmp;
+int (*eembed_strcmp)(const char *s1, const char *s2) = eembed_diy_strcmp;
 
-int echeck_diy_strncmp(const char *s1, const char *s2, size_t max_len)
+int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 {
 	size_t i;
 	int d;
@@ -1058,7 +1076,7 @@ int echeck_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 }
 
 int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) =
-    echeck_diy_strncmp;
+    eembed_diy_strncmp;
 #endif
 
 #if EEMBED_HOSTED
@@ -1181,6 +1199,194 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 
 char *(*eembed_strstr)(const char *haystack, const char *needle) =
     eembed_diy_strstr;
+#endif
+
+#if EEMBED_HOSTED
+/* from Insane Coding blog "A good idea with bad usage: /dev/urandom"
+http://insanecoding.blogspot.nl/2014/05/a-good-idea-with-bad-usage-devurandom.html
+*/
+static long eembed_retrying_read(int fd, void *buf, size_t len)
+{
+	size_t amount_read = 0;
+	unsigned char *cbuf = NULL;
+	ssize_t r = 0;
+
+	while (amount_read < len) {
+		cbuf = ((unsigned char *)buf) + amount_read;
+		r = read(fd, cbuf, len - amount_read);
+		if (r > 0) {
+			amount_read += r;
+		} else {
+			/* Things are a bit weird the code gets here */
+			/* LCOV_EXCL_START */
+			if (!r) {
+				break;
+			} else if (errno != EINTR) {
+				amount_read = -1;
+				break;
+			}
+			/* LCOV_EXCL_STOP */
+		}
+	}
+	return amount_read;
+}
+
+int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
+{
+	int err = 0;
+	int save_errno = 0;
+	int urandom_fd = 0;
+	int entropy = 0;
+	long bytes_read = 0;
+	const char *urandom_str = "/dev/urandom";
+	struct eembed_log *log = eembed_err_log;
+
+	urandom_fd = open(urandom_str, O_RDONLY);
+	if (-1 == urandom_fd) {
+		/* LCOV_EXCL_START */
+		/* Seriously weird if open /dev/urandom fails */
+		save_errno = errno;
+		if (log) {
+			log->append_s(log, __FILE__);
+			log->append_s(log, ":");
+			log->append_ul(log, __LINE__);
+			log->append_s(log, ": ");
+			log->append_s(log, "open('");
+			log->append_s(log, urandom_str);
+			log->append_s(log, "') failed, errno: ");
+			log->append_l(log, save_errno);
+			log->append_s(log, " (");
+			log->append_s(log, strerror(save_errno));
+			log->append_s(log, ")");
+			log->append_eol(log);
+		}
+		return (save_errno) ? save_errno : 1;
+		/* LCOV_EXCL_STOP */
+	}
+	if (-1 == ioctl(urandom_fd, RNDGETENTCNT, &entropy)) {
+		/* LCOV_EXCL_START */
+		/* Unreasonably weird if /dev/urandom is not RNDGETENTCNT */
+		save_errno = errno;
+		if (log) {
+			log->append_s(log, __FILE__);
+			log->append_s(log, ":");
+			log->append_ul(log, __LINE__);
+			log->append_s(log, ": ");
+			log->append_s(log, urandom_str);
+			log->append_s(log, " not a random device? errno: ");
+			log->append_l(log, save_errno);
+			log->append_s(log, " (");
+			log->append_s(log, strerror(save_errno));
+			log->append_s(log, ")");
+			log->append_eol(log);
+		}
+		err = (save_errno) ? save_errno : 1;
+		goto eembed_dev_urandom_bytes_end;
+		/* LCOV_EXCL_STOP */
+	}
+
+	if (entropy < ((long)(len * 8))) {
+		/* LCOV_EXCL_START */
+		/* This is highly unlikely even on a misconfigured system */
+		if (log) {
+			log->append_s(log, __FILE__);
+			log->append_s(log, ":");
+			log->append_ul(log, __LINE__);
+			log->append_s(log, ": ");
+			log->append_s(log, urandom_str);
+			log->append_s(log, " lacks : ");
+			log->append_ul(log, len * 8);
+			log->append_s(log, "entropy");
+			log->append_eol(log);
+		}
+		/* LCOV_EXCL_STOP */
+	}
+
+	bytes_read = eembed_retrying_read(urandom_fd, buf, len);
+	if (bytes_read < ((long)len)) {
+		/* LCOV_EXCL_START */
+		/* something very strange would have to have happened */
+		if (log) {
+			log->append_s(log, __FILE__);
+			log->append_s(log, ":");
+			log->append_ul(log, __LINE__);
+			log->append_s(log, ": ");
+			log->append_s(log, "wanted to read ");
+			log->append_ul(log, len);
+			log->append_s(log, " bytes from ");
+			log->append_s(log, urandom_str);
+			log->append_s(log, ", read ");
+			log->append_l(log, bytes_read);
+			log->append_eol(log);
+		}
+		/* LCOV_EXCL_STOP */
+	}
+
+eembed_dev_urandom_bytes_end:
+	if (-1 == close(urandom_fd)) {
+		/* LCOV_EXCL_START */
+		/* Very very weird if close /dev/urandom fails */
+		save_errno = errno;
+		if (log) {
+			log->append_s(log, __FILE__);
+			log->append_s(log, ":");
+			log->append_ul(log, __LINE__);
+			log->append_s(log, ": ");
+			log->append_s(log, "close('");
+			log->append_s(log, urandom_str);
+			log->append_s(log, "') failed, errno: ");
+			log->append_l(log, save_errno);
+			log->append_s(log, " (");
+			log->append_s(log, strerror(save_errno));
+			log->append_s(log, ")");
+			log->append_eol(log);
+		}
+		/* LCOV_EXCL_STOP */
+	}
+
+	return err;
+}
+
+int (*eembed_random_bytes)(unsigned char *buf, size_t len) =
+    eembed_dev_urandom_bytes;
+
+#else
+
+static const uint8_t eembed_bogus_random[] = {
+	2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
+	31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+	73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
+	127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+	179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
+	233, 239, 241, 251,
+	0			/* zero terminated */
+};
+
+static size_t eembed_bogus_random_len = 54;
+size_t eembed_bogus_random_seed = 0;
+
+int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t len)
+{
+	size_t i = 0;
+	size_t pos = 0;
+	unsigned char byte = 0x00;
+	uint32_t bogus = 0;
+
+	pos = (eembed_bogus_random_seed % eembed_bogus_random_len);
+	byte = eembed_bogus_random[pos];
+
+	for (i = 0; i < len; ++i) {
+		bogus = bogus + (byte + i) + (bogus * 31) + (size_t)buf;
+		byte = bogus > 255 ? (bogus >> (i % 8)) : bogus;
+		buf[i] = byte;
+		eembed_bogus_random_seed += bogus;
+	}
+
+	return 0;
+}
+
+int (*eembed_random_bytes)(unsigned char *buf, size_t len) =
+    eembed_totally_bogus_random_bytes;
 #endif
 
 struct eembed_alloc_chunk {

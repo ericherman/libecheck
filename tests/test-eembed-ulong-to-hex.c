@@ -8,11 +8,16 @@
 void check_ulong_to_hex_nothing_explodes(void)
 {
 	char buf[30];
+	unsigned long ulong_max = ULONG_MAX;
+	unsigned char *bytes;
 
-	eembed_ulong_to_hex(buf, 3, ULONG_MAX);
-	eembed_ulong_to_hex(buf, 0, ULONG_MAX);
-	eembed_ulong_to_hex(NULL, 30, ULONG_MAX);
-	eembed_ulong_to_hex(buf, 30, ULONG_MAX);
+	eembed_ulong_to_hex(buf, 3, ulong_max);
+	eembed_ulong_to_hex(buf, 0, ulong_max);
+	eembed_ulong_to_hex(NULL, 30, ulong_max);
+	eembed_ulong_to_hex(buf, 30, ulong_max);
+
+	bytes = (unsigned char *)&ulong_max;
+	eembed_bytes_to_hex(buf, 30, bytes, sizeof(unsigned long));
 }
 
 unsigned check_ulong_to_hex(unsigned long ul, const char *ulhex)
