@@ -1352,21 +1352,20 @@ int (*eembed_random_bytes)(unsigned char *buf, size_t len) =
 
 #else
 
-static const uint8_t eembed_bogus_random[] = {
-	2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
-	31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
-	73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
-	127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
-	179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
-	233, 239, 241, 251,
-	0			/* zero terminated */
-};
-
-static size_t eembed_bogus_random_len = 54;
 size_t eembed_bogus_random_seed = 0;
 
 int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t len)
 {
+	const uint8_t eembed_bogus_random[] = {
+		2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
+		31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+		73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
+		127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+		179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
+		233, 239, 241, 251,
+		0		/* zero terminated */
+	};
+	const size_t eembed_bogus_random_len = 54;
 	size_t i = 0;
 	size_t pos = 0;
 	unsigned char byte = 0x00;
