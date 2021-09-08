@@ -51,7 +51,6 @@ check_PROGRAMS=\
  test-eembed-chunk-alloc \
  test-eembed-chunk-realloc \
  test-eembed-malloc-free \
- test-eembed-alloca-freea \
  test_check_status \
  test_check_byte_array \
  test_check_byte_array_m \
@@ -142,9 +141,6 @@ test_eembed_malloc_free_SOURCES=$(TESTS_COMMON_SOURCES) \
  tests/test-eembed-malloc-free.c
 test_eembed_malloc_free_LDADD=$(T_LDADD)
 
-test_eembed_alloca_freea_SOURCES=$(TESTS_COMMON_SOURCES) \
- tests/test-eembed-alloca-freea.c
-test_eembed_alloca_freea_LDADD=$(T_LDADD)
 #---------
 
 test_check_status_SOURCES=tests/test_check_status.c \
@@ -335,9 +331,6 @@ vg-test-eembed-chunk-realloc: test-eembed-chunk-realloc
 vg-test-eembed-malloc-free: test-eembed-malloc-free
 	./libtool --mode=execute valgrind -q ./test-eembed-malloc-free
 
-vg-test-eembed-alloca-freea: test-eembed-alloca-freea
-	./libtool --mode=execute valgrind -q ./test-eembed-alloca-freea
-
 vg-test_check_status: test_check_status
 	./libtool --mode=execute valgrind -q ./test_check_status
 
@@ -431,7 +424,6 @@ valgrind: \
 	vg-test-eembed-chunk-alloc \
 	vg-test-eembed-chunk-realloc \
 	vg-test-eembed-malloc-free \
-	vg-test-eembed-alloca-freea \
 	vg-test_check_byte_array \
 	vg-test_check_byte_array_m \
 	vg-test_check_byte_array_m2 \

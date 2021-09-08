@@ -112,25 +112,6 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 #define EEMBED_NOP() do { ((void)0); } while (0)
 #endif
 
-/*
- * The macros "eembed_alloca" might resolve to malloc, thus
- * be sure to call "emmbed_freea" before leaving the scope.
- *
- * Indeed, this changes "alloca" from being automatically freed,
- * however it remains useful if stack-allocation is desired in
- * the typical hosted, or well supported embedded case.
- */
-#if (EEMBED_NO_ALLOCA || __STDC_NO_VLA__)
-#define eembed_alloca(len) eembed_malloc(len)
-#define eembed_freea(p) eembed_mfree(p)
-#else /* (EEMBED_NO_ALLOCA || __STDC_NO_VLA__) */
-#if (!(EEMBED_SKIP_ALLOCA_H))
-#include <alloca.h>
-#endif /* (!(EEMBED_SKIP_ALLOCA_H)) */
-#define eembed_alloca(len) alloca(len)
-#define eembed_freea(p) EEMBED_NOP()
-#endif /* (EEMBED_NO_ALLOCA || __STDC_NO_VLA__) */
-
 #ifndef EEMBED_HOSTED
 #ifdef ARDUINO
 #define EEMBED_HOSTED 0
