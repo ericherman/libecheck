@@ -153,12 +153,11 @@ void eembed_sprintf_append(struct eembed_log *log, const char *format, ...)
 	va_list ap;
 
 	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
-	/* LCOV_EXCL_START */
-	/* this would be a programmer error */
-	if (!ctx || !ctx->buf || !ctx->len) {
-		return;
-	}
-	/* LCOV_EXCL_STOP */
+
+	eembed_assert(ctx);
+	eembed_assert(ctx->buf);
+	eembed_assert(ctx->len);
+
 	used = eembed_strnlen(ctx->buf, ctx->len);
 	if (used < (ctx->len - 1)) {
 		buf = ctx->buf + used;
@@ -747,14 +746,9 @@ uint64_t eembed_diy_str_to_u64(const char *str, char **endptr, int pbase)
 	char ascii_end2 = 0;
 	char ascii_end3 = 0;
 
-	/* LCOV_EXCL_START */
-	if (!str || base < 2 || base > 36) {
-		if (endptr) {
-			*endptr = NULL;
-		}
-		return 0;
-	}
-	/* LCOV_EXCL_STOP */
+	eembed_assert(str);
+	eembed_assert(base >= 2);
+	eembed_assert(base <= 36);
 
 	if (base <= 10) {
 		ascii_end1 = '0' + (base - 1);
@@ -797,14 +791,9 @@ int64_t eembed_diy_str_to_i64(const char *str, char **endptr, int base)
 	int64_t val = 0;
 	int negate = 0;
 
-	/* LCOV_EXCL_START */
-	if (!str || base < 2 || base > 36) {
-		if (endptr) {
-			*endptr = NULL;
-		}
-		return 0;
-	}
-	/* LCOV_EXCL_STOP */
+	eembed_assert(str);
+	eembed_assert(base >= 2);
+	eembed_assert(base <= 36);
 
 	if (*str == '-') {
 		str++;
@@ -907,12 +896,10 @@ int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 		return 0;
 	}
 
-	/* LCOV_EXCL_START */
 	/* glibc explodes on NULL */
 	if (!a1 || !a2) {
 		return a1 ? 1 : -1;
 	}
-	/* LCOV_EXCL_STOP */
 
 	s1 = (const unsigned char *)a1;
 	s2 = (const unsigned char *)a2;
@@ -1050,12 +1037,11 @@ int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 	if (s1 == s2 || max_len == 0) {
 		return 0;
 	}
-	/* LCOV_EXCL_START */
-	/* glibc explodes on NULL */
+
+	/* glibc explodes on NULL, do all libc memcpy? */
 	if (!s1 || !s2) {
 		return s1 ? 1 : -1;
 	}
-	/* LCOV_EXCL_STOP */
 
 	for (i = 0; i < max_len; ++i) {
 		d = s1[i] - s2[i];
@@ -1195,6 +1181,11 @@ char *(*eembed_strstr)(const char *haystack, const char *needle) =
 #endif
 
 #if EEMBED_HOSTED
+int (*eembed_system_open)(const char *pathname, int flags, ...) = open;
+ssize_t (*eembed_system_read)(int fd, void *buf, size_t count) = read;
+int (*eembed_system_ioctl)(int fd, unsigned long request, ...) = ioctl;
+int (*eembed_system_close)(int fd) = close;
+
 /* from Insane Coding blog "A good idea with bad usage: /dev/urandom"
 http://insanecoding.blogspot.nl/2014/05/a-good-idea-with-bad-usage-devurandom.html
 */
@@ -1206,7 +1197,7 @@ static long eembed_retrying_read(int fd, void *buf, size_t len)
 
 	while (amount_read < len) {
 		cbuf = ((unsigned char *)buf) + amount_read;
-		r = read(fd, cbuf, len - amount_read);
+		r = eembed_system_read(fd, cbuf, len - amount_read);
 		if (r > 0) {
 			amount_read += r;
 		} else {
@@ -1234,7 +1225,7 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 	const char *urandom_str = "/dev/urandom";
 	struct eembed_log *log = eembed_err_log;
 
-	urandom_fd = open(urandom_str, O_RDONLY);
+	urandom_fd = eembed_system_open(urandom_str, O_RDONLY);
 	if (-1 == urandom_fd) {
 		/* LCOV_EXCL_START */
 		/* Seriously weird if open /dev/urandom fails */
@@ -1256,7 +1247,7 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 		return (save_errno) ? save_errno : 1;
 		/* LCOV_EXCL_STOP */
 	}
-	if (-1 == ioctl(urandom_fd, RNDGETENTCNT, &entropy)) {
+	if (-1 == eembed_system_ioctl(urandom_fd, RNDGETENTCNT, &entropy)) {
 		/* LCOV_EXCL_START */
 		/* Unreasonably weird if /dev/urandom is not RNDGETENTCNT */
 		save_errno = errno;
@@ -1316,7 +1307,7 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 	}
 
 eembed_dev_urandom_bytes_end:
-	if (-1 == close(urandom_fd)) {
+	if (-1 == eembed_system_close(urandom_fd)) {
 		/* LCOV_EXCL_START */
 		/* Very very weird if close /dev/urandom fails */
 		save_errno = errno;
