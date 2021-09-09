@@ -153,10 +153,6 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 #endif
 
 #ifndef eembed_assert
-#if EEMBED_HOSTED
-#include <assert.h>
-#define eembed_assert(expression) assert(expression)
-#else
 #ifdef NDEBUG
 #define eembed_assert(expression) EEMBED_NOP()
 #else
@@ -178,7 +174,6 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 			eembed_assert_crash(); \
 		} \
 	} while (0)
-#endif
 #endif
 #endif
 

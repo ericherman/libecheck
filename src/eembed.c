@@ -26,14 +26,12 @@
 #endif
 
 #if EEMBED_HOSTED
-/* LCOV_EXCL_START */
+void (*eembed_exit)(int status) = exit;
 void eembed_exit_failure(void)
 {
 	/* assertion failed, now we crash */
-	exit(EXIT_FAILURE);
+	eembed_exit(EXIT_FAILURE);
 }
-
-/* LCOV_EXCL_STOP */
 
 void (*eembed_assert_crash)(void) = eembed_exit_failure;
 #else
@@ -247,6 +245,7 @@ char *eembed_sprintf_to_str(char *buf, size_t len, const char *format, ...)
 {
 	va_list ap;
 	int printed = 0;
+	size_t pos = 0;
 
 	if (!buf || !len) {
 		return buf;
@@ -261,16 +260,10 @@ char *eembed_sprintf_to_str(char *buf, size_t len, const char *format, ...)
 #endif
 	va_end(ap);
 
-	/* LCOV_EXCL_START */
-	/* Something *very* strange is afoot, bail out! */
-	if (printed < 0) {
-		buf[0] = '\0';
-		return NULL;
-	}
-	/* LCOV_EXCL_STOP */
+	pos = (printed < 0) ? 0 : len - 1;
+	buf[pos] = '\0';
 
-	buf[len - 1] = '\0';
-	return buf;
+	return ((printed < 0) || ((size_t)printed >= len)) ? NULL : buf;
 }
 
 char *eembed_long_to_str(char *buf, size_t len, int64_t l)

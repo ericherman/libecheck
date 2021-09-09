@@ -34,6 +34,7 @@ endif
 
 TESTS=$(check_PROGRAMS)
 check_PROGRAMS=\
+ test-eembed-assert \
  test-eembed-log \
  test-eembed-long-to-str \
  test-eembed-ulong-to-str \
@@ -81,6 +82,9 @@ check_PROGRAMS=\
 TESTS_COMMON_SOURCES=src/eembed.h src/echeck.h
 
 T_LDADD=libecheck.la -lecheck libeembed.la -leembed
+
+test_eembed_assert_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-assert.c
+test_eembed_assert_LDADD=$(T_LDADD)
 
 test_eembed_log_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-log.c
 test_eembed_log_LDADD=$(T_LDADD)
@@ -280,6 +284,9 @@ tidy:
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino
 
+vg-test-eembed-assert: test-eembed-assert
+	./libtool --mode=execute valgrind -q ./test-eembed-assert
+
 vg-test-eembed-log: test-eembed-log
 	./libtool --mode=execute valgrind -q ./test-eembed-log
 
@@ -407,6 +414,7 @@ vg-test_echeck_err_log: test_echeck_err_log
 	./libtool --mode=execute valgrind -q ./test_echeck_err_log
 
 valgrind: \
+	vg-test-eembed-assert \
 	vg-test-eembed-log \
 	vg-test-eembed-long-to-str \
 	vg-test-eembed-ulong-to-str \
