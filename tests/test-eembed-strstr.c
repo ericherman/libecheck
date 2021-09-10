@@ -25,6 +25,10 @@ unsigned test_eembed_strstr(void)
 	expect = NULL;
 	failures += check_ptr(rv, expect);
 
+	rv = eembed_strstr(haystack, "");
+	expect = haystack;
+	failures += check_ptr(rv, expect);
+
 	return failures;
 }
 

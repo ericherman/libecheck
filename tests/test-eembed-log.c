@@ -10,6 +10,7 @@ unsigned int test_eembed_log(void)
 	int diff = 0;
 	int failures = 0;
 	const char *expected = NULL;
+	char *found = NULL;
 
 	buf[0] = '\0';
 	log = eembed_char_buf_log_init(NULL, &bctx, buf, buf_len);
@@ -46,6 +47,36 @@ unsigned int test_eembed_log(void)
 		eembed_err_log->append_eol(eembed_err_log);
 		eembed_err_log->append_s(eembed_err_log, "\tdiff of ");
 		eembed_err_log->append_l(eembed_err_log, diff);
+		eembed_err_log->append_eol(eembed_err_log);
+		++failures;
+	}
+
+	eembed_memset(buf, 0x00, buf_len);
+	log->append_f(log, -2.5);
+	found = eembed_strstr(buf, "-2.5");
+	if (!found) {
+		eembed_err_log->append_s(eembed_err_log, "Did not find");
+		eembed_err_log->append_s(eembed_err_log, " -2.5 in '");
+		eembed_err_log->append_s(eembed_err_log, buf);
+		eembed_err_log->append_s(eembed_err_log, "'");
+		eembed_err_log->append_eol(eembed_err_log);
+		++failures;
+	}
+
+	eembed_memset(buf, 0x00, buf_len);
+	log->append_vp(log, NULL);
+	found = eembed_strstr(buf, "0x00");
+	if (!found) {
+		found = eembed_strstr(buf, "null");
+	}
+	if (!found) {
+		found = eembed_strstr(buf, "nil");
+	}
+	if (!found) {
+		eembed_err_log->append_s(eembed_err_log, "Did not find");
+		eembed_err_log->append_s(eembed_err_log, " (nil) in '");
+		eembed_err_log->append_s(eembed_err_log, buf);
+		eembed_err_log->append_s(eembed_err_log, "'");
 		eembed_err_log->append_eol(eembed_err_log);
 		++failures;
 	}

@@ -27,6 +27,8 @@ void check_float_to_str_nothing_explodes(void)
 
 	eembed_float_to_str(buf, 30, LDBL_MAX / 2);
 	eembed_float_to_str(buf, 30, LDBL_MAX * 2);
+
+	eembed_float_to_str(buf, 30, 0.000000001);
 }
 
 unsigned check_float_to_str(double d, const char *fltstr)

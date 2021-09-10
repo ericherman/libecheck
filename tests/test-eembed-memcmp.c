@@ -54,6 +54,8 @@ unsigned int test_eembed_memcmp(void)
 	/* glibc explodes on NULL */
 	rv1 = eembed_memcmp(NULL, s2, 20);
 	failures += check_int(rv1 == 0 ? 0 : 1, 1);
+	rv2 = eembed_memcmp(s1, NULL, 20);
+	failures += check_int(rv2 == 0 ? 0 : 1, 1);
 #endif
 
 	return failures;

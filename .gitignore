@@ -3,6 +3,7 @@
 ################
 test-eembed-assert
 test-eembed-log
+test-eembed-print
 test-eembed-long-to-str
 test-eembed-ulong-to-hex
 test-eembed-ulong-to-str

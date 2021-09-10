@@ -36,6 +36,7 @@ TESTS=$(check_PROGRAMS)
 check_PROGRAMS=\
  test-eembed-assert \
  test-eembed-log \
+ test-eembed-print \
  test-eembed-long-to-str \
  test-eembed-ulong-to-str \
  test-eembed-ulong-to-hex \
@@ -88,6 +89,9 @@ test_eembed_assert_LDADD=$(T_LDADD)
 
 test_eembed_log_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-log.c
 test_eembed_log_LDADD=$(T_LDADD)
+
+test_eembed_print_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-print.c
+test_eembed_print_LDADD=$(T_LDADD)
 
 test_eembed_long_to_str_SOURCES=$(TESTS_COMMON_SOURCES) \
  tests/test-eembed-long-to-str.c
@@ -290,6 +294,9 @@ vg-test-eembed-assert: test-eembed-assert
 vg-test-eembed-log: test-eembed-log
 	./libtool --mode=execute valgrind -q ./test-eembed-log
 
+vg-test-eembed-print: test-eembed-print
+	./libtool --mode=execute valgrind -q ./test-eembed-print
+
 vg-test-eembed-long-to-str: test-eembed-long-to-str
 	./libtool --mode=execute valgrind -q ./test-eembed-long-to-str
 
@@ -416,6 +423,7 @@ vg-test_echeck_err_log: test_echeck_err_log
 valgrind: \
 	vg-test-eembed-assert \
 	vg-test-eembed-log \
+	vg-test-eembed-print \
 	vg-test-eembed-long-to-str \
 	vg-test-eembed-ulong-to-str \
 	vg-test-eembed-ulong-to-hex \

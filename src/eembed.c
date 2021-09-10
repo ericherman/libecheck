@@ -40,6 +40,9 @@ void (*eembed_assert_crash)(void) = NULL;
 
 #if EEMBED_HOSTED
 
+int (*eembed_system_fprintf)(FILE *stream, const char *format, ...) = fprintf;
+int (*eembed_system_fflush)(FILE *stream) = fflush;
+
 #ifndef EEMBDED_IO_HAVE_SNPRINTF
 #if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _GNU_SOURCE || _BSD_SOURCE
 #define EEMBDED_IO_HAVE_SNPRINTF 1
@@ -57,78 +60,100 @@ void (*eembed_assert_crash)(void) = NULL;
 *
 * https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_05_01
 */
-static unsigned char eembed_posix1_2017_2_5_1 = 0;
+static unsigned char eembed_posix1_2017_2_5_1_stdout_clean = 0;
+
+FILE *eembed_stderr(void)
+{
+	if (!eembed_posix1_2017_2_5_1_stdout_clean) {
+		eembed_system_fflush(stdout);
+		eembed_posix1_2017_2_5_1_stdout_clean = 1;
+	}
+	return stderr;
+}
+
+FILE *eembed_stdout(void)
+{
+	eembed_posix1_2017_2_5_1_stdout_clean = 0;
+	return stdout;
+}
+
+FILE *eembed_stream(FILE *stream)
+{
+	if (!stream || stream == stderr) {
+		return eembed_stderr();
+	}
+	if (stream == stdout) {
+		return eembed_stdout();
+	}
+	return stream;
+}
+
+void eembed_stream_eol(FILE *stream)
+{
+	eembed_stream(stream);
+	eembed_system_fprintf(stream, "\n");
+	eembed_system_fflush(stream);
+}
+
+static FILE *eembed_fprintf_context(struct eembed_log *log)
+{
+	return eembed_stream((FILE *)log->context);
+}
 
 void eembed_stdout_print(const char *str)
 {
-	fprintf(stdout, "%s", str);
+	eembed_system_fprintf(eembed_stdout(), "%s", str);
 }
 
 void (*eembed_system_print)(const char *str) = eembed_stdout_print;
 
 void eembed_stdout_printc(char c)
 {
-	fprintf(stdout, "%c", c);
+	eembed_system_fprintf(eembed_stdout(), "%c", c);
 }
 
 void (*eembed_system_printc)(char c) = eembed_stdout_printc;
 
 void eembed_stdout_println(void)
 {
-	fprintf(stdout, "\n");
-	fflush(stdout);
+	eembed_stream_eol(eembed_stdout());
 }
 
 void (*eembed_system_println)(void) = eembed_stdout_println;
 
-static FILE *eembed_fprintf_context(struct eembed_log *log)
-{
-	FILE *stream = log->context ? (FILE *)log->context : stderr;
-	/* LCOV_EXCL_START */
-	if (stream == stderr && !eembed_posix1_2017_2_5_1) {
-		fflush(stdout);
-		eembed_posix1_2017_2_5_1 = 1;
-	}
-	/* LCOV_EXCL_STOP */
-	return stream;
-}
-
 void eembed_fprintf_append_c(struct eembed_log *log, char c)
 {
-	fprintf(eembed_fprintf_context(log), "%c", c);
+	eembed_system_fprintf(eembed_fprintf_context(log), "%c", c);
 }
 
 void eembed_fprintf_append_s(struct eembed_log *log, const char *str)
 {
-	fprintf(eembed_fprintf_context(log), "%s", str);
+	eembed_system_fprintf(eembed_fprintf_context(log), "%s", str);
 }
 
 void eembed_fprintf_append_ul(struct eembed_log *log, uint64_t ul)
 {
-	fprintf(eembed_fprintf_context(log), "%" PRIu64, ul);
+	eembed_system_fprintf(eembed_fprintf_context(log), "%" PRIu64, ul);
 }
 
 void eembed_fprintf_append_l(struct eembed_log *log, int64_t l)
 {
-	fprintf(eembed_fprintf_context(log), "%" PRId64, l);
+	eembed_system_fprintf(eembed_fprintf_context(log), "%" PRId64, l);
 }
 
 void eembed_fprintf_append_f(struct eembed_log *log, long double f)
 {
-	fprintf(eembed_fprintf_context(log), "%Lg", f);
+	eembed_system_fprintf(eembed_fprintf_context(log), "%Lg", f);
 }
 
 void eembed_fprintf_append_vp(struct eembed_log *log, const void *ptr)
 {
-	fprintf(eembed_fprintf_context(log), "%p", ptr);
+	eembed_system_fprintf(eembed_fprintf_context(log), "%p", ptr);
 }
 
 void eembed_fprintf_append_eol(struct eembed_log *log)
 {
-	FILE *stream = eembed_fprintf_context(log);
-	fprintf(stream, "\n");
-	fflush(stream);
-	eembed_posix1_2017_2_5_1 = 0;
+	eembed_stream_eol(eembed_fprintf_context(log));
 }
 
 struct eembed_log eembed_default_fprintf_log = {
@@ -1039,8 +1064,10 @@ int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 	}
 
 	/* glibc explodes on NULL, do all libc memcpy? */
-	if (!s1 || !s2) {
-		return s1 ? 1 : -1;
+	if (!s1) {
+		return -1;
+	} else if (!s2) {
+		return 1;
 	}
 
 	for (i = 0; i < max_len; ++i) {

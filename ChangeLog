@@ -1,5 +1,20 @@
 echeck Changelog
 
+2021-09-10  Eric Herman <eric@freesa.org>
+
+	Improve testing of print functions.
+
+	* src/eembed.c: adjust to support better print testing
+	* tests/test-eembed-print.c: new file
+	* tests/test-eembed-float-to-str.c: add test for very small value
+	* tests/test-eembed-log.c: log floats and pointers
+	* tests/test-eembed-memcmp.c: try both params as NULL
+	* tests/test-eembed-strstr.c: test search for empty string
+	* tests/test_echeck_err_log.c: remove console noise
+	* Makefile.am: test-eembed-print
+	* .gitignore: test-eembed-print
+
+
 2020-11-28  Eric Herman <eric@freesa.org>
 
 	as nice as it can be to have the source in a zillion files,
