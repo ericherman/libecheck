@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
+/* Copyright (C) 2021 Eric Herman <eric@freesa.org> */
+
 #include "echeck.h"
 
 char *global_buf = NULL;
