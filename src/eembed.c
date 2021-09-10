@@ -1381,12 +1381,13 @@ int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t len)
 	size_t pos = 0;
 	unsigned char byte = 0x00;
 	uint32_t bogus = 0;
+	size_t buf_addr = (size_t)buf;
 
 	pos = (eembed_bogus_random_seed % eembed_bogus_random_len);
 	byte = eembed_bogus_random[pos];
 
 	for (i = 0; i < len; ++i) {
-		bogus = bogus + (byte + i) + (bogus * 31) + (size_t)buf;
+		bogus = bogus + (byte + i) + (bogus * 31) + buf_addr;
 		byte = bogus > 255 ? (bogus >> (i % 8)) : bogus;
 		buf[i] = byte;
 		eembed_bogus_random_seed += bogus;
