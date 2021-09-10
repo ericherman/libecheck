@@ -46,6 +46,7 @@ check_PROGRAMS=\
  test-eembed-memmove \
  test-eembed-memset \
  test-eembed-random-bytes \
+ test-eembed-random-bytes-2 \
  test-eembed-strcat \
  test-eembed-strcpy \
  test-eembed-strlen \
@@ -124,6 +125,10 @@ test_eembed_memset_LDADD=$(T_LDADD)
 test_eembed_random_bytes_SOURCES=$(TESTS_COMMON_SOURCES) \
  tests/test-eembed-random-bytes.c
 test_eembed_random_bytes_LDADD=$(T_LDADD)
+
+test_eembed_random_bytes_2_SOURCES=$(TESTS_COMMON_SOURCES) \
+ tests/test-eembed-random-bytes-2.c
+test_eembed_random_bytes_2_LDADD=$(T_LDADD)
 
 test_eembed_strcat_SOURCES=$(TESTS_COMMON_SOURCES) tests/test-eembed-strcat.c
 test_eembed_strcat_LDADD=$(T_LDADD)
@@ -324,6 +329,9 @@ vg-test-eembed-memset: test-eembed-memset
 vg-test-eembed-random-bytes: test-eembed-random-bytes
 	./libtool --mode=execute valgrind -q ./test-eembed-random-bytes
 
+vg-test-eembed-random-bytes-2: test-eembed-random-bytes-2
+	./libtool --mode=execute valgrind -q ./test-eembed-random-bytes-2
+
 vg-test-eembed-strcat: test-eembed-strcat
 	./libtool --mode=execute valgrind -q ./test-eembed-strcat
 
@@ -433,6 +441,7 @@ valgrind: \
 	vg-test-eembed-memmove \
 	vg-test-eembed-memset \
 	vg-test-eembed-random-bytes \
+	vg-test-eembed-random-bytes-2 \
 	vg-test-eembed-strcat \
 	vg-test-eembed-strcpy \
 	vg-test-eembed-strlen \

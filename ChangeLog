@@ -6,6 +6,7 @@ echeck Changelog
 
 	* src/eembed.c: adjust to support better print testing
 	* tests/test-eembed-print.c: new file
+	* tests/test-eembed-random-bytes-2.c: test /dev/urandom
 	* tests/test-eembed-float-to-str.c: add test for very small value
 	* tests/test-eembed-log.c: log floats and pointers
 	* tests/test-eembed-memcmp.c: try both params as NULL

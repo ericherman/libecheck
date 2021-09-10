@@ -21,6 +21,7 @@ test-eembed-chunk-realloc
 test-eembed-malloc-free
 test-eembed-alloca-freea
 test-eembed-random-bytes
+test-eembed-random-bytes-2
 test_check_status
 test_check_byte_array
 test_check_byte_array_m

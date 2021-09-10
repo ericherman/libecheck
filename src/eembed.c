@@ -1216,7 +1216,7 @@ int (*eembed_system_close)(int fd) = close;
 /* from Insane Coding blog "A good idea with bad usage: /dev/urandom"
 http://insanecoding.blogspot.nl/2014/05/a-good-idea-with-bad-usage-devurandom.html
 */
-static long eembed_retrying_read(int fd, void *buf, size_t len)
+static ssize_t eembed_retrying_read(int fd, void *buf, size_t len)
 {
 	size_t amount_read = 0;
 	unsigned char *cbuf = NULL;
@@ -1229,14 +1229,11 @@ static long eembed_retrying_read(int fd, void *buf, size_t len)
 			amount_read += r;
 		} else {
 			/* Things are a bit weird the code gets here */
-			/* LCOV_EXCL_START */
 			if (!r) {
 				break;
 			} else if (errno != EINTR) {
-				amount_read = -1;
-				break;
+				return -1;
 			}
-			/* LCOV_EXCL_STOP */
 		}
 	}
 	return amount_read;
@@ -1254,7 +1251,6 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 
 	urandom_fd = eembed_system_open(urandom_str, O_RDONLY);
 	if (-1 == urandom_fd) {
-		/* LCOV_EXCL_START */
 		/* Seriously weird if open /dev/urandom fails */
 		save_errno = errno;
 		if (log) {
@@ -1272,10 +1268,8 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 			log->append_eol(log);
 		}
 		return (save_errno) ? save_errno : 1;
-		/* LCOV_EXCL_STOP */
 	}
 	if (-1 == eembed_system_ioctl(urandom_fd, RNDGETENTCNT, &entropy)) {
-		/* LCOV_EXCL_START */
 		/* Unreasonably weird if /dev/urandom is not RNDGETENTCNT */
 		save_errno = errno;
 		if (log) {
@@ -1283,8 +1277,9 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 			log->append_s(log, ":");
 			log->append_ul(log, __LINE__);
 			log->append_s(log, ": ");
+			log->append_s(log, "ioctl('");
 			log->append_s(log, urandom_str);
-			log->append_s(log, " not a random device? errno: ");
+			log->append_s(log, "') failed, errno: ");
 			log->append_l(log, save_errno);
 			log->append_s(log, " (");
 			log->append_s(log, strerror(save_errno));
@@ -1293,11 +1288,9 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 		}
 		err = (save_errno) ? save_errno : 1;
 		goto eembed_dev_urandom_bytes_end;
-		/* LCOV_EXCL_STOP */
 	}
 
 	if (entropy < ((long)(len * 8))) {
-		/* LCOV_EXCL_START */
 		/* This is highly unlikely even on a misconfigured system */
 		if (log) {
 			log->append_s(log, __FILE__);
@@ -1310,12 +1303,11 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 			log->append_s(log, "entropy");
 			log->append_eol(log);
 		}
-		/* LCOV_EXCL_STOP */
 	}
 
 	bytes_read = eembed_retrying_read(urandom_fd, buf, len);
 	if (bytes_read < ((long)len)) {
-		/* LCOV_EXCL_START */
+		err = 1;
 		/* something very strange would have to have happened */
 		if (log) {
 			log->append_s(log, __FILE__);
@@ -1330,12 +1322,10 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 			log->append_l(log, bytes_read);
 			log->append_eol(log);
 		}
-		/* LCOV_EXCL_STOP */
 	}
 
 eembed_dev_urandom_bytes_end:
 	if (-1 == eembed_system_close(urandom_fd)) {
-		/* LCOV_EXCL_START */
 		/* Very very weird if close /dev/urandom fails */
 		save_errno = errno;
 		if (log) {
@@ -1352,7 +1342,6 @@ eembed_dev_urandom_bytes_end:
 			log->append_s(log, ")");
 			log->append_eol(log);
 		}
-		/* LCOV_EXCL_STOP */
 	}
 
 	return err;
