@@ -398,9 +398,27 @@ char echeck_status_m(struct eembed_log *err, const char *func, const char *file,
 	return c;
 }
 
-void *echeck_err_injecting_malloc(struct eembed_allocator *ea, size_t size)
+void whine_if_context_data_corruption(struct echeck_err_injecting_context *ctx)
 {
 	struct eembed_log *log = NULL;
+	if (ctx->free_bytes > ctx->alloc_bytes) {
+		log = ctx->log;
+		log->append_s(log, __FILE__);
+		log->append_s(log, ":");
+		log->append_ul(log, __LINE__);
+		log->append_s(log, " BAD MOJO: ");
+		log->append_s(log, " free_bytes > alloc_bytes?! (");
+		log->append_ul(log, ctx->free_bytes);
+		log->append_s(log, " > ");
+		log->append_ul(log, ctx->alloc_bytes);
+		log->append_s(log, ")");
+		log->append_s(log, " CONTEXT DATA CORRUPTION!");
+		log->append_eol(log);
+	}
+}
+
+void *echeck_err_injecting_malloc(struct eembed_allocator *ea, size_t size)
+{
 	struct eembed_allocator *real;
 	struct echeck_err_injecting_context *ctx = NULL;
 	unsigned char *tracking_buffer = NULL;
@@ -423,22 +441,9 @@ void *echeck_err_injecting_malloc(struct eembed_allocator *ea, size_t size)
 	eembed_memcpy(tracking_buffer, &size, sizeof(size_t));
 	++ctx->allocs;
 	ctx->alloc_bytes += size;
-	/* LCOV_EXCL_START */
-	if (ctx->free_bytes > ctx->alloc_bytes) {
-		log = ctx->log;
-		log->append_s(log, __FILE__);
-		log->append_s(log, ":");
-		log->append_ul(log, __LINE__);
-		log->append_s(log, " BAD MOJO: ");
-		log->append_s(log, " free_bytes > alloc_bytes?! (");
-		log->append_ul(log, ctx->free_bytes);
-		log->append_s(log, " > ");
-		log->append_ul(log, ctx->alloc_bytes);
-		log->append_s(log, ")");
-		log->append_s(log, " CONTEXT DATA CORRUPTION!");
-		log->append_eol(log);
-	}
-	/* LCOV_EXCL_STOP */
+
+	whine_if_context_data_corruption(ctx);
+
 	used = ctx->alloc_bytes - ctx->free_bytes;
 	if (used > ctx->max_used) {
 		ctx->max_used = used;
@@ -495,7 +500,6 @@ void *echeck_err_injecting_reallocarray(struct eembed_allocator *ea, void *ptr,
 
 void echeck_err_injecting_free(struct eembed_allocator *ea, void *ptr)
 {
-	struct eembed_log *log = NULL;
 	struct eembed_allocator *real;
 	struct echeck_err_injecting_context *ctx = NULL;
 	unsigned char *tracking_buffer = NULL;
@@ -516,22 +520,8 @@ void echeck_err_injecting_free(struct eembed_allocator *ea, void *ptr)
 
 	ctx->free_bytes += size;
 	++ctx->frees;
-	/* LCOV_EXCL_START */
-	if (ctx->free_bytes > ctx->alloc_bytes) {
-		log = ctx->log;
-		log->append_s(log, __FILE__);
-		log->append_s(log, ":");
-		log->append_ul(log, __LINE__);
-		log->append_s(log, " BAD MOJO: ");
-		log->append_s(log, " free_bytes > alloc_bytes?! (");
-		log->append_ul(log, ctx->free_bytes);
-		log->append_s(log, " > ");
-		log->append_ul(log, ctx->alloc_bytes);
-		log->append_s(log, ")");
-		log->append_s(log, " CONTEXT DATA CORRUPTION!");
-		log->append_eol(log);
-	}
-	/* LCOV_EXCL_STOP */
+
+	whine_if_context_data_corruption(ctx);
 }
 
 int echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,

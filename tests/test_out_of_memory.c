@@ -92,6 +92,45 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 	return failures;
 }
 
+void whine_if_context_data_corruption(struct echeck_err_injecting_context *ctx);
+unsigned check_whine(void)
+{
+	unsigned int failures = 0;
+	const size_t buf_size = 250;
+	char buf[250];
+	struct eembed_str_buf sbuf;
+	struct eembed_log slog;
+	struct echeck_err_injecting_context mctx;
+	const char *found = NULL;
+
+	eembed_memset(buf, 0x00, buf_size);
+	eembed_memset(&mctx, 0x00, sizeof(struct echeck_err_injecting_context));
+	mctx.log = eembed_char_buf_log_init(&slog, &sbuf, buf, buf_size);
+
+	mctx.allocs = 2;
+	mctx.alloc_bytes = 100;
+	mctx.frees = 2;
+	mctx.free_bytes = 200;
+	mctx.max_used = 100;
+	mctx.attempts = 1;
+
+	whine_if_context_data_corruption(&mctx);
+
+	found = eembed_strstr(buf, "free_bytes");
+	failures += check_ptr_not_null_m(found, buf);
+
+	found = eembed_strstr(buf, "alloc_bytes");
+	failures += check_ptr_not_null_m(found, buf);
+
+	found = eembed_strstr(buf, "100");
+	failures += check_ptr_not_null_m(found, buf);
+
+	found = eembed_strstr(buf, "200");
+	failures += check_ptr_not_null_m(found, buf);
+
+	return failures;
+}
+
 int test_out_of_memory(void)
 {
 	int failures = 0;
@@ -107,6 +146,8 @@ int test_out_of_memory(void)
 		mask32 = ((one << i) | (one << (i + one)));
 		failures += test_out_of_memory_inner(mask32);
 	}
+
+	failures += check_whine();
 
 	return failures;
 }
