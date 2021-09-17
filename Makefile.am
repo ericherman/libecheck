@@ -5,7 +5,7 @@
 BROWSER=firefox
 
 CSTD_CFLAGS=-std=c89
-NOISY_CFLAGS=-Wall -Wextra -pedantic -Werror -Wcast-qual
+NOISY_CFLAGS=-Wall -Wextra -pedantic -Werror -Wcast-qual -Wc++-compat
 
 eembed_headers=src/eembed.h src/eembed-arduino.h
 include_HEADERS=$(eembed_headers) src/echeck.h

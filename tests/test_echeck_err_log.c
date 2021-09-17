@@ -18,7 +18,9 @@ void eembed_test_hosted_buf_print(const char *str)
 	size_t used = 0;
 	size_t left = 0;
 
-	sbuf = eembed_err_log ? eembed_err_log->context : NULL;
+	if (eembed_err_log) {
+		sbuf = (struct eembed_str_buf *)eembed_err_log->context;
+	}
 	if (sbuf) {
 		used = eembed_strnlen(sbuf->buf, sbuf->len);
 		left = sbuf->len - used;
