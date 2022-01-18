@@ -294,6 +294,10 @@ tidy:
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino
 
+.PHONY: check-unit
+check-unit: check
+	echo "SUCCESS $@"
+
 .PHONY: vg-test-eembed-assert
 vg-test-eembed-assert: test-eembed-assert
 	./libtool --mode=execute valgrind -q ./test-eembed-assert
@@ -527,17 +531,32 @@ check-valgrind: \
 valgrind: check-valgrind
 	echo "SUCCESS $@"
 
-coverage.info: check
+coverage.info: check-unit
 	lcov	--checksum \
 		--capture \
 		--base-directory . \
 		--directory . \
 		--output-file coverage.info
+	ls -l coverage.info
 
 coverage_html/src/index.html: coverage.info
 	mkdir -pv ./coverage_html
 	genhtml coverage.info --output-directory coverage_html
 	ls -l coverage_html/src/index.html
+
+.PHONY: check-coverage
+check-coverage: coverage_html/src/index.html
+	if [ $$(grep -c 'headerCovTableEntryHi">100.0 %' \
+			coverage_html/src/index.html) -eq 2 ]; then \
+		true; \
+	else grep headerCovTableEntryHi coverage_html/src/index.html && \
+		false; \
+	fi
+	echo "SUCCESS $@"
+
+.PHONY: check-all
+check-all: check-unit check-valgrind check-coverage
+	echo "SUCCESS $@"
 
 .PHONY: coverage
 coverage: coverage_html/src/index.html
