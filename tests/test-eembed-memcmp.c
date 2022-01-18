@@ -4,8 +4,7 @@
 
 #include "echeck.h"
 
-static void fill_array(void *dest, size_t len, unsigned char c,
-		       unsigned char term)
+static void fill_array_terminated(void *dest, size_t len, unsigned char c)
 {
 	size_t i = 0;
 	unsigned char *chars = NULL;
@@ -14,22 +13,21 @@ static void fill_array(void *dest, size_t len, unsigned char c,
 	for (i = 0; i < (len - 1); ++i) {
 		chars[i] = c;
 	}
-	chars[len - 1] = term;
+	chars[len - 1] = '\0';
 }
 
 unsigned int test_eembed_memcmp(void)
 {
-	char s2[20];
-	char s1[20];
+	char s2[20] =
+	    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	char s1[20] =
+	    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	int rv1 = 0;
 	int rv2 = 0;
 	unsigned failures = 0;
 
-	s1[0] = '\0';
-	s2[0] = '\0';
-
-	fill_array(s1, 20, 'X', '\0');
-	fill_array(s2, 20, 'X', '\0');
+	fill_array_terminated(s1, 20, 'X');
+	fill_array_terminated(s2, 20, 'X');
 	rv1 = eembed_memcmp(s1, s2, 20);
 	failures += check_int(rv1, 0);
 	rv2 = eembed_strcmp(s1, s2);
@@ -37,13 +35,13 @@ unsigned int test_eembed_memcmp(void)
 	rv2 = eembed_strncmp(s1, s2, 20);
 	failures += check_int(rv1, rv2);
 
-	fill_array(s2 + 10, 20 - 10, 'O', '\0');
+	fill_array_terminated(s2 + 10, 20 - 10, 'O');
 	rv1 = eembed_memcmp(s1, s2, 20);
 	failures += check_int(rv1 == 0 ? 0 : 1, 1);
 	rv2 = eembed_strcmp(s1, s2);
-	failures += check_int(rv1, rv2);
+	failures += check_int(rv1 == 0 ? 1 : 0, rv2 == 0 ? 1 : 0);
 	rv2 = eembed_strncmp(s1, s2, 20);
-	failures += check_int(rv1, rv2);
+	failures += check_int(rv1 == 0 ? 1 : 0, rv2 == 0 ? 1 : 0);
 
 	rv1 = eembed_memcmp(s1, s2, 20 - 10);
 	failures += check_int(rv1, 0);

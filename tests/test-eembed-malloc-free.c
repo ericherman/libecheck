@@ -5,6 +5,7 @@
 
 unsigned test_eembed_malloc_free(void)
 {
+	const size_t bigger_than_ram = SIZE_MAX / 8;
 	const size_t bytes_len = 500 * sizeof(size_t);
 	unsigned char bytes[500 * sizeof(size_t)];
 	struct eembed_allocator *orig = eembed_global_allocator;
@@ -28,7 +29,7 @@ unsigned test_eembed_malloc_free(void)
 	message = (char *)eembed_malloc(0);
 	eembed_free(message);
 
-	message = (char *)eembed_malloc(SIZE_MAX);
+	message = (char *)eembed_malloc(bigger_than_ram);
 	failures += check_ptr(message, NULL);
 	eembed_free(message);
 

@@ -5,6 +5,7 @@
 
 int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 {
+	const size_t bigger_than_ram = SIZE_MAX / 8;
 	struct eembed_allocator with_errs;
 	struct echeck_err_injecting_context mctx;
 	struct eembed_allocator *real = NULL;
@@ -81,7 +82,7 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 		messages[j] = NULL;
 	}
 
-	message = (char *)eembed_malloc(SIZE_MAX / 2);
+	message = (char *)eembed_malloc(bigger_than_ram);
 	failures += check_ptr(message, NULL);
 
 	failures += ((mctx.frees == mctx.allocs) ? 0 : 1);
