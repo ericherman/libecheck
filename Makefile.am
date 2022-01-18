@@ -278,6 +278,7 @@ AM_LDFLAGS=$(BUILD_TYPE_LDFLAGS)
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
 
+.PHONY: tidy
 tidy:
 	$(LINDENT) \
 		-T FILE \
@@ -293,142 +294,188 @@ tidy:
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino
 
+.PHONY: vg-test-eembed-assert
 vg-test-eembed-assert: test-eembed-assert
 	./libtool --mode=execute valgrind -q ./test-eembed-assert
 
+.PHONY: vg-test-eembed-log
 vg-test-eembed-log: test-eembed-log
 	./libtool --mode=execute valgrind -q ./test-eembed-log
 
+.PHONY: vg-test-eembed-print
 vg-test-eembed-print: test-eembed-print
 	./libtool --mode=execute valgrind -q ./test-eembed-print
 
+.PHONY: vg-test-eembed-long-to-str
 vg-test-eembed-long-to-str: test-eembed-long-to-str
 	./libtool --mode=execute valgrind -q ./test-eembed-long-to-str
 
+.PHONY: vg-test-eembed-ulong-to-str
 vg-test-eembed-ulong-to-str: test-eembed-ulong-to-str
 	./libtool --mode=execute valgrind -q ./test-eembed-ulong-to-str
 
+.PHONY: vg-test-eembed-ulong-to-hex
 vg-test-eembed-ulong-to-hex: test-eembed-ulong-to-hex
 	./libtool --mode=execute valgrind -q ./test-eembed-ulong-to-hex
 
+.PHONY: vg-test-eembed-float-to-str
 vg-test-eembed-float-to-str: test-eembed-float-to-str
 	./libtool --mode=execute valgrind -q ./test-eembed-float-to-str
 
+.PHONY: vg-test-eembed-memcmp
 vg-test-eembed-memcmp: test-eembed-memcmp
 	./libtool --mode=execute valgrind -q ./test-eembed-memcmp
 
+.PHONY: vg-test-eembed-memcpy
 vg-test-eembed-memcpy: test-eembed-memcpy
 	./libtool --mode=execute valgrind -q ./test-eembed-memcpy
 
+.PHONY: vg-test-eembed-memmove
 vg-test-eembed-memmove: test-eembed-memmove
 	./libtool --mode=execute valgrind -q ./test-eembed-memmove
 
+.PHONY: vg-test-eembed-memset
 vg-test-eembed-memset: test-eembed-memset
 	./libtool --mode=execute valgrind -q ./test-eembed-memset
 
+.PHONY: vg-test-eembed-random-bytes
 vg-test-eembed-random-bytes: test-eembed-random-bytes
 	./libtool --mode=execute valgrind -q ./test-eembed-random-bytes
 
+.PHONY: vg-test-eembed-random-bytes-2
 vg-test-eembed-random-bytes-2: test-eembed-random-bytes-2
 	./libtool --mode=execute valgrind -q ./test-eembed-random-bytes-2
 
+.PHONY: vg-test-eembed-strcat
 vg-test-eembed-strcat: test-eembed-strcat
 	./libtool --mode=execute valgrind -q ./test-eembed-strcat
 
+.PHONY: vg-test-eembed-strcpy
 vg-test-eembed-strcpy: test-eembed-strcpy
 	./libtool --mode=execute valgrind -q ./test-eembed-strcpy
 
+.PHONY: vg-test-eembed-strlen
 vg-test-eembed-strlen: test-eembed-strlen
 	./libtool --mode=execute valgrind -q ./test-eembed-strlen
 
+.PHONY: vg-test-eembed-strstr
 vg-test-eembed-strstr: test-eembed-strstr
 	./libtool --mode=execute valgrind -q ./test-eembed-strstr
 
+.PHONY: vg-test-eembed-chunk-alloc
 vg-test-eembed-chunk-alloc: test-eembed-chunk-alloc
 	./libtool --mode=execute valgrind -q ./test-eembed-chunk-alloc
 
+.PHONY: vg-test-eembed-chunk-realloc
 vg-test-eembed-chunk-realloc: test-eembed-chunk-realloc
 	./libtool --mode=execute valgrind -q ./test-eembed-chunk-realloc
 
+.PHONY: vg-test-eembed-malloc-free
 vg-test-eembed-malloc-free: test-eembed-malloc-free
 	./libtool --mode=execute valgrind -q ./test-eembed-malloc-free
 
+.PHONY: vg-test_check_status
 vg-test_check_status: test_check_status
 	./libtool --mode=execute valgrind -q ./test_check_status
 
+.PHONY: vg-test_check_byte_array
 vg-test_check_byte_array: test_check_byte_array
 	./libtool --mode=execute valgrind -q ./test_check_byte_array
 
+.PHONY: vg-test_check_byte_array_m
 vg-test_check_byte_array_m: test_check_byte_array_m
 	./libtool --mode=execute valgrind -q ./test_check_byte_array_m
 
+.PHONY: vg-test_check_byte_array_m2
 vg-test_check_byte_array_m2: test_check_byte_array_m2
 	./libtool --mode=execute valgrind -q ./test_check_byte_array_m2
 
+.PHONY: vg-test_check_char
 vg-test_check_char: test_check_char
 	./libtool --mode=execute valgrind -q ./test_check_char
 
+.PHONY: vg-test_check_char_m
 vg-test_check_char_m: test_check_char_m
 	./libtool --mode=execute valgrind -q ./test_check_char_m
 
+.PHONY: vg-test_check_double
 vg-test_check_double: test_check_double
 	./libtool --mode=execute valgrind -q ./test_check_double
 
+.PHONY: vg-test_check_int
 vg-test_check_int: test_check_int
 	./libtool --mode=execute valgrind -q ./test_check_int
 
+.PHONY: vg-test_check_int_m
 vg-test_check_int_m: test_check_int_m
 	./libtool --mode=execute valgrind -q ./test_check_int_m
 
+.PHONY: vg-test_check_long
 vg-test_check_long: test_check_long
 	./libtool --mode=execute valgrind -q ./test_check_long
 
+.PHONY: vg-test_check_long_m
 vg-test_check_long_m: test_check_long_m
 	./libtool --mode=execute valgrind -q ./test_check_long_m
 
+.PHONY: vg-test_check_ptr
 vg-test_check_ptr: test_check_ptr
 	./libtool --mode=execute valgrind -q ./test_check_ptr
 
+.PHONY: vg-test_check_ptr_m
 vg-test_check_ptr_m: test_check_ptr_m
 	./libtool --mode=execute valgrind -q ./test_check_ptr_m
 
+.PHONY: vg-test_check_ptr_not_null
 vg-test_check_ptr_not_null: test_check_ptr_not_null
 	./libtool --mode=execute valgrind -q ./test_check_ptr_not_null
 
+.PHONY: vg-test_check_size_t
 vg-test_check_size_t: test_check_size_t
 	./libtool --mode=execute valgrind -q ./test_check_size_t
 
+.PHONY: vg-test_check_size_t_m
 vg-test_check_size_t_m: test_check_size_t_m
 	./libtool --mode=execute valgrind -q ./test_check_size_t_m
 
+.PHONY: vg-test_check_str
 vg-test_check_str: test_check_str
 	./libtool --mode=execute valgrind -q ./test_check_str
 
+.PHONY: vg-test_check_str_null_ptr
 vg-test_check_str_null_ptr: test_check_str_null_ptr
 	./libtool --mode=execute valgrind -q ./test_check_str_null_ptr
 
+.PHONY: vg-test_check_str_m
 vg-test_check_str_m: test_check_str_m
 	./libtool --mode=execute valgrind -q ./test_check_str_m
 
+.PHONY: vg-test_check_unsigned_int
 vg-test_check_unsigned_int: test_check_unsigned_int
 	./libtool --mode=execute valgrind -q ./test_check_unsigned_int
 
+.PHONY: vg-test_check_unsigned_int_m
 vg-test_check_unsigned_int_m: test_check_unsigned_int_m
 	./libtool --mode=execute valgrind -q ./test_check_unsigned_int_m
 
+.PHONY: vg-test_check_unsigned_long
 vg-test_check_unsigned_long: test_check_unsigned_long
 	./libtool --mode=execute valgrind -q ./test_check_unsigned_long
 
+.PHONY: vg-test_check_unsigned_long_m
 vg-test_check_unsigned_long_m: test_check_unsigned_long_m
 	./libtool --mode=execute valgrind -q ./test_check_unsigned_long_m
 
+.PHONY: vg-test_out_of_memory
 vg-test_out_of_memory: test_out_of_memory
 	./libtool --mode=execute valgrind -q ./test_out_of_memory
 
+.PHONY: vg-test_echeck_err_log
 vg-test_echeck_err_log: test_echeck_err_log
 	./libtool --mode=execute valgrind -q ./test_echeck_err_log
 
-valgrind: \
+.PHONY: check-valgrind
+check-valgrind: \
 	vg-test-eembed-assert \
 	vg-test-eembed-log \
 	vg-test-eembed-print \
@@ -474,27 +521,35 @@ valgrind: \
 	vg-test_check_unsigned_long_m \
 	vg-test_out_of_memory \
 	vg-test_echeck_err_log
-	echo "valgrind complete"
+	echo "SUCCESS $@"
 
-line-cov: check
+.PHONY: valgrind
+valgrind: check-valgrind
+	echo "SUCCESS $@"
+
+coverage.info: check
 	lcov	--checksum \
 		--capture \
 		--base-directory . \
 		--directory . \
 		--output-file coverage.info
 
-html-report: line-cov
+coverage_html/src/index.html: coverage.info
 	mkdir -pv ./coverage_html
 	genhtml coverage.info --output-directory coverage_html
+	ls -l coverage_html/src/index.html
 
-coverage: html-report
+.PHONY: coverage
+coverage: coverage_html/src/index.html
 	$(BROWSER) ./coverage_html/src/index.html
 
+.PHONY: spotless
 spotless:
 	rm -rf `cat .gitignore | sed -e 's/#.*//'`
 	pushd src && rm -rf `cat ../.gitignore | sed -e 's/#.*//'`; popd
 	pushd tests && rm -rf `cat ../.gitignore | sed -e 's/#.*//'`; popd
 
+.PHONY: mrproper
 mrproper:
 	git clean -dffx
 	git submodule foreach --recursive git clean -dffx
