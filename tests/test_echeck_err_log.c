@@ -87,6 +87,8 @@ unsigned test_echeck_err_log(void)
 
 #if EEMBED_HOSTED
 	fflush(memlogfile);
+	fclose(memlogfile);
+	memlogfile = NULL;
 #endif
 
 	failures += check_str_contains(logbuf, "logbuf");
