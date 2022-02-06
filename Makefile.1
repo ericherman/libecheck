@@ -1,0 +1,368 @@
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# Makefile: "E(asy)Check" boiler-plate to make simple testing easier
+# Copyright (C) 2016-2022 Eric Herman <eric@freesa.org>
+
+# $@ : target label
+# $< : the first prerequisite after the colon
+# $^ : all of the prerequisite files
+# $* : wildcard matched part
+# Target-specific Variable syntax:
+# https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
+#
+# patsubst : $(patsubst pattern,replacement,text)
+#	https://www.gnu.org/software/make/manual/html_node/Text-Functions.html
+# call : $(call func,param1,param2,...)
+#       https://www.gnu.org/software/make/manual/html_node/Call-Function.html
+# define :
+#       https://www.gnu.org/software/make/manual/html_node/Multi_002dLine.html
+
+BROWSER	?= firefox
+VALGRIND ?= $(shell which valgrind)
+
+# pushd, popd are bash-ism
+SHELL=/bin/bash
+
+# This Makefile can create several types of builds, including the standard
+# "build" directory, but also "faux-freestanding", "debug" and "coverage"
+# (and combination) builds. Each build type gets its own directory, so they
+# do not interfere with each other. The directories are:
+build_dirs=\
+ build \
+ faux-fs \
+ debug \
+ debug-faux-fs \
+ debug-coverage \
+ debug-coverage-faux-fs
+
+
+# this will become -std=c11 once that is "everywhere enough"
+CSTD_CFLAGS=-std=c89
+
+NOISY_CFLAGS=-Wall -Wextra -pedantic -Wcast-qual -Wc++-compat
+SRC_CFLAGS=-I./src
+
+COMMON_CFLAGS=$(CSTD_CFLAGS) $(NOISY_CFLAGS) $(SRC_CFLAGS) -pipe
+
+NORMAL_CFLAGS=-g -O2 -DNDEBUG -fomit-frame-pointer
+NORMAL_LDFLAGS=
+
+DEBUG_CFLAGS=-g -O2 -Werror
+DEBUG_LDFLAGS=
+
+COVERAGE_CFLAGS=-O0 -g -Werror \
+	-fno-inline-small-functions \
+	-fkeep-inline-functions \
+	-fkeep-static-functions \
+	--coverage
+COVERAGE_LDFLAGS=--coverage
+
+FAUX_FREESTANDING_ENV_CFLAGS=-DFAUX_FREESTANDING=1 -DEEMBED_HOSTED=0
+HOSTED_ENV_CFLAGS=
+
+default: check
+
+# Each build type implies target specific BUILD CFLAGS and LDFLAGS variables:
+build/%: BUILD_DIR = build
+build/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
+	$(NORMAL_CFLAGS) \
+	$(HOSTED_ENV_CFLAGS) \
+	$(CFLAGS)
+build/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+
+faux-fs/%: BUILD_DIR = faux-fs
+faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
+	$(NORMAL_CFLAGS) \
+	$(FAUX_FREESTANDING_ENV_CFLAGS) \
+	$(CFLAGS)
+faux-fs/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+
+debug/%: BUILD_DIR = debug
+debug/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
+	$(DEBUG_CFLAGS) \
+	$(HOSTED_ENV_CFLAGS) \
+	$(CFLAGS)
+debug/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+
+debug-faux-fs/%: BUILD_DIR = debug-faux-fs
+debug-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
+	$(DEBUG_CFLAGS) \
+	$(FAUX_FREESTANDING_ENV_CFLAGS) \
+	$(CFLAGS)
+debug-faux-fs/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+
+debug-coverage/%: BUILD_DIR = debug-coverage
+debug-coverage/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	$(HOSTED_ENV_CFLAGS) \
+	$(CFLAGS)
+debug-coverage/%: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS)  $(LDFLAGS)
+
+debug-coverage-faux-fs/%: BUILD_DIR = debug-coverage-faux-fs
+debug-coverage-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	$(FAUX_FREESTANDING_ENV_CFLAGS) \
+	$(CFLAGS)
+debug-coverage-faux-fs/%s: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS)  $(LDFLAGS)
+
+
+test_progs=\
+ test-eembed-assert \
+ test-eembed-log \
+ test-eembed-print \
+ test-eembed-long-to-str \
+ test-eembed-ulong-to-str \
+ test-eembed-ulong-to-hex \
+ test-eembed-float-to-str \
+ test-eembed-memcmp \
+ test-eembed-memcpy \
+ test-eembed-memmove \
+ test-eembed-memset \
+ test-eembed-random-bytes \
+ test-eembed-random-bytes-2 \
+ test-eembed-strcat \
+ test-eembed-strcpy \
+ test-eembed-strlen \
+ test-eembed-strstr \
+ test-eembed-chunk-alloc \
+ test-eembed-chunk-realloc \
+ test-eembed-malloc-free \
+ test_check_status \
+ test_check_byte_array \
+ test_check_byte_array_m \
+ test_check_byte_array_m2 \
+ test_check_char \
+ test_check_char_m \
+ test_check_double \
+ test_check_int \
+ test_check_int_m \
+ test_check_long \
+ test_check_long_m \
+ test_check_ptr \
+ test_check_ptr_m \
+ test_check_ptr_not_null \
+ test_check_size_t \
+ test_check_size_t_m \
+ test_check_str \
+ test_check_str_null_ptr \
+ test_check_str_m \
+ test_check_unsigned_int \
+ test_check_unsigned_int_m \
+ test_check_unsigned_long \
+ test_check_unsigned_long_m \
+ test_out_of_memory \
+ test_echeck_err_log
+
+# Make will normally delete intermediate files which it views as no longer
+# needed; the ".o" files are examples of this. We set .PRECIOUS to prevent
+# output files from getting automatically cleaned up.
+# https://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
+# https://www.gnu.org/software/make/manual/html_node/Special-Targets.html
+.PRECIOUS: %.o \
+ build/tests/test% \
+ faux-fs/tests/test% \
+ debug/tests/test% \
+ debug-faux-fs/tests/test% \
+ debug-coverage/tests/test% \
+ debug-coverage-faux-fs/tests/test%
+
+
+# This function moves a FOO.tmp to FOO
+define mv-tmp
+	mv -v $(1).tmp $(1)
+	ls -l $(1)
+	file $(1)
+	echo $(1)
+endef
+
+define build-o
+	mkdir -pv $(dir $(1))
+	$(CC) -c $(BUILD_CFLAGS) $2 -o $1.tmp
+	$(call mv-tmp,$(1))
+endef
+
+define build-exe
+	mkdir -pv $(dir $(1))
+	$(CC) $(BUILD_CFLAGS) $2 -o $1.tmp
+	$(call mv-tmp,$(1))
+endef
+
+$(patsubst %, %/eembed.o, $(build_dirs)): src/eembed.c src/eembed.h
+	$(call build-o,$@,$<)
+
+$(patsubst %, %/echeck.o, $(build_dirs)): src/echeck.c src/echeck.h src/eembed.h
+	$(call build-o,$@,$<)
+
+#
+# 'build' TESTS
+#
+build/tests/test%: tests/test%.c \
+		build/echeck.o build/eembed.o
+	$(call build-exe,$@,$^)
+
+.PHONY:
+check-%: build/tests/%
+	./$<
+	echo "SUCCESS $@"
+
+.PHONY:
+build-check: $(patsubst %, check-%, $(test_progs))
+	echo "SUCCESS $@"
+
+
+#
+# 'faux-fs' TESTS
+#
+faux-fs/tests/test%: tests/test%.c \
+		faux-fs/echeck.o faux-fs/eembed.o
+	$(call build-exe,$@,$^)
+
+.PHONY:
+check-faux-fs-%: faux-fs/tests/%
+	./$<
+	echo "SUCCESS $@"
+
+.PHONY:
+faux-fs-check: $(patsubst %, check-faux-fs-%, $(test_progs))
+	echo "SUCCESS $@"
+
+
+#
+# 'debug' TESTS
+#
+debug/tests/test%: tests/test%.c \
+		debug/echeck.o debug/eembed.o
+	$(call build-exe,$@,$^)
+
+.PHONY:
+debug-check-%: debug/tests/%
+	$(VALGRIND) ./$< > $@.out 2>&1
+	if [ $$(grep -c 'definitely lost' $@.out) -eq 0 ]; \
+		then true; else false; fi && \
+		if [ $$(grep -c 'probably lost' $@.out) -eq 0 ]; \
+		then true; else false; fi
+	echo "SUCCESS $@"
+
+.PHONY:
+debug-check: $(patsubst %, debug-check-%, $(test_progs))
+	echo "SUCCESS $@"
+
+
+#
+# 'debug-faux-fs' TESTS
+#
+debug-faux-fs/tests/test%: tests/test%.c \
+		debug-faux-fs/echeck.o debug-faux-fs/eembed.o
+	$(call build-exe,$@,$^)
+
+.PHONY:
+debug-faux-fs-check-%: debug-faux-fs/tests/%
+	./$<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-faux-fs-check: $(patsubst %, debug-faux-fs-check-%, $(test_progs))
+	@echo "SUCCESS $@"
+
+
+#
+# 'debug-coverage' TESTS
+#
+debug-coverage/tests/test%: tests/test%.c \
+		debug-coverage/echeck.o debug-coverage/eembed.o
+	$(call build-exe,$@,$^)
+
+.PHONY:
+debug-coverage-check-%: debug-coverage/tests/%
+	./$<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-coverage-check: $(patsubst %, debug-coverage-check-%, $(test_progs))
+	@echo "SUCCESS $@"
+
+#
+# 'debug-coverage-faux-fs' TESTS
+#
+debug-coverage-faux-fs/tests/test%: tests/test%.c \
+		debug-coverage-faux-fs/echeck.o debug-coverage-faux-fs/eembed.o
+	$(call build-exe,$@,$^)
+
+.PHONY:
+debug-coverage-faux-fs-check-%: debug-coverage-faux-fs/tests/%
+	./$<
+	echo "SUCCESS $@"
+
+.PHONY:
+debug-coverage-faux-fs-check: \
+		$(patsubst %, debug-coverage-faux-fs-check-%, $(test_progs))
+	echo "SUCCESS $@"
+
+
+.PHONY:
+check: build-check
+	echo "SUCCESS $@"
+
+check-all: build-check faux-fs-check debug-check debug-faux-fs-check \
+		debug-coverage-check debug-coverage-faux-fs-check
+	echo "SUCCESS $@"
+
+valgrind: debug-check
+	echo "SUCCESS $@"
+
+debug-coverage/coverage.info: debug-coverage-check
+	lcov	--checksum \
+		--capture \
+		--base-directory . \
+		--directory . \
+		--output-file $@
+	ls -l $@
+
+debug-coverage/tests/coverage_html/src/index.html: debug-coverage/coverage.info
+	mkdir -pv $(dir $@)
+	genhtml $< --output-directory \
+		./debug-coverage/tests/coverage_html
+	ls -l $@
+
+.PHONY: check-coverage
+check-coverage: debug-coverage/tests/coverage_html/src/index.html
+	if [ $$(grep -c 'headerCovTableEntryHi">100.0 %' $< ) -eq 2 ]; then \
+		true; \
+	else grep headerCovTableEntryHi $< && \
+		false; \
+	fi
+	echo "SUCCESS $@"
+
+.PHONY: coverage
+coverage: debug-coverage/tests/coverage_html/src/index.html
+	$(BROWSER) $<
+
+# extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
+LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
+
+.PHONY: tidy
+tidy:
+	$(LINDENT) \
+		-T FILE \
+		-T ssize_t  -T  int8_t  -T  int16_t  -T  int32_t  -T  int64_t \
+		-T  size_t  -T uint8_t  -T uint16_t  -T uint32_t  -T uint64_t \
+		-T echeck_err_injecting_context \
+		-T eembed_allocator \
+		-T eembed_alloc_chunk \
+		-T eembed_log \
+		-T eembed_str_buf \
+		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
+		eembed_arduino_demo/eembed_arduino_demo.ino \
+		echeck_tests_arduino/echeck_tests_arduino.ino \
+		echeck_arduino_demo/echeck_arduino_demo.ino
+
+.PHONY: clean
+clean:
+	rm -rfv $(build_dirs)
+	rm -rfv `cat .gitignore | sed -e 's/#.*//'`
+	pushd src && rm -rfv `cat ../.gitignore | sed -e 's/#.*//'`; popd
+	pushd tests && rm -rfv `cat ../.gitignore | sed -e 's/#.*//'`; popd
+
+.PHONY: mrproper
+mrproper:
+	git clean -dffx
+	git submodule foreach --recursive git clean -dffx
