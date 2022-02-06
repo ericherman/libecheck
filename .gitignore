@@ -76,6 +76,7 @@ $*
 *.tar.gz
 *.gcda
 *.gcno
+*.out
 coverage.info
 coverage_html/
 
