@@ -177,6 +177,35 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 #endif
 #endif
 
+#define eembed_concat(a,b) a##b
+
+/* without the two layers here, eembed_concat(foo, __LINE__) would result in
+ * `foo__LINE__`, thus we do an expansion first to get `foo123`*/
+#define eembed_concat_expanded(a,b) eembed_concat(a,b)
+
+/* if the expression is false, the compiler errors on array of negative size */
+/* e.g.: error: size of array ‘eembed_static_assert_97_a’ is negative */
+#define eembed_static_assert_struct(expression, name) \
+	typedef struct name { \
+		char eembed_concat(name, _a)[(expression) ? 1 : -1]; \
+	} eembed_concat(name,_s)
+
+#if __STDC_VERSION__ >= 201112L
+#define eembed_static_assert(expression, msg) _Static_assert(expression, msg)
+#endif
+
+#ifndef eembed_static_assert
+#define eembed_static_assert(expression, msg) \
+	eembed_static_assert_struct(expression, \
+		eembed_concat_expanded(eembed_static_assert_, __LINE__))
+#endif
+
+#define eembed_static_assert_equals(a,b) \
+	eembed_static_assert(a == b, "assertion ( " #a " == " #b " ) failed")
+
+#define eembed_static_assert_sizes_match(a,b) \
+	eembed_static_assert_equals(sizeof(a), sizeof(b))
+
 #ifndef EEMBED_CHAR_BIT
 #ifdef CHAR_BIT
 #define EEMBED_CHAR_BIT CHAR_BIT
