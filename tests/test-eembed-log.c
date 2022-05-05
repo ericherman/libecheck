@@ -19,6 +19,9 @@ unsigned int test_eembed_log(void)
 	log = eembed_char_buf_log_init(NULL, &bctx, buf, buf_len);
 	failures += check_ptr(log, NULL);
 
+	log = eembed_char_buf_log_init(&llog, NULL, buf, buf_len);
+	failures += check_ptr(log, NULL);
+
 	log = eembed_char_buf_log_init(&llog, &bctx, NULL, buf_len);
 	failures += check_ptr(log, NULL);
 
