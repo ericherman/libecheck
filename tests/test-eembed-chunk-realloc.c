@@ -23,7 +23,14 @@ unsigned test_eembed_chunk_realloc(void)
 	}
 
 	for (i = 0; i < pointers_len; i++) {
-		pointers[i] = (char *)ea->calloc(ea, 1, test_object_size);
+		if (i == 0) {
+			pointers[i] =
+			    (char *)ea->realloc(ea, NULL, test_object_size);
+			eembed_memset(pointers[i], 0x00, test_object_size);
+		} else {
+			pointers[i] =
+			    (char *)ea->calloc(ea, 1, test_object_size);
+		}
 		failures +=
 		    check_ptr_not_null_m(pointers[i],
 					 eembed_ulong_to_str(buf, buf_len, i));

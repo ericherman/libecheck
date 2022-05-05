@@ -1403,9 +1403,8 @@ static struct eembed_alloc_chunk *eembed_alloc_chunk_init(unsigned char *bytes,
 	size_t size = eembed_align(sizeof(struct eembed_alloc_chunk));
 
 	eembed_assert(bytes);
-	if (available_length < size) {
-		return NULL;
-	}
+	eembed_assert(available_length >= size);
+
 	chunk->start = bytes + size;
 	chunk->available_length = available_length - size;
 	chunk->in_use = 0;
@@ -1432,9 +1431,7 @@ static void eembed_alloc_chunk_split(struct eembed_alloc_chunk *from,
 	}
 
 	remaining_available_length = from->available_length - aligned_request;
-	if (remaining_available_length <= min_size) {
-		return;
-	}
+	eembed_assert(remaining_available_length >= min_size);
 
 	from->available_length = aligned_request;
 	orig_next = from->next;
@@ -1455,7 +1452,9 @@ void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
 	struct eembed_alloc_chunk *chunk =
 	    (struct eembed_alloc_chunk *)ea->context;
 
-	if (!chunk || !size) {
+	eembed_assert(chunk);
+
+	if (!size) {
 		return NULL;
 	}
 
@@ -1518,9 +1517,7 @@ void *eembed_chunk_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
 	int found = 0;
 	void *new_ptr = NULL;
 
-	if (!chunk) {
-		return NULL;
-	}
+	eembed_assert(chunk);
 
 	if (!ptr) {
 		return ea->malloc(ea, size);
@@ -1629,20 +1626,20 @@ struct eembed_allocator eembed_null_chunk_allocator = {
 
 struct eembed_allocator *eembed_null_allocator = &eembed_null_chunk_allocator;
 
+const size_t eembed_bytes_allocator_min_buf_size =
+eembed_align(sizeof(struct eembed_allocator)) +
+eembed_align(sizeof(struct eembed_alloc_chunk)) +
+eembed_align(sizeof(size_t)) + eembed_align(1);
+
 struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 						size_t len)
 {
 	struct eembed_allocator *ea = NULL;
 	struct eembed_alloc_chunk *chunk = NULL;
 	size_t used = 0;
-	size_t min_buf_size =
-	    eembed_align(sizeof(struct eembed_allocator)) +
-	    eembed_align(sizeof(struct eembed_alloc_chunk)) +
-	    eembed_align(sizeof(size_t)) + eembed_align(1);
 
-	if (!bytes || len < min_buf_size) {
-		return NULL;
-	}
+	eembed_assert(bytes);
+	eembed_assert(len >= eembed_bytes_allocator_min_buf_size);
 
 	ea = (struct eembed_allocator *)bytes;
 	used = eembed_align(sizeof(struct eembed_allocator));

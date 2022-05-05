@@ -105,6 +105,7 @@ struct eembed_allocator {
 	void (*free)(struct eembed_allocator *ea, void *ptr);
 };
 
+extern const size_t eembed_bytes_allocator_min_buf_size;
 struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 						size_t len);
 
