@@ -454,7 +454,7 @@ debug-coverage/coverage.info: debug-coverage-check
 	lcov	--checksum \
 		--capture \
 		--base-directory . \
-		--directory . \
+		--directory $(dir $@) \
 		--output-file $@
 	ls -l $@
 
@@ -482,7 +482,7 @@ debug-coverage-faux-fs/coverage-faux-fs.info: debug-coverage-faux-fs-check
 	lcov	--checksum \
 		--capture \
 		--base-directory . \
-		--directory . \
+		--directory $(dir $@) \
 		--output-file $@
 	ls -l $@
 
@@ -507,6 +507,9 @@ check-coverage-faux-fs: \
 coverage-faux-fs: \
  debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html
 	$(BROWSER) $<
+
+.PHONY: coverage-all
+coverage-all: coverage-faux-fs coverage
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0

@@ -79,6 +79,8 @@ $*
 *.out
 coverage.info
 coverage_html/
+debug-coverage/
+debug-coverage-faux-fs/
 
 ################
 # autotools
