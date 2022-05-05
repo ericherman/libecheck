@@ -587,7 +587,7 @@ char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z)
 	unsigned char ul_bytes[sizeof(uint64_t)];
 	size_t i = 0;
 
-	if (len < eembed_bytes_to_hex_min_buf(ul_bytes_len)) {
+	if (!buf || len < eembed_bytes_to_hex_min_buf(ul_bytes_len)) {
 		return NULL;
 	}
 
@@ -1459,9 +1459,7 @@ void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
 	    (struct eembed_alloc_chunk *)ea->context;
 	/* LCOV_EXCL_LINE */
 
-	eembed_assert(chunk);
-
-	if (!size) {
+	if (!chunk || !size) {
 		return NULL;
 	}
 
