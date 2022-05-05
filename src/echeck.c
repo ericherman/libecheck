@@ -178,7 +178,7 @@ unsigned char echeck_str_contains_m(struct eembed_log *err, const char *func,
 				    const char *msg)
 {
 	if (haystack == needle) {
-		return 0;
+		return 0;	/* LCOV_EXCL_LINE optimized out? more CFLAGS! */
 	}
 
 	if (haystack != NULL && needle != NULL
@@ -379,7 +379,7 @@ char echeck_status_m(struct eembed_log *err, const char *func, const char *file,
 		return val;
 	}
 	if (val < -128) {
-		c = -128;
+		c = -128;	/* LCOV_EXCL_LINE optimized out? more CFLAGS */
 	} else {
 		c = 127;
 	}
