@@ -587,6 +587,10 @@ char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z)
 	unsigned char ul_bytes[sizeof(uint64_t)];
 	size_t i = 0;
 
+	if (len < eembed_bytes_to_hex_min_buf(ul_bytes_len)) {
+		return NULL;
+	}
+
 	for (i = 0; i < sizeof(uint64_t); ++i) {
 		unsigned char byte = 0;
 		byte = (0xFF & (z >> (8 * ((sizeof(uint64_t) - 1) - i))));
@@ -716,7 +720,7 @@ char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
 
 	eembed_assert(buf);
 
-	if (buf_len < (2 + (2 * bytes_len) + 1)) {
+	if (buf_len < eembed_bytes_to_hex_min_buf(bytes_len)) {
 		return NULL;
 	}
 
@@ -1537,9 +1541,12 @@ void *eembed_chunk_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
 		}
 	}
 
+	eembed_assert(found);
+#ifdef NDEBUG
 	if (!found) {
 		return NULL;
 	}
+#endif
 
 	if (old_size >= size) {
 		eembed_alloc_chunk_split(chunk, size);

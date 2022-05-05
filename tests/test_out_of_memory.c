@@ -28,12 +28,8 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 		real = eembed_global_allocator;
 	}
 
-	failures +=
-	    echeck_err_injecting_allocator_init(&with_errs, real, &mctx,
-						eembed_err_log);
-	if (failures) {
-		return 1;
-	}
+	echeck_err_injecting_allocator_init(&with_errs, real, &mctx,
+					    eembed_err_log);
 	eembed_global_allocator = &with_errs;
 
 	mctx.attempts_to_fail_bitmask = malloc_fail_bitmask;

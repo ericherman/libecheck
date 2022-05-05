@@ -6,10 +6,10 @@
 
 struct eembed_log *echeck_ensure_log(struct eembed_log *err)
 {
-	if (err) {
-		return err;
+	if (!err) {
+		err = eembed_err_log;
 	}
-	return eembed_err_log;
+	return err;
 }
 
 static void echeck_append_fail(struct eembed_log *err, const char *msg)
@@ -524,19 +524,15 @@ void echeck_err_injecting_free(struct eembed_allocator *ea, void *ptr)
 	whine_if_context_data_corruption(ctx);
 }
 
-int echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,
-					struct eembed_allocator *real,
-					struct echeck_err_injecting_context *c,
-					struct eembed_log *log)
+void echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,
+					 struct eembed_allocator *real,
+					 struct echeck_err_injecting_context *c,
+					 struct eembed_log *log)
 {
 	eembed_assert(with_errs);
 	eembed_assert(real);
 	eembed_assert(c);
 	eembed_assert(log);
-
-	if (!with_errs || !real || !c || !log) {
-		return 1;
-	}
 
 	eembed_memset(c, 0x00, sizeof(struct echeck_err_injecting_context));
 	c->real = real;
@@ -549,6 +545,4 @@ int echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,
 	with_errs->realloc = echeck_err_injecting_realloc;
 	with_errs->reallocarray = echeck_err_injecting_reallocarray;
 	with_errs->free = echeck_err_injecting_free;
-
-	return 0;
 }

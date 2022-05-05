@@ -348,10 +348,10 @@ char echeck_status_m(struct eembed_log *err, const char *func, const char *file,
 
 struct echeck_err_injecting_context;
 
-int echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,
-					struct eembed_allocator *real,
-					struct echeck_err_injecting_context *c,
-					struct eembed_log *log);
+void echeck_err_injecting_allocator_init(struct eembed_allocator *with_errs,
+					 struct eembed_allocator *real,
+					 struct echeck_err_injecting_context *c,
+					 struct eembed_log *log);
 
 struct echeck_err_injecting_context {
 	unsigned long allocs;

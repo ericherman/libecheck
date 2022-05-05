@@ -20,7 +20,12 @@ unsigned test_check_str(void)
 	strs[0] = "same";
 	strs[1] = "different";
 
+	failures += check_str(NULL, NULL);
+	failures += check_str_contains(NULL, NULL);
+
 	failures += check_str("same", "same");
+	failures += check_str(strs[0], strs[0]);
+	failures += check_str_contains(strs[0], strs[0]);
 
 	eembed_memset(mem_buf, 0x00, mem_buf_len);
 	eembed_err_log =

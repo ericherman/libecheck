@@ -18,6 +18,9 @@ void check_ulong_to_hex_nothing_explodes(void)
 
 	bytes = (unsigned char *)&ulong_max;
 	eembed_bytes_to_hex(buf, 30, bytes, sizeof(unsigned long));
+
+	eembed_bytes_to_hex(buf, (sizeof(unsigned long) - 1),
+			    bytes, sizeof(unsigned long));
 }
 
 unsigned check_ulong_to_hex(unsigned long ul, const char *ulhex)

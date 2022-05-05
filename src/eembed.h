@@ -27,6 +27,8 @@ char *eembed_long_to_str(char *buf, size_t len, int64_t l);
 char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul);
 char *eembed_float_to_str(char *buf, size_t len, long double f);
 
+/* ("0x" + (two hex digits per byte) + NULL terminator) */
+#define eembed_bytes_to_hex_min_buf(num_bytes) (2 + (2 * num_bytes) + 1)
 char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z);
 char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
 			  size_t bytes_len);
@@ -159,9 +161,7 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 #else
 #define eembed_assert(expression) \
 	do { \
-		if (expression) { \
-			EEMBED_NOP(); \
-		} else { \
+		if (!(expression)) { \
 			struct eembed_log *el = eembed_err_log; \
 			if (el) { \
 				el->append_s(el, __FILE__); \

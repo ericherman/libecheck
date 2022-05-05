@@ -83,8 +83,11 @@ unsigned test_check_status(void)
 	}
 
 	expected = -128;
-	for (i = expected; i < -260; --i) {
-		eembed_err_log = orig;
+	for (i = expected; i > -260; --i) {
+		eembed_memset(mem_buf, 0x00, mem_buf_len);
+		eembed_err_log =
+		    eembed_char_buf_log_init(&buf_log, &log_ctx, mem_buf,
+					     mem_buf_len);
 		actual = check_status(i);
 		eembed_err_log = orig;
 		buf[0] = '-';

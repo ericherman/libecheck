@@ -13,7 +13,7 @@
 		} \
 	} while (0)
 
-#if NDEBUG
+#ifdef NDEBUG
 unsigned test_eembed_assert(void)
 {
 	eembed_assert(1 == 1);
