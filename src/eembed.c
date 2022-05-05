@@ -1457,11 +1457,12 @@ void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
 {
 	struct eembed_alloc_chunk *chunk =
 	    (struct eembed_alloc_chunk *)ea->context;
-	/* LCOV_EXCL_LINE */
 
+	/* LCOV_EXCL_START only happens in the FREESTANDING case */
 	if (!chunk || !size) {
 		return NULL;
 	}
+	/* LCOV_EXCL_STOP */
 
 	while (chunk != NULL) {
 		if (chunk->in_use == 0) {
