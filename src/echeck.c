@@ -27,10 +27,12 @@ static void echeck_append_func_file_line(struct eembed_log *err,
 					 int line)
 {
 	err->append_s(err, "[");
+	/* LCOV_EXCL_START TODO: remove after c11 */
 	if (func) {
 		err->append_s(err, func);
 		err->append_s(err, " at ");
 	}
+	/* LCOV_EXCL_STOP */
 	err->append_s(err, file);
 	err->append_s(err, ":");
 	err->append_l(err, line);
