@@ -1402,7 +1402,8 @@ static struct eembed_alloc_chunk *eembed_alloc_chunk_init(unsigned char *bytes,
 	struct eembed_alloc_chunk *chunk = (struct eembed_alloc_chunk *)bytes;
 	size_t size = eembed_align(sizeof(struct eembed_alloc_chunk));
 
-	if (!bytes || available_length < size) {
+	eembed_assert(bytes);
+	if (available_length < size) {
 		return NULL;
 	}
 	chunk->start = bytes + size;
