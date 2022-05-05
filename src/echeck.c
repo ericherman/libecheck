@@ -479,12 +479,12 @@ void *echeck_err_injecting_realloc(struct eembed_allocator *ea, void *ptr,
 	eembed_memcpy(&size, tracking_buffer, sizeof(size_t));
 
 	if (newsize == size) {
-		return ptr;
+		return ptr;	/* LCOV_EXCL_LINE optimized out; but CLFAGS */
 	}
 
 	ptr2 = ea->calloc(ea, 1, newsize);
 	if (!ptr2) {
-		return ptr2;
+		return ptr2;	/* LCOV_EXCL_LINE optimized out; but CLFAGS */
 	}
 
 	eembed_memcpy(ptr2, ptr, newsize < size ? newsize : size);

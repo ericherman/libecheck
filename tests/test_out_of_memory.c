@@ -22,8 +22,11 @@ int test_out_of_memory_inner(uint32_t malloc_fail_bitmask)
 
 	eembed_memset(messages, 0x00, 40 * sizeof(char *));
 
-	if (eembed_global_allocator == NULL) {
+	if (!EEMBED_HOSTED || eembed_global_allocator == NULL) {
 		real = eembed_bytes_allocator(bytes, bytes_len);
+		if (check_ptr_not_null(real)) {
+			return 1;
+		}
 	} else {
 		real = eembed_global_allocator;
 	}
