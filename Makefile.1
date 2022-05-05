@@ -9,18 +9,39 @@
 # Target-specific Variable syntax:
 # https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 #
-# patsubst : $(patsubst pattern,replacement,text)
+# patsubst, subst, foreach : $(patsubst pattern,replacement,text)
 #	https://www.gnu.org/software/make/manual/html_node/Text-Functions.html
 # call : $(call func,param1,param2,...)
 #       https://www.gnu.org/software/make/manual/html_node/Call-Function.html
 # define :
 #       https://www.gnu.org/software/make/manual/html_node/Multi_002dLine.html
+# dir, notdir :
+#	https://www.gnu.org/software/make/manual/html_node/File-Name-Functions.html
 
 BROWSER	?= firefox
 VALGRIND ?= $(shell which valgrind)
 
 # pushd, popd are bash-ism
 SHELL=/bin/bash
+UNAME := $(shell uname)
+
+VER_MAJOR := 2
+VER_MINOR := 0
+VER_PATCH := 0
+VERSION := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
+
+
+ifeq ($(UNAME), Darwin)
+SHAREDEXT = dylib
+define make-shared-flags
+	-dynamiclib
+endef
+else
+SHAREDEXT = so
+define make-shared-flags
+	-shared -Wl,-soname,$(notdir $(1))
+endef
+endif
 
 # This Makefile can create several types of builds, including the standard
 # "build" directory, but also "faux-freestanding", "debug" and "coverage"
@@ -34,20 +55,22 @@ build_dirs=\
  debug-coverage \
  debug-coverage-faux-fs
 
+default: $(foreach DIR,$(build_dirs),\
+	$(DIR)/eembed.o $(DIR)/libeembed.$(SHAREDEXT) $(DIR)/libeembed.a \
+	$(DIR)/echeck.o $(DIR)/libecheck.$(SHAREDEXT) $(DIR)/libecheck.a \
+	)
+	@echo SUCCESS $@
 
 # this will become -std=c11 once that is "everywhere enough"
 CSTD_CFLAGS=-std=c89
 
 NOISY_CFLAGS=-Wall -Wextra -pedantic -Wcast-qual -Wc++-compat
-SRC_CFLAGS=-I./src
 
-COMMON_CFLAGS=$(CSTD_CFLAGS) $(NOISY_CFLAGS) $(SRC_CFLAGS) -pipe
+COMMON_CFLAGS=$(CSTD_CFLAGS) $(NOISY_CFLAGS) -pipe
 
 NORMAL_CFLAGS=-g -O2 -DNDEBUG -fomit-frame-pointer
-NORMAL_LDFLAGS=
 
 DEBUG_CFLAGS=-g -O2 -Werror
-DEBUG_LDFLAGS=
 
 COVERAGE_CFLAGS=-O0 -g -Werror \
 	-fno-inline-small-functions \
@@ -57,9 +80,6 @@ COVERAGE_CFLAGS=-O0 -g -Werror \
 COVERAGE_LDFLAGS=--coverage
 
 FAUX_FREESTANDING_ENV_CFLAGS=-DFAUX_FREESTANDING=1 -DEEMBED_HOSTED=0
-HOSTED_ENV_CFLAGS=
-
-default: check
 
 # Each build type implies target specific BUILD CFLAGS and LDFLAGS variables:
 build/%: BUILD_DIR = build
@@ -67,42 +87,44 @@ build/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(NORMAL_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-build/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+build/%: BUILD_LDFLAGS = -L./build $(LDFLAGS)
 
 faux-fs/%: BUILD_DIR = faux-fs
 faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(NORMAL_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-faux-fs/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+faux-fs/%: BUILD_LDFLAGS = -L./faux-fs $(LDFLAGS)
 
 debug/%: BUILD_DIR = debug
 debug/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(DEBUG_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-debug/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+debug/%: BUILD_LDFLAGS = -L./debug $(LDFLAGS)
 
 debug-faux-fs/%: BUILD_DIR = debug-faux-fs
 debug-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(DEBUG_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-faux-fs/%: BUILD_LDFLAGS = $(NORMAL_LDFLAGS) $(LDFLAGS)
+debug-faux-fs/%: BUILD_LDFLAGS = -L./debug-faux-fs $(LDFLAGS)
 
 debug-coverage/%: BUILD_DIR = debug-coverage
 debug-coverage/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-coverage/%: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS)  $(LDFLAGS)
+debug-coverage/%: BUILD_LDFLAGS = -L./debug-coverage \
+	$(COVERAGE_LDFLAGS) $(LDFLAGS)
 
 debug-coverage-faux-fs/%: BUILD_DIR = debug-coverage-faux-fs
 debug-coverage-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-coverage-faux-fs/%s: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS)  $(LDFLAGS)
+debug-coverage-faux-fs/%s: BUILD_LDFLAGS = -L./debug-coverage-faux-fs \
+	$(COVERAGE_LDFLAGS) $(LDFLAGS)
 
 
 test_progs=\
@@ -157,40 +179,159 @@ test_progs=\
 # output files from getting automatically cleaned up.
 # https://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 # https://www.gnu.org/software/make/manual/html_node/Special-Targets.html
-.PRECIOUS: %.o \
- build/tests/test% \
- faux-fs/tests/test% \
- debug/tests/test% \
- debug-faux-fs/tests/test% \
- debug-coverage/tests/test% \
- debug-coverage-faux-fs/tests/test%
-
-
-# This function moves a FOO.tmp to FOO
-define mv-tmp
-	mv -v $(1).tmp $(1)
-	ls -l $(1)
-	file $(1)
-	echo $(1)
-endef
+PRECIOUS=%.o $(foreach DIR,$(build_dirs),\
+			$(foreach TEST,$(test_progs), \
+				$(DIR)/tests/$(TEST)))
+.PRECIOUS:$(PRECIOUS)
 
 define build-o
-	mkdir -pv $(dir $(1))
-	$(CC) -c $(BUILD_CFLAGS) $2 -o $1.tmp
-	$(call mv-tmp,$(1))
+	@mkdir -pv $(dir $1)
+	$(CC) -c -fPIC -Isrc $(BUILD_CFLAGS) $2 -o $1
 endef
 
 define build-exe
-	mkdir -pv $(dir $(1))
-	$(CC) $(BUILD_CFLAGS) $2 -o $1.tmp
-	$(call mv-tmp,$(1))
+	@mkdir -pv $(dir $1)
+	$(CC) -Isrc $(BUILD_CFLAGS) $2 -o $1
 endef
 
-$(patsubst %, %/eembed.o, $(build_dirs)): src/eembed.c src/eembed.h
+# usage build-so(so_name,major,minor,patch,so_objs)
+define build-so
+	@mkdir -pv $(dir $1)
+	$(CC) $(call make-shared-flags,$1) -o $1.$2.$3.$4 $5
+	{ pushd $(dir $1); \
+		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1.$2.$3); \
+		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1.$2); \
+		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1); \
+	 popd; }
+	ls -l $(dir $1)*.$(SHAREDEXT)*
+endef
+
+# usage build-a(a_name,so_objs)
+define build-a
+	@mkdir -pv $(dir $1)
+	ar -r $1 $(shell readlink -f $2)
+	ar -t $1
+endef
+
+src/eembed.c: src/eembed.h
+	ls -l $^ $@
+
+src/echeck.c: src/echeck.h
+	ls -l $^ $@
+
+#
+# eembed.o
+#
+$(foreach %,$(build_dirs),%/eembed.o): src/eembed.c
 	$(call build-o,$@,$<)
 
-$(patsubst %, %/echeck.o, $(build_dirs)): src/echeck.c src/echeck.h src/eembed.h
+#
+# libeembed.so
+#
+build/libeembed.$(SHAREDEXT): build/eembed.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/eembed.o)
+
+faux-fs/libeembed.$(SHAREDEXT): faux-fs/eembed.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/eembed.o)
+
+debug/libeembed.$(SHAREDEXT): debug/eembed.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/eembed.o)
+
+debug-faux-fs/libeembed.$(SHAREDEXT): debug-faux-fs/eembed.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/eembed.o)
+
+debug-coverage/libeembed.$(SHAREDEXT): debug-coverage/eembed.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/eembed.o)
+
+debug-coverage-faux-fs/libeembed.$(SHAREDEXT): debug-coverage-faux-fs/eembed.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/eembed.o)
+
+#
+# libeembed.a
+#
+build/libeembed.a: build/libeembed.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+faux-fs/libeembed.a: faux-fs/libeembed.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug/libeembed.a: debug/libeembed.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug-faux-fs/libeembed.a: debug-faux-fs/libeembed.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug-coverage/libeembed.a: debug-coverage/libeembed.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug-coverage-faux-fs/libeembed.a: \
+		debug-coverage-faux-fs/libeembed.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+
+
+#
+# echeck.o
+#
+$(foreach %,$(build_dirs),%/echeck.o): src/echeck.c
 	$(call build-o,$@,$<)
+
+#
+# libecheck.so
+#
+build/libecheck.$(SHAREDEXT): build/echeck.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/echeck.o)
+
+faux-fs/libecheck.$(SHAREDEXT): faux-fs/echeck.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/echeck.o)
+
+debug/libecheck.$(SHAREDEXT): debug/echeck.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/echeck.o)
+
+debug-faux-fs/libecheck.$(SHAREDEXT): debug-faux-fs/echeck.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/echeck.o)
+
+debug-coverage/libecheck.$(SHAREDEXT): debug-coverage/echeck.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/echeck.o)
+
+debug-coverage-faux-fs/libecheck.$(SHAREDEXT): debug-coverage-faux-fs/echeck.o
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
+		$(BUILD_DIR)/echeck.o)
+
+#
+# libecheck.a
+#
+build/libecheck.a: build/libecheck.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+faux-fs/libecheck.a: faux-fs/libecheck.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug/libecheck.a: debug/libecheck.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug-faux-fs/libecheck.a: debug-faux-fs/libecheck.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug-coverage/libecheck.a: debug-coverage/libecheck.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+debug-coverage-faux-fs/libecheck.a: \
+		debug-coverage-faux-fs/libecheck.$(SHAREDEXT)
+	$(call build-a,$@,$^)
+
+
 
 #
 # 'build' TESTS
@@ -284,7 +425,8 @@ debug-coverage-check: $(patsubst %, debug-coverage-check-%, $(test_progs))
 # 'debug-coverage-faux-fs' TESTS
 #
 debug-coverage-faux-fs/tests/test%: tests/test%.c \
-		debug-coverage-faux-fs/echeck.o debug-coverage-faux-fs/eembed.o
+		debug-coverage-faux-fs/echeck.o \
+		debug-coverage-faux-fs/eembed.o
 	$(call build-exe,$@,$^)
 
 .PHONY:
@@ -334,6 +476,37 @@ check-coverage: debug-coverage/tests/coverage_html/src/index.html
 
 .PHONY: coverage
 coverage: debug-coverage/tests/coverage_html/src/index.html
+	$(BROWSER) $<
+
+
+debug-coverage-faux-fs/coverage-faux-fs.info: debug-coverage-faux-fs-check
+	lcov	--checksum \
+		--capture \
+		--base-directory . \
+		--directory . \
+		--output-file $@
+	ls -l $@
+
+debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html: \
+		debug-coverage-faux-fs/coverage-faux-fs.info
+	mkdir -pv $(dir $@)
+	genhtml $< --output-directory \
+		./debug-coverage-faux-fs/tests/coverage-faux-fs_html
+	ls -l $@
+
+.PHONY: check-coverage-faux-fs
+check-coverage-faux-fs: \
+ debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html
+	if [ $$(grep -c 'headerCovTableEntryHi">100.0 %' $< ) -eq 2 ]; then \
+		true; \
+	else grep headerCovTableEntryHi $< && \
+		false; \
+	fi
+	echo "SUCCESS $@"
+
+.PHONY: coverage-faux-fs
+coverage-faux-fs: \
+ debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html
 	$(BROWSER) $<
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
