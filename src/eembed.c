@@ -714,9 +714,7 @@ char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
 	size_t i = 0;
 	size_t pos = 0;
 
-	if (!buf) {
-		return NULL;
-	}
+	eembed_assert(buf);
 
 	if (buf_len < (2 + (2 * bytes_len) + 1)) {
 		return NULL;
