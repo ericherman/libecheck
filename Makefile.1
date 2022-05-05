@@ -25,11 +25,10 @@ VALGRIND ?= $(shell which valgrind)
 SHELL=/bin/bash
 UNAME := $(shell uname)
 
-VER_MAJOR := 2
-VER_MINOR := 0
-VER_PATCH := 0
-VERSION := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
-
+VERSION=$(shell grep AC_INIT configure.ac | sed -e 's/AC_INIT(\[libecheck\], \[\([0-9\.]*\)], \[eric@freesa.org\])/\1/g')
+VER_MAJOR := `echo $(VERSION) | cut -f1 -d'.'`
+VER_MINOR := `echo $(VERSION) | cut -f2 -d'.'`
+VER_PATCH := `echo $(VERSION) | cut -f3 -d'.'`
 
 ifeq ($(UNAME), Darwin)
 SHAREDEXT = dylib
