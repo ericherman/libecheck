@@ -54,11 +54,16 @@ build_dirs=\
  debug-coverage \
  debug-coverage-faux-fs
 
-default: $(foreach DIR,$(build_dirs),\
+all:all-obj check-all
+	find . -name '*.$(SHAREDEXT)' -o -name '*.o'
+	@echo "SUCCESS $@"
+
+all-obj: $(foreach DIR,$(build_dirs),\
 	$(DIR)/eembed.o $(DIR)/libeembed.$(SHAREDEXT) $(DIR)/libeembed.a \
 	$(DIR)/echeck.o $(DIR)/libecheck.$(SHAREDEXT) $(DIR)/libecheck.a \
 	)
-	@echo SUCCESS $@
+	@echo "SUCCESS $@"
+
 
 # this will become -std=c11 once that is "everywhere enough"
 CSTD_CFLAGS=-std=c89
@@ -86,44 +91,42 @@ build/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(NORMAL_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-build/%: BUILD_LDFLAGS = -L./build $(LDFLAGS)
+build/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
 
 faux-fs/%: BUILD_DIR = faux-fs
 faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(NORMAL_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-faux-fs/%: BUILD_LDFLAGS = -L./faux-fs $(LDFLAGS)
+faux-fs/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
 
 debug/%: BUILD_DIR = debug
 debug/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(DEBUG_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-debug/%: BUILD_LDFLAGS = -L./debug $(LDFLAGS)
+debug/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
 
 debug-faux-fs/%: BUILD_DIR = debug-faux-fs
 debug-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(DEBUG_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-faux-fs/%: BUILD_LDFLAGS = -L./debug-faux-fs $(LDFLAGS)
+debug-faux-fs/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
 
 debug-coverage/%: BUILD_DIR = debug-coverage
 debug-coverage/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-coverage/%: BUILD_LDFLAGS = -L./debug-coverage \
-	$(COVERAGE_LDFLAGS) $(LDFLAGS)
+debug-coverage/%: BUILD_LDFLAGS = -L. $(COVERAGE_LDFLAGS) $(LDFLAGS)
 
 debug-coverage-faux-fs/%: BUILD_DIR = debug-coverage-faux-fs
 debug-coverage-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-coverage-faux-fs/%s: BUILD_LDFLAGS = -L./debug-coverage-faux-fs \
-	$(COVERAGE_LDFLAGS) $(LDFLAGS)
+debug-coverage-faux-fs/%s: BUILD_LDFLAGS = -L. $(COVERAGE_LDFLAGS) $(LDFLAGS)
 
 
 test_progs=\
@@ -183,31 +186,40 @@ PRECIOUS=%.o $(foreach DIR,$(build_dirs),\
 				$(DIR)/tests/$(TEST)))
 .PRECIOUS:$(PRECIOUS)
 
+# usage build-o(path/foo.o,src/foo.c)
 define build-o
 	@mkdir -pv $(dir $1)
-	$(CC) -c -fPIC -Isrc $(BUILD_CFLAGS) $2 -o $1
+	cd $(BUILD_DIR) && \
+		$(CC) -c -fPIC -I../src $(BUILD_CFLAGS) \
+			../$2 \
+			-o $(subst $(BUILD_DIR)/,,$1)
 endef
 
+# usage build-exe(path/test_name,tests/test_src.c)
 define build-exe
 	@mkdir -pv $(dir $1)
-	$(CC) -Isrc $(BUILD_CFLAGS) $2 -o $1
+	cd $(BUILD_DIR) && \
+		$(CC) -I../src $(BUILD_CFLAGS) \
+			eembed.o echeck.o ../$2 \
+			-o $(subst $(BUILD_DIR)/,,$1)
 endef
 
 # usage build-so(so_name,major,minor,patch,so_objs)
 define build-so
-	@mkdir -pv $(dir $1)
-	$(CC) $(call make-shared-flags,$1) -o $1.$2.$3.$4 $5
-	{ pushd $(dir $1); \
+	@mkdir -pv $(BUILD_DIR)
+	cd $(BUILD_DIR) && $(CC) $(call make-shared-flags,$1) \
+		-o $(subst $(BUILD_DIR)/,,$1).$2.$3.$4 $5
+	{ pushd $(BUILD_DIR); \
 		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1.$2.$3); \
 		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1.$2); \
 		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1); \
 	 popd; }
-	ls -l $(dir $1)*.$(SHAREDEXT)*
+	ls -l $(BUILD_DIR)/*.$(SHAREDEXT)*
 endef
 
 # usage build-a(a_name,so_objs)
 define build-a
-	@mkdir -pv $(dir $1)
+	@mkdir -pv $(BUILD_DIR)
 	ar -r $1 $(shell readlink -f $2)
 	ar -t $1
 endef
@@ -228,28 +240,22 @@ $(foreach %,$(build_dirs),%/eembed.o): src/eembed.c
 # libeembed.so
 #
 build/libeembed.$(SHAREDEXT): build/eembed.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/eembed.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),eembed.o)
 
 faux-fs/libeembed.$(SHAREDEXT): faux-fs/eembed.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/eembed.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),eembed.o)
 
 debug/libeembed.$(SHAREDEXT): debug/eembed.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/eembed.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),eembed.o)
 
 debug-faux-fs/libeembed.$(SHAREDEXT): debug-faux-fs/eembed.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/eembed.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),eembed.o)
 
 debug-coverage/libeembed.$(SHAREDEXT): debug-coverage/eembed.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/eembed.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),eembed.o)
 
 debug-coverage-faux-fs/libeembed.$(SHAREDEXT): debug-coverage-faux-fs/eembed.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/eembed.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),eembed.o)
 
 #
 # libeembed.a
@@ -285,28 +291,22 @@ $(foreach %,$(build_dirs),%/echeck.o): src/echeck.c
 # libecheck.so
 #
 build/libecheck.$(SHAREDEXT): build/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
 
 faux-fs/libecheck.$(SHAREDEXT): faux-fs/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
 
 debug/libecheck.$(SHAREDEXT): debug/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
 
 debug-faux-fs/libecheck.$(SHAREDEXT): debug-faux-fs/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
 
 debug-coverage/libecheck.$(SHAREDEXT): debug-coverage/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
 
 debug-coverage-faux-fs/libecheck.$(SHAREDEXT): debug-coverage-faux-fs/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), \
-		$(BUILD_DIR)/echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
 
 #
 # libecheck.a
@@ -337,16 +337,16 @@ debug-coverage-faux-fs/libecheck.a: \
 #
 build/tests/test%: tests/test%.c \
 		build/echeck.o build/eembed.o
-	$(call build-exe,$@,$^)
+	$(call build-exe,$@,$<)
 
 .PHONY:
 check-%: build/tests/%
-	./$<
-	echo "SUCCESS $@"
+	pushd build && ../$<
+	@echo "SUCCESS $@"
 
 .PHONY:
 build-check: $(patsubst %, check-%, $(test_progs))
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 
 #
@@ -354,16 +354,16 @@ build-check: $(patsubst %, check-%, $(test_progs))
 #
 faux-fs/tests/test%: tests/test%.c \
 		faux-fs/echeck.o faux-fs/eembed.o
-	$(call build-exe,$@,$^)
+	$(call build-exe,$@,$<)
 
 .PHONY:
 check-faux-fs-%: faux-fs/tests/%
-	./$<
-	echo "SUCCESS $@"
+	pushd faux-fs && ../$<
+	@echo "SUCCESS $@"
 
 .PHONY:
 faux-fs-check: $(patsubst %, check-faux-fs-%, $(test_progs))
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 
 #
@@ -371,20 +371,20 @@ faux-fs-check: $(patsubst %, check-faux-fs-%, $(test_progs))
 #
 debug/tests/test%: tests/test%.c \
 		debug/echeck.o debug/eembed.o
-	$(call build-exe,$@,$^)
+	$(call build-exe,$@,$<)
 
 .PHONY:
 debug-check-%: debug/tests/%
-	$(VALGRIND) ./$< > $@.out 2>&1
-	if [ $$(grep -c 'definitely lost' $@.out) -eq 0 ]; \
+	pushd debug && $(VALGRIND) ../$< > $@.out 2>&1
+	if [ $$(grep -c 'definitely lost' debug/$@.out) -eq 0 ]; \
 		then true; else false; fi && \
-		if [ $$(grep -c 'probably lost' $@.out) -eq 0 ]; \
+		if [ $$(grep -c 'probably lost' debug/$@.out) -eq 0 ]; \
 		then true; else false; fi
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 .PHONY:
 debug-check: $(patsubst %, debug-check-%, $(test_progs))
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 
 #
@@ -392,11 +392,11 @@ debug-check: $(patsubst %, debug-check-%, $(test_progs))
 #
 debug-faux-fs/tests/test%: tests/test%.c \
 		debug-faux-fs/echeck.o debug-faux-fs/eembed.o
-	$(call build-exe,$@,$^)
+	$(call build-exe,$@,$<)
 
 .PHONY:
 debug-faux-fs-check-%: debug-faux-fs/tests/%
-	./$<
+	pushd debug-faux-fs && ../$<
 	@echo "SUCCESS $@"
 
 .PHONY:
@@ -409,11 +409,11 @@ debug-faux-fs-check: $(patsubst %, debug-faux-fs-check-%, $(test_progs))
 #
 debug-coverage/tests/test%: tests/test%.c \
 		debug-coverage/echeck.o debug-coverage/eembed.o
-	$(call build-exe,$@,$^)
+	$(call build-exe,$@,$<)
 
 .PHONY:
 debug-coverage-check-%: debug-coverage/tests/%
-	./$<
+	pushd debug-coverage && ../$<
 	@echo "SUCCESS $@"
 
 .PHONY:
@@ -426,34 +426,35 @@ debug-coverage-check: $(patsubst %, debug-coverage-check-%, $(test_progs))
 debug-coverage-faux-fs/tests/test%: tests/test%.c \
 		debug-coverage-faux-fs/echeck.o \
 		debug-coverage-faux-fs/eembed.o
-	$(call build-exe,$@,$^)
+	$(call build-exe,$@,$<)
 
 .PHONY:
 debug-coverage-faux-fs-check-%: debug-coverage-faux-fs/tests/%
-	./$<
-	echo "SUCCESS $@"
+	pushd debug-coverage-faux-fs && ../$<
+	@echo "SUCCESS $@"
 
 .PHONY:
 debug-coverage-faux-fs-check: \
 		$(patsubst %, debug-coverage-faux-fs-check-%, $(test_progs))
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 
 .PHONY:
 check: build-check
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 check-all: build-check faux-fs-check debug-check debug-faux-fs-check \
-		debug-coverage-check debug-coverage-faux-fs-check
-	echo "SUCCESS $@"
+		debug-coverage-check debug-coverage-faux-fs-check \
+		check-coverage check-coverage-faux-fs
+	@echo "SUCCESS $@"
 
 valgrind: debug-check
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 debug-coverage/coverage.info: debug-coverage-check
 	lcov	--checksum \
 		--capture \
-		--base-directory . \
+		--base-directory $(dir $@) \
 		--directory $(dir $@) \
 		--output-file $@
 	ls -l $@
@@ -471,7 +472,7 @@ check-coverage: debug-coverage/tests/coverage_html/src/index.html
 	else grep headerCovTableEntryHi $< && \
 		false; \
 	fi
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 .PHONY: coverage
 coverage: debug-coverage/tests/coverage_html/src/index.html
@@ -481,7 +482,7 @@ coverage: debug-coverage/tests/coverage_html/src/index.html
 debug-coverage-faux-fs/coverage-faux-fs.info: debug-coverage-faux-fs-check
 	lcov	--checksum \
 		--capture \
-		--base-directory . \
+		--base-directory $(dir $@) \
 		--directory $(dir $@) \
 		--output-file $@
 	ls -l $@
@@ -501,7 +502,7 @@ check-coverage-faux-fs: \
 	else grep headerCovTableEntryHi $< && \
 		false; \
 	fi
-	echo "SUCCESS $@"
+	@echo "SUCCESS $@"
 
 .PHONY: coverage-faux-fs
 coverage-faux-fs: \
