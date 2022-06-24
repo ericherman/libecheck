@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* Copyright (C) 2020, 2021 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 unsigned int test_eembed_log(void)
 {
@@ -17,19 +17,19 @@ unsigned int test_eembed_log(void)
 
 	buf[0] = '\0';
 	log = eembed_char_buf_log_init(NULL, &bctx, buf, buf_len);
-	failures += check_ptr(log, NULL);
+	eembed_crash_if_false(log == NULL);
 
 	log = eembed_char_buf_log_init(&llog, NULL, buf, buf_len);
-	failures += check_ptr(log, NULL);
+	eembed_crash_if_false(log == NULL);
 
 	log = eembed_char_buf_log_init(&llog, &bctx, NULL, buf_len);
-	failures += check_ptr(log, NULL);
+	eembed_crash_if_false(log == NULL);
 
 	buf[0] = '\0';
 	log = eembed_char_buf_log_init(&llog, &bctx, buf, buf_len);
 	if (!log) {
 		++failures;
-		return failures;
+		return 0;
 	}
 
 	log->append_s(log, "foo ");
@@ -87,7 +87,7 @@ unsigned int test_eembed_log(void)
 		++failures;
 	}
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_log)
+EEMBED_FUNC_MAIN(test_eembed_log)

@@ -2,10 +2,10 @@
 /* test-eembed-ulong-to-str.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 #include <limits.h>
 
-void check_ulong_to_str_nothing_explodes(void)
+void test_ulong_to_str_nothing_explodes(void)
 {
 	char buf[30];
 
@@ -16,36 +16,31 @@ void check_ulong_to_str_nothing_explodes(void)
 	eembed_ulong_to_str(buf, 30, ULONG_MAX);
 }
 
-unsigned check_ulong_to_str(unsigned long ul, const char *ulstr)
+void test_ulong_to_str(unsigned long ul, const char *ulstr)
 {
-	unsigned failures = 0;
 	char buf[30];
 	char *rv;
 	unsigned long rul = 0;
 
 	rv = eembed_ulong_to_str(buf, 30, ul);
-	failures += check_ptr_m(rv, buf, ulstr);
-	failures += check_str_m(buf, ulstr, ulstr);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strcmp(buf, ulstr) == 0);
 
 	rul = eembed_str_to_ulong(rv, NULL);
-	failures += check_unsigned_long(rul, ul);
-
-	return failures;
+	eembed_crash_if_false(rul == ul);
 }
 
-#define Check_ulong_to_str(ul) check_ulong_to_str(ul, #ul)
+#define Test_ulong_to_str(ul) test_ulong_to_str(ul, #ul)
 
 unsigned int test_eembed_ulong_to_str(void)
 {
-	unsigned failures = 0;
+	Test_ulong_to_str(0);
+	Test_ulong_to_str(2147483000);
+	Test_ulong_to_str(4294967295);
 
-	failures += Check_ulong_to_str(0);
-	failures += Check_ulong_to_str(2147483000);
-	failures += Check_ulong_to_str(4294967295);
+	test_ulong_to_str_nothing_explodes();
 
-	check_ulong_to_str_nothing_explodes();
-
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_ulong_to_str)
+EEMBED_FUNC_MAIN(test_eembed_ulong_to_str)

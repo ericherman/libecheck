@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* Copyright (C) 2020, 2021 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 unsigned int test_eembed_log(void)
 {
@@ -16,7 +16,6 @@ unsigned int test_eembed_log(void)
 	const size_t msg_len = 80 + (3 * 64);
 	char msg[80 + (3 * 64)];
 
-	unsigned failures = 0;
 	int err = 0;
 	size_t i = 0;
 	size_t diff12 = 0;
@@ -32,21 +31,21 @@ unsigned int test_eembed_log(void)
 
 	err = eembed_random_bytes(buf1, buf_len);
 	eembed_bytes_to_hex(hexbuf, hexbuf_len, buf1, buf_len);
-	failures += check_int_m(err, 0, hexbuf);
+	eembed_crash_if_false(err == 0);
 	eembed_strcat(msg, "buf1: ");
 	eembed_strcat(msg, hexbuf);
 	eembed_strcat(msg, "\n");
 
 	err = eembed_random_bytes(buf2, buf_len);
 	eembed_bytes_to_hex(hexbuf, hexbuf_len, buf2, buf_len);
-	failures += check_int_m(err, 0, hexbuf);
+	eembed_crash_if_false(err == 0);
 	eembed_strcat(msg, "buf2: ");
 	eembed_strcat(msg, hexbuf);
 	eembed_strcat(msg, "\n");
 
 	err = eembed_random_bytes(buf3, buf_len);
 	eembed_bytes_to_hex(hexbuf, hexbuf_len, buf3, buf_len);
-	failures += check_int_m(err, 0, hexbuf);
+	eembed_crash_if_false(err == 0);
 	eembed_strcat(msg, "buf3: ");
 	eembed_strcat(msg, hexbuf);
 	eembed_strcat(msg, "\n");
@@ -63,13 +62,13 @@ unsigned int test_eembed_log(void)
 		}
 	}
 
-	failures += check_int_m((diff12 > 0 ? 1 : 0), 1, msg);
-	failures += check_int_m((diff13 > 0 ? 1 : 0), 1, msg);
-	failures += check_int_m((diff23 > 0 ? 1 : 0), 1, msg);
+	eembed_crash_if_false((diff12 > 0 ? 1 : 0) == 1);
+	eembed_crash_if_false((diff13 > 0 ? 1 : 0) == 1);
+	eembed_crash_if_false((diff23 > 0 ? 1 : 0) == 1);
 
 	eembed_err_log->append_s(eembed_err_log, msg);
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_log)
+EEMBED_FUNC_MAIN(test_eembed_log)

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 unsigned test_eembed_malloc_free(void)
 {
@@ -16,13 +16,10 @@ unsigned test_eembed_malloc_free(void)
 	const size_t messages_len = 8;
 	char *messages[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 	const size_t test_object_size = bytes_len / (2 * messages_len);
-	unsigned failures = 0;
 
 	if (!EEMBED_HOSTED) {
 		ea = eembed_bytes_allocator(bytes, bytes_len);
-		if (check_ptr_not_null(ea)) {
-			return 1;
-		}
+		eembed_crash_if_false(ea);
 		eembed_global_allocator = ea;
 	}
 
@@ -30,7 +27,7 @@ unsigned test_eembed_malloc_free(void)
 	eembed_free(message);
 
 	message = (char *)eembed_malloc(bigger_than_ram);
-	failures += check_ptr(message, NULL);
+	eembed_crash_if_false(message == NULL);
 	eembed_free(message);
 
 	for (i = 0; i < messages_len; ++i) {
@@ -50,17 +47,14 @@ unsigned test_eembed_malloc_free(void)
 		default:
 			message = (char *)eembed_malloc(test_object_size);
 		}
-		if (!message) {
-			++failures;
-		} else {
-			if (i % 4 == 3) {
-				for (j = 0; j < test_object_size; ++j) {
-					check_int_m(message[j], 0, message);
-				}
+		eembed_crash_if_false(message);
+		if (i % 4 == 3) {
+			for (j = 0; j < test_object_size; ++j) {
+				eembed_crash_if_false(message[j] == 0);
 			}
-			eembed_memset(message, ('A' + i), test_object_size);
-			message[8] = '\0';	/* truncate for debug */
 		}
+		eembed_memset(message, ('A' + i), test_object_size);
+		message[8] = '\0';	/* truncate for debug */
 		messages[i] = message;
 	}
 	for (i = 8; i > 2; i -= 2) {
@@ -80,7 +74,7 @@ unsigned test_eembed_malloc_free(void)
 		eembed_global_allocator = orig;
 	}
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_malloc_free)
+EEMBED_FUNC_MAIN(test_eembed_malloc_free)

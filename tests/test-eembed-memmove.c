@@ -2,30 +2,39 @@
 /* test-eembed-memmove.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
+
+static void test_byte_arrays(unsigned char *actual, size_t actual_len,
+			     unsigned char *expect, size_t expect_len)
+{
+	size_t i;
+	eembed_crash_if_false(actual_len == expect_len);
+	for (i = 0; i < actual_len; ++i) {
+		eembed_crash_if_false(actual[i] == expect[i]);
+	}
+}
 
 unsigned test_eembed_memmove(void)
 {
 	unsigned char actual[20];
 	unsigned char expect[20];
-	char *rv = NULL;
+	unsigned char *rv = NULL;
 	size_t i = 0;
-	unsigned failures = 0;
 
 	for (i = 0; i < 20; ++i) {
 		actual[i] = '\0';
 		expect[i] = 'a' + i;
 	}
-	rv = (char *)eembed_memmove(actual, expect, 20);
-	failures += check_byte_array(actual, 20, expect, 20);
-	failures += check_ptr(rv, actual);
+	rv = (unsigned char *)eembed_memmove(actual, expect, 20);
+	test_byte_arrays(actual, 20, expect, 20);
+	eembed_crash_if_false(rv == actual);
 
 	for (i = 2; i < 12; ++i) {
 		expect[i] = expect[i + 4];
 	}
-	rv = (char *)eembed_memmove(actual + 2, actual + 6, 10);
-	failures += check_byte_array(actual, 20, expect, 20);
-	failures += check_ptr(rv, actual + 2);
+	rv = (unsigned char *)eembed_memmove(actual + 2, actual + 6, 10);
+	test_byte_arrays(actual, 20, expect, 20);
+	eembed_crash_if_false(rv == (actual + 2));
 
 	for (i = 0; i < 20; ++i) {
 		expect[i] = 'a' + i;
@@ -34,11 +43,11 @@ unsigned test_eembed_memmove(void)
 	for (i = 15; i > 5; --i) {
 		expect[i] = expect[i - 4];
 	}
-	rv = (char *)eembed_memmove(actual + 6, actual + 2, 10);
-	failures += check_byte_array(actual, 20, expect, 20);
-	failures += check_ptr(rv, actual + 6);
+	rv = (unsigned char *)eembed_memmove(actual + 6, actual + 2, 10);
+	test_byte_arrays(actual, 20, expect, 20);
+	eembed_crash_if_false(rv == (actual + 6));
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_memmove)
+EEMBED_FUNC_MAIN(test_eembed_memmove)

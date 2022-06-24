@@ -380,26 +380,15 @@ struct echeck_err_injecting_context {
 		} \
 	} while (0)
 
-#if FAUX_FREESTANDING
-#define eembed_test_init() \
-	eembed_system_print = eembed_faux_freestanding_system_print
-#else
-#define eembed_test_init() EEMBED_NOP()
-#endif
-
-#if (EEMBED_HOSTED || FAUX_FREESTANDING)
-
 #ifndef ECHECK_TEST_MAIN
-int printf(const char *format, ...);
 #define ECHECK_TEST_MAIN(pfunc) \
-void eembed_faux_freestanding_system_print(const char *str) \
-{ \
-	printf("%s", str); \
-}\
+EEMBED_DECLARE_FAUX_FREESTANDING_SYSTEM_PRINT \
 int main(void) \
 { \
 	unsigned failures = 0; \
-	eembed_test_init(); \
+	if (FAUX_FREESTANDING) { \
+		eembed_system_print = eembed_faux_freestanding_system_print; \
+	} \
 	failures += pfunc(); \
 	echeck_test_main_log_failures(failures, #pfunc, __FILE__); \
 	return check_status(failures); \
@@ -407,18 +396,16 @@ int main(void) \
 #endif
 
 #ifndef ECHECK_TEST_MAIN_V
-int printf(const char *format, ...);
-int atoi(const char *nptr);
 #define ECHECK_TEST_MAIN_V(pfunc) \
-void eembed_faux_freestanding_system_print(const char *str) \
-{ \
-	printf("%s", str); \
-}\
+int atoi(const char *nptr); \
+EEMBED_DECLARE_FAUX_FREESTANDING_SYSTEM_PRINT \
 int main(int argc, char **argv) \
 { \
 	int verbose = 0; \
 	unsigned failures = 0; \
-	eembed_test_init(); \
+	if (FAUX_FREESTANDING) { \
+		eembed_system_print = eembed_faux_freestanding_system_print; \
+	} \
 	verbose = (argc > 1) ? atoi(argv[1]) : 0; \
 	failures = pfunc(verbose); \
 	echeck_test_main_log_failures(failures, #pfunc, __FILE__); \
@@ -435,8 +422,6 @@ int main(int argc, char **argv) \
 #ifndef ECHECK_TEST_MAIN_V
 #define ECHECK_TEST_MAIN_V(pfunc)	/* skip */
 #endif
-
-#endif /* (EEMBED_HOSTED || FAUX_FREESTANDING) */
 
 Echeck_end_C_functions
 #undef Echeck_end_C_functions

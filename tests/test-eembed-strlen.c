@@ -2,25 +2,23 @@
 /* test-eembed-strlen.c */
 /* Copyright (C) 2016, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 unsigned test_eembed_strlen(void)
 {
-	unsigned failures = 0;
+	eembed_crash_if_false(eembed_strlen("") == 0);
+	eembed_crash_if_false(eembed_strlen("1") == 1);
+	eembed_crash_if_false(eembed_strlen("12") == 2);
+	eembed_crash_if_false(eembed_strlen("123") == 3);
+	eembed_crash_if_false(eembed_strlen("123456789") == 9);
 
-	failures += check_size_t(eembed_strlen(""), 0);
-	failures += check_size_t(eembed_strlen("1"), 1);
-	failures += check_size_t(eembed_strlen("12"), 2);
-	failures += check_size_t(eembed_strlen("123"), 3);
-	failures += check_size_t(eembed_strlen("123456789"), 9);
+	eembed_crash_if_false(eembed_strnlen("", 3) == 0);
+	eembed_crash_if_false(eembed_strnlen("1", 3) == 1);
+	eembed_crash_if_false(eembed_strnlen("12", 3) == 2);
+	eembed_crash_if_false(eembed_strnlen("123456789", 10) == 9);
+	eembed_crash_if_false(eembed_strnlen("123456789", 4) == 4);
 
-	failures += check_size_t(eembed_strnlen("", 3), 0);
-	failures += check_size_t(eembed_strnlen("1", 3), 1);
-	failures += check_size_t(eembed_strnlen("12", 3), 2);
-	failures += check_size_t(eembed_strnlen("123456789", 10), 9);
-	failures += check_size_t(eembed_strnlen("123456789", 4), 4);
-
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_strlen)
+EEMBED_FUNC_MAIN(test_eembed_strlen)

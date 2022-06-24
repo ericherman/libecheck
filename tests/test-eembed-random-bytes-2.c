@@ -2,7 +2,7 @@
 /* libeembed: "E(asy)Embed": easier writing and testing of embedded libraries */
 /* Copyright (C) 2020, 2021 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 #if EEMBED_HOSTED
 #include <errno.h>
@@ -105,7 +105,6 @@ unsigned int test_dev_urandom_bytes(void)
 	const size_t buf_size = 1000;
 	char buf[1000];
 
-	unsigned int failures = 0;
 	const size_t bytes_buf_size = 32;
 	unsigned char bytes_buf[32];
 	int err = 0;
@@ -124,11 +123,12 @@ unsigned int test_dev_urandom_bytes(void)
 	eembed_err_log = &buf_log;
 	err = eembed_dev_urandom_bytes(bytes_buf, bytes_buf_size);
 	eembed_err_log = orig_err_log;
-	failures += check_long(err == 0 ? 0 : 1, 1);
-	failures += check_str(actual_pathname, "/dev/urandom");
-	failures += check_long(actual_flags, O_RDONLY);
-	failures += check_ptr_not_null_m(eembed_strstr(buf, "open"), buf);
-	failures += check_ptr_not_null_m(eembed_strstr(buf, "fail"), buf);
+	eembed_crash_if_false((err == 0 ? 0 : 1) == 1);
+	eembed_crash_if_false(eembed_strcmp(actual_pathname, "/dev/urandom") ==
+			      0);
+	eembed_crash_if_false(actual_flags == O_RDONLY);
+	eembed_crash_if_false(eembed_strstr(buf, "open"));
+	eembed_crash_if_false(eembed_strstr(buf, "fail"));
 	urandom_fd = 0;
 
 	/* fake ioctl() fails and returns a -1, as does close */
@@ -138,9 +138,9 @@ unsigned int test_dev_urandom_bytes(void)
 	eembed_err_log = &buf_log;
 	err = eembed_dev_urandom_bytes(bytes_buf, bytes_buf_size);
 	eembed_err_log = orig_err_log;
-	failures += check_long(err == 0 ? 0 : 1, 1);
-	failures += check_ptr_not_null_m(eembed_strstr(buf, "ioctl"), buf);
-	failures += check_ptr_not_null_m(eembed_strstr(buf, "fail"), buf);
+	eembed_crash_if_false((err == 0 ? 0 : 1) == 1);
+	eembed_crash_if_false(eembed_strstr(buf, "ioctl"));
+	eembed_crash_if_false(eembed_strstr(buf, "fail"));
 	ioctl_rv = 0;
 	close_rv = 0;
 
@@ -150,8 +150,8 @@ unsigned int test_dev_urandom_bytes(void)
 	eembed_err_log = &buf_log;
 	err = eembed_dev_urandom_bytes(bytes_buf, bytes_buf_size);
 	eembed_err_log = orig_err_log;
-	failures += check_long(err == 0 ? 0 : 1, 1);
-	failures += check_ptr_not_null_m(eembed_strstr(buf, "entropy"), buf);
+	eembed_crash_if_false((err == 0 ? 0 : 1) == 1);
+	eembed_crash_if_false(eembed_strstr(buf, "entropy"));
 	ioctl_entropy = INT_MAX / 4;
 
 	/* fake read() is really failing badly */
@@ -161,8 +161,8 @@ unsigned int test_dev_urandom_bytes(void)
 	eembed_err_log = &buf_log;
 	err = eembed_dev_urandom_bytes(bytes_buf, bytes_buf_size);
 	eembed_err_log = orig_err_log;
-	failures += check_long(err == 0 ? 0 : 1, 1);
-	failures += check_ptr_not_null_m(eembed_strstr(buf, "read"), buf);
+	eembed_crash_if_false((err == 0 ? 0 : 1) == 1);
+	eembed_crash_if_false(eembed_strstr(buf, "read"));
 	read_fails = 0;
 	read_really_broken = 0;
 
@@ -170,13 +170,14 @@ unsigned int test_dev_urandom_bytes(void)
 	urandom_fd = 7;
 	read_fails = 1;
 	err = eembed_dev_urandom_bytes(bytes_buf, bytes_buf_size);
-	failures += check_long(err, 0);
-	failures += check_str(actual_pathname, "/dev/urandom");
-	failures += check_long(actual_flags, O_RDONLY);
-	failures += check_long(actual_fd, urandom_fd);
-	failures += check_long(actual_request, RNDGETENTCNT);
-	failures += check_long(actual_fd2, urandom_fd);
-	failures += check_long(actual_fd3, urandom_fd);
+	eembed_crash_if_false(err == 0);
+	eembed_crash_if_false(eembed_strcmp(actual_pathname, "/dev/urandom") ==
+			      0);
+	eembed_crash_if_false(actual_flags == O_RDONLY);
+	eembed_crash_if_false(actual_fd == urandom_fd);
+	eembed_crash_if_false(actual_request == RNDGETENTCNT);
+	eembed_crash_if_false(actual_fd2 == urandom_fd);
+	eembed_crash_if_false(actual_fd3 == urandom_fd);
 
 	eembed_err_log = orig_err_log;
 	eembed_system_open = orig_system_open;
@@ -184,7 +185,7 @@ unsigned int test_dev_urandom_bytes(void)
 	eembed_system_ioctl = orig_system_ioctl;
 	eembed_system_close = orig_system_close;
 
-	return failures;
+	return 0;
 }
 #else
 unsigned int test_dev_urandom_bytes(void)
@@ -193,4 +194,4 @@ unsigned int test_dev_urandom_bytes(void)
 }
 #endif
 
-ECHECK_TEST_MAIN(test_dev_urandom_bytes)
+EEMBED_FUNC_MAIN(test_dev_urandom_bytes)

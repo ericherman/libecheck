@@ -2,7 +2,7 @@
 /* test-eembed-strcat.c */
 /* Copyright (C) 2016, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 static void fill_str(char *str, size_t len, char c)
 {
@@ -20,21 +20,20 @@ unsigned test_eembed_strcpy(void)
 	const char *expect = NULL;
 	char actual[80];
 	char *rv = NULL;
-	unsigned failures = 0;
 
 	fill_str(actual, 80, 'X');
 	expect = "foo bar";
 	rv = eembed_strcpy(actual, expect);
-	failures += check_str(actual, expect);
-	failures += check_ptr(rv, actual);
+	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
+	eembed_crash_if_false(rv == actual);
 
 	fill_str(actual, 80, '\0');
 	expect = "foo";
 	eembed_strncpy(actual, "foo bar", 3);
-	failures += check_str(actual, expect);
-	failures += check_ptr(rv, actual);
+	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
+	eembed_crash_if_false(rv == actual);
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_strcpy)
+EEMBED_FUNC_MAIN(test_eembed_strcpy)

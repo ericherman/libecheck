@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* Copyright (C) 2021 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 char *global_buf = NULL;
 size_t global_buf_size = 0;
@@ -15,8 +15,6 @@ extern int (*eembed_system_fprintf)(FILE *stream, const char *format, ...);
 extern int (*eembed_system_fflush)(FILE *stream);
 
 extern void eembed_stream_eol(FILE *stream);
-
-unsigned int *global_failures = NULL;
 
 unsigned int flush_stdout_cnt = 0;
 unsigned int flush_stderr_cnt = 0;
@@ -49,7 +47,7 @@ static int test_eembed_system_fflush(FILE *stream)
 	} else {
 		fprintf(stderr, "%s:%d unknown stream: %p?\n",
 			__FILE__, __LINE__, (void *)stream);
-		++(*global_failures);
+		eembed_crash_if_false(1 == 0);
 	}
 	return 0;
 }
@@ -79,13 +77,10 @@ unsigned int test_eembed_print(void)
 	char buf[24];
 	char *found = NULL;
 
-	unsigned failures = 0;
-
 	global_buf = buf;
 	global_buf_size = 24;
 
 #if EEMBED_HOSTED
-	global_failures = &failures;
 	eembed_system_fprintf = test_eembed_system_fprintf;
 	eembed_system_fflush = test_eembed_system_fflush;
 
@@ -104,10 +99,10 @@ unsigned int test_eembed_print(void)
 
 	buf[0] = '\0';
 	eembed_system_print("foo");
-	failures += check_str(buf, "foo");
+	eembed_crash_if_false(eembed_strcmp(buf, "foo") == 0);
 #if EEMBED_HOSTED
-	failures += check_unsigned_long(flush_stdout_cnt, 0);
-	failures += check_ptr(expect_stream, actual_stream);
+	eembed_crash_if_false(flush_stdout_cnt == 0);
+	eembed_crash_if_false(expect_stream == actual_stream);
 #endif /* EEMBED_HOSTED */
 
 #if EEMBED_HOSTED
@@ -115,24 +110,24 @@ unsigned int test_eembed_print(void)
 #endif /* EEMBED_HOSTED */
 	buf[0] = '\0';
 	eembed_err_log->append_s(eembed_err_log, "bar");
-	failures += check_str(buf, "bar");
+	eembed_crash_if_false(eembed_strcmp(buf, "bar") == 0);
 #if EEMBED_HOSTED
-	failures += check_unsigned_long(flush_stdout_cnt, 1);
-	failures += check_ptr(expect_stream, actual_stream);
+	eembed_crash_if_false(flush_stdout_cnt == 1);
+	eembed_crash_if_false(expect_stream == actual_stream);
 #endif /* EEMBED_HOSTED */
 
 	eembed_err_log->append_c(eembed_err_log, 'r');
-	failures += check_str(buf, "r");
+	eembed_crash_if_false(eembed_strcmp(buf, "r") == 0);
 
 	eembed_err_log->append_ul(eembed_err_log, 7);
-	failures += check_str(buf, "7");
+	eembed_crash_if_false(eembed_strcmp(buf, "7") == 0);
 
 	eembed_err_log->append_l(eembed_err_log, -23);
-	failures += check_str(buf, "-23");
+	eembed_crash_if_false(eembed_strcmp(buf, "-23") == 0);
 
 	eembed_err_log->append_f(eembed_err_log, 1.5);
 	found = eembed_strstr(buf, "1.5");
-	failures += check_ptr(found, buf);
+	eembed_crash_if_false(found == buf);
 
 	eembed_err_log->append_vp(eembed_err_log, NULL);
 	found = eembed_strstr(buf, "0x00");
@@ -142,25 +137,25 @@ unsigned int test_eembed_print(void)
 	if (!found) {
 		found = eembed_strstr(buf, "null");
 	}
-	failures += check_ptr_not_null_m(found, buf);
+	eembed_crash_if_false(found != NULL);
 
 	eembed_err_log->append_eol(eembed_err_log);
-	failures += check_str(buf, "\n");
+	eembed_crash_if_false(eembed_strcmp(buf, "\n") == 0);
 #if EEMBED_HOSTED
-	failures += check_unsigned_long(flush_stderr_cnt, 1);
+	eembed_crash_if_false(flush_stderr_cnt == 1);
 #endif /* EEMBED_HOSTED */
 
 #if EEMBED_HOSTED
 	expect_stream = stdout;
 #endif /* EEMBED_HOSTED */
 	eembed_system_printc('c');
-	failures += check_str(buf, "c");
+	eembed_crash_if_false(eembed_strcmp(buf, "c") == 0);
 #if EEMBED_HOSTED
-	failures += check_ptr(expect_stream, actual_stream);
+	eembed_crash_if_false(expect_stream == actual_stream);
 #endif /* EEMBED_HOSTED */
 
 	eembed_system_println();
-	failures += check_str(buf, "\n");
+	eembed_crash_if_false(eembed_strcmp(buf, "\n") == 0);
 
 #if EEMBED_HOSTED
 	eembed_system_fprintf = orig_fprintf;
@@ -169,7 +164,7 @@ unsigned int test_eembed_print(void)
 	eembed_system_print = orig_system_print;
 #endif /* EEMBED_HOSTED */
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_print)
+EEMBED_FUNC_MAIN(test_eembed_print)

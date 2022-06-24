@@ -2,7 +2,7 @@
 /* test-eembed-mempy.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 unsigned test_eembed_chunk_alloc(void)
 {
@@ -18,12 +18,9 @@ unsigned test_eembed_chunk_alloc(void)
 	size_t len = 0;
 	size_t allocs = 0;
 	size_t allocs2 = 0;
-	unsigned failures = 0;
 
 	ea = eembed_bytes_allocator(bytes, bytes_len);
-	if (check_ptr_not_null(ea)) {
-		return 1;
-	}
+	eembed_crash_if_false(ea);
 
 	for (i = 0, allocs = 0; i < keys_len; ++i) {
 		eembed_ulong_to_str(buf, buf_len, allocs);
@@ -38,7 +35,7 @@ unsigned test_eembed_chunk_alloc(void)
 		keys[i] = key;
 	}
 
-	failures += check_int(allocs > 5 ? 1 : 0, 1);
+	eembed_crash_if_false((allocs > 5 ? 1 : 0) == 1);
 
 	for (i = keys_len / 2; i > 2; i -= 2) {
 		ea->free(ea, keys[i]);
@@ -60,10 +57,10 @@ unsigned test_eembed_chunk_alloc(void)
 		keys[i] = key;
 	}
 
-	failures += check_int(allocs2 > 1 ? 1 : 0, 1);
+	eembed_crash_if_false((allocs2 > 1 ? 1 : 0) == 1);
 
 	key = (char *)ea->realloc(ea, keys[0], SIZE_MAX / 2);
-	failures += check_ptr(key, NULL);
+	eembed_crash_if_false(!key);
 
 	for (i = 3; i < keys_len; ++i) {
 		if (i % 7) {
@@ -73,14 +70,13 @@ unsigned test_eembed_chunk_alloc(void)
 
 	len = 1 + (eembed_align(len) * 4);
 	key = (char *)ea->realloc(ea, keys[0], len);
-	failures +=
-	    check_ptr_not_null_m(key, eembed_ulong_to_str(buf, buf_len, len));
+	eembed_crash_if_false(key != NULL);
 
 	for (i = 0; i < keys_len; ++i) {
 		ea->free(ea, keys[i]);
 	}
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_chunk_alloc)
+EEMBED_FUNC_MAIN(test_eembed_chunk_alloc)

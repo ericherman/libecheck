@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* Copyright (C) 2012, 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 unsigned test_eembed_chunk_realloc(void)
 {
@@ -12,15 +12,10 @@ unsigned test_eembed_chunk_realloc(void)
 	char *pointers[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 	const size_t test_object_size = bytes_len / (pointers_len * 2);
 	const size_t test_object_size_2 = 1 + ((test_object_size * 3) / 4);
-	const size_t buf_len = 80;
-	char buf[80];
 	size_t i = 0;
-	unsigned failures = 0;
 
 	ea = eembed_bytes_allocator(bytes, bytes_len);
-	if (check_ptr_not_null(ea)) {
-		return 1;
-	}
+	eembed_crash_if_false(ea);
 
 	for (i = 0; i < pointers_len; i++) {
 		if (i == 0) {
@@ -31,13 +26,9 @@ unsigned test_eembed_chunk_realloc(void)
 			pointers[i] =
 			    (char *)ea->calloc(ea, 1, test_object_size);
 		}
-		failures +=
-		    check_ptr_not_null_m(pointers[i],
-					 eembed_ulong_to_str(buf, buf_len, i));
-		if (pointers[i]) {
-			eembed_memset(pointers[i], '0' + i, test_object_size);
-			pointers[i][6] = '\0';	/* truncate string */
-		}
+		eembed_crash_if_false(pointers[i] != NULL);
+		eembed_memset(pointers[i], '0' + i, test_object_size);
+		pointers[i][6] = '\0';	/* truncate string */
 	}
 	for (i = 1; i < pointers_len; i += 2) {
 		ea->free(ea, pointers[i]);
@@ -52,23 +43,18 @@ unsigned test_eembed_chunk_realloc(void)
 			    (char *)ea->reallocarray(ea, pointers[i], 1,
 						     test_object_size_2);
 		}
-		failures +=
-		    check_ptr_not_null_m(pointers[i],
-					 eembed_ulong_to_str(buf, buf_len, i));
-		if (pointers[i]) {
-			eembed_memset(pointers[i], '0' + i, test_object_size_2);
-			pointers[i][4] = '\0';	/* truncate string */
-		}
+		eembed_crash_if_false(pointers[i] != NULL);
+		eembed_memset(pointers[i], '0' + i, test_object_size_2);
+		pointers[i][4] = '\0';	/* truncate string */
 	}
 
 	for (i = 0; i < pointers_len; i++) {
 		pointers[i] = (char *)ea->realloc(ea, pointers[i], 0);
-		check_ptr_m(pointers[i], NULL,
-			    eembed_ulong_to_str(buf, buf_len, i));
+		eembed_crash_if_false(pointers[i] == NULL);
 		ea->free(ea, pointers[i]);
 	}
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_chunk_realloc)
+EEMBED_FUNC_MAIN(test_eembed_chunk_realloc)

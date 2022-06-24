@@ -2,10 +2,10 @@
 /* test-eembed-ulong-to-hex.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 #include <limits.h>
 
-void check_ulong_to_hex_nothing_explodes(void)
+void test_ulong_to_hex_nothing_explodes(void)
 {
 	char buf[30];
 	unsigned long ulong_max = ULONG_MAX;
@@ -23,38 +23,33 @@ void check_ulong_to_hex_nothing_explodes(void)
 			    bytes, sizeof(unsigned long));
 }
 
-unsigned check_ulong_to_hex(unsigned long ul, const char *ulhex)
+void test_ulong_to_hex(unsigned long ul, const char *ulhex)
 {
-	unsigned failures = 0;
 	char buf[30];
 	char *rv;
 	unsigned long rul = 0;
 	char *endptr = NULL;
 
 	rv = eembed_ulong_to_hex(buf, 30, ul);
-	failures += check_ptr_m(rv, buf, ulhex);
-	failures += check_str_contains(buf, "0x");
-	failures += check_str_contains(buf, ulhex);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strstr(buf, "0x") != NULL);
+	eembed_crash_if_false(eembed_strstr(buf, ulhex) != NULL);
 
 	rul = eembed_hex_to_ulong(ulhex, &endptr);
-	failures += check_unsigned_long(rul, ul);
-	failures += check_ptr_not_null(endptr);
-
-	return failures;
+	eembed_crash_if_false(rul == ul);
+	eembed_crash_if_false(endptr);
 }
 
 unsigned int test_eembed_ulong_to_hex(void)
 {
-	unsigned failures = 0;
+	test_ulong_to_hex(0, "0x00");
+	test_ulong_to_hex(2147483000, "7FFFFD78");
+	test_ulong_to_hex(4294967295, "FFFFFFFF");
+	eembed_crash_if_false(eembed_hex_to_ulong("ff", NULL) == 255);
 
-	failures += check_ulong_to_hex(0, "0x00");
-	failures += check_ulong_to_hex(2147483000, "7FFFFD78");
-	failures += check_ulong_to_hex(4294967295, "FFFFFFFF");
-	failures += check_unsigned_long(eembed_hex_to_ulong("ff", NULL), 255);
+	test_ulong_to_hex_nothing_explodes();
 
-	check_ulong_to_hex_nothing_explodes();
-
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_ulong_to_hex)
+EEMBED_FUNC_MAIN(test_eembed_ulong_to_hex)

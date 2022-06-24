@@ -2,7 +2,7 @@
 /* test-eembed-assert.c */
 /* Copyright (C) 2021 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 #define bad_line(log) \
 	do { \
@@ -94,16 +94,18 @@ unsigned test_eembed_assert(void)
 	eembed_assert(1 == 1);
 	if (test_eemebed_global_crash_count != 0) {
 		bad_line(orig_log);
-		++failures;
+		failures = 1;
+		goto test_eembed_assert_end;
 	}
 
 	test_eemebed_global_crash_count = 0;
 	eembed_assert(1 == 2);
 	if (test_eemebed_global_crash_count != 1) {
 		bad_line(orig_log);
-		++failures;
+		failures = 1;
 	}
 
+test_eembed_assert_end:
 	eembed_err_log = orig_log;
 	eembed_assert_crash = orig_assert_crash;
 
@@ -113,4 +115,4 @@ unsigned test_eembed_assert(void)
 #endif /* EEMBED_HOSTED */
 #endif /* NDEBUG */
 
-ECHECK_TEST_MAIN(test_eembed_assert)
+EEMBED_FUNC_MAIN(test_eembed_assert)

@@ -2,10 +2,11 @@
 /* test-eembed-long-to-str.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 #include <limits.h>
+#include <float.h>
 
-void check_long_to_str_nothing_explodes(void)
+void test_long_to_str_nothing_explodes(void)
 {
 	char buf[30];
 
@@ -15,38 +16,33 @@ void check_long_to_str_nothing_explodes(void)
 	eembed_long_to_str(buf, 30, LONG_MAX);
 }
 
-unsigned check_long_to_str(long l, const char *lstr)
+void test_long_to_str(long l, const char *lstr)
 {
-	unsigned failures = 0;
 	char buf[30];
 	char *rv = NULL;
 	long rl = 0;
 
 	rv = eembed_long_to_str(buf, 30, l);
-	failures += check_ptr_m(rv, buf, lstr);
-	failures += check_str_m(buf, lstr, lstr);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strcmp(buf, lstr) == 0);
 
 	rl = eembed_str_to_long(rv, NULL);
-	failures += check_long(rl, l);
-
-	return failures;
+	eembed_crash_if_false(rl == l);
 }
 
-#define Check_long_to_str(ul) check_long_to_str(ul, #ul)
+#define Test_long_to_str(ul) test_long_to_str(ul, #ul)
 
 unsigned int test_eembed_long_to_str(void)
 {
-	unsigned failures = 0;
+	Test_long_to_str(0);
+	Test_long_to_str(300);
+	Test_long_to_str(-400);
+	Test_long_to_str(2147483647);
+	Test_long_to_str(-2147483647);
 
-	failures += Check_long_to_str(0);
-	failures += Check_long_to_str(300);
-	failures += Check_long_to_str(-400);
-	failures += Check_long_to_str(2147483647);
-	failures += Check_long_to_str(-2147483647);
+	test_long_to_str_nothing_explodes();
 
-	check_long_to_str_nothing_explodes();
-
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_long_to_str)
+EEMBED_FUNC_MAIN(test_eembed_long_to_str)

@@ -1,5 +1,39 @@
 echeck Changelog
 
+2022-06-26  Eric Herman <eric@freesa.org>
+	VERSION 2.0.6
+
+	Make the eembed tests not rely upon echeck, breaking circular
+	dependency. Test failures in eembed will not have nice verbose
+	error messages, but that is okay.
+	Move more FAUX_FREESTANDING logic from echeck.h to eembed.h.
+
+	* src/eembed.h: EEMBED_FUNC_MAIN, eembed_crash_if_false
+	* src/echeck.h: some FAUX_FREESTANDING logic moved out
+	* tests/test-eembed-assert.c: remove echeck.h
+	* tests/test-eembed-chunk-alloc.c: remove echeck.h
+	* tests/test-eembed-chunk-realloc.c: remove echeck.h
+	* tests/test-eembed-float-to-str.c: remove echeck.h
+	* tests/test-eembed-log.c: remove echeck.h
+	* tests/test-eembed-long-to-str.c: remove echeck.h
+	* tests/test-eembed-malloc-free.c: remove echeck.h
+	* tests/test-eembed-memcmp.c: remove echeck.h
+	* tests/test-eembed-memcpy.c: remove echeck.h
+	* tests/test-eembed-memmove.c: remove echeck.h
+	* tests/test-eembed-memset.c: remove echeck.h
+	* tests/test-eembed-print.c: remove echeck.h
+	* tests/test-eembed-random-bytes-2.c: remove echeck.h
+	* tests/test-eembed-random-bytes.c: remove echeck.h
+	* tests/test-eembed-strcat.c: remove echeck.h
+	* tests/test-eembed-strcpy.c: remove echeck.h
+	* tests/test-eembed-strlen.c: remove echeck.h
+	* tests/test-eembed-strstr.c: remove echeck.h
+	* tests/test-eembed-ulong-to-hex.c: remove echeck.h
+	* tests/test-eembed-ulong-to-str.c: remove echeck.h
+	* tests/test_check_str_m.c: add an explicit test
+	* Makefile: version -> 2.0.6
+	* configure.ac: version -> 2.0.6
+
 2022-06-24  Eric Herman <eric@freesa.org>
 
 	VERSION 2.0.5

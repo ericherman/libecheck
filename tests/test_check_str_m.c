@@ -22,6 +22,10 @@ unsigned test_check_str_m(void)
 	failures += check_str_m("same", "same", "contextual info");
 
 	eembed_memset(mem_buf, 0x00, mem_buf_len);
+	eembed_memmove(mem_buf, "same", 4);
+	failures += check_str_m(mem_buf, "same", "contextual info");
+
+	eembed_memset(mem_buf, 0x00, mem_buf_len);
 	eembed_err_log =
 	    eembed_char_buf_log_init(&buf_log, &log_ctx, mem_buf, mem_buf_len);
 	if (0 == check_str_m("weirdly", "different", "contextual info")) {

@@ -155,11 +155,7 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 #error "EEMBED_HOSTED is not defined"
 #endif
 
-#ifndef eembed_assert
-#ifdef NDEBUG
-#define eembed_assert(expression) EEMBED_NOP()
-#else
-#define eembed_assert(expression) \
+#define eembed_crash_if_false(expression) \
 	do { \
 		if (!(expression)) { \
 			struct eembed_log *el = eembed_err_log; \
@@ -175,6 +171,12 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 			eembed_assert_crash(); \
 		} \
 	} while (0)
+
+#ifndef eembed_assert
+#ifdef NDEBUG
+#define eembed_assert(expression) EEMBED_NOP()
+#else
+#define eembed_assert(expression) eembed_crash_if_false(expression)
 #endif
 #endif
 
@@ -232,6 +234,37 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 		     & ~((y) - 1))
 
 #define eembed_align(x) eembed_align_to(x, EEMBED_WORD_LEN)
+
+#ifndef FAUX_FREESTANDING
+#define FAUX_FREESTANDING 0
+#endif
+
+#if (EEMBED_HOSTED || FAUX_FREESTANDING)
+
+#define EEMBED_DECLARE_FAUX_FREESTANDING_SYSTEM_PRINT \
+int printf(const char *format, ...); \
+void eembed_faux_freestanding_system_print(const char *str) \
+{ \
+	printf("%s", str); \
+}
+
+#ifndef EEMBED_FUNC_MAIN
+#define EEMBED_FUNC_MAIN(pfunc) \
+EEMBED_DECLARE_FAUX_FREESTANDING_SYSTEM_PRINT \
+int main(void) \
+{ \
+	if (FAUX_FREESTANDING) { \
+		eembed_system_print = eembed_faux_freestanding_system_print; \
+	} \
+	return pfunc() ? 1 : 0; \
+}
+#endif
+
+#endif /* (EEMBED_HOSTED || FAUX_FREESTANDING) */
+
+#ifndef EEMBED_FUNC_MAIN
+#define EEMBED_FUNC_MAIN(pfunc)	/* skip */
+#endif
 
 Eembed_end_C_functions
 #undef Eembed_end_C_functions

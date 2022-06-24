@@ -2,7 +2,7 @@
 /* test-eembed-mempy.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include "echeck.h"
+#include <eembed.h>
 
 static void fill_array(unsigned char *a, size_t len, char c, char term)
 {
@@ -15,19 +15,27 @@ static void fill_array(unsigned char *a, size_t len, char c, char term)
 	a[last] = term;
 }
 
+static void test_byte_array(unsigned char *actual, size_t actual_len,
+			    unsigned char *expect, size_t expect_len)
+{
+	size_t i;
+	eembed_crash_if_false(actual_len == expect_len);
+	for (i = 0; i < actual_len; ++i) {
+		eembed_crash_if_false(actual[i] == expect[i]);
+	}
+}
+
 unsigned test_eembed_memcpy(void)
 {
 	unsigned char expect[20];
 	unsigned char actual[20];
 	char *rv;
-	int failures;
 
-	failures = 0;
 	fill_array(actual, 20, '\0', '\0');
 	fill_array(expect, 20, 'Y', '\0');
 	rv = (char *)eembed_memcpy(actual, expect, 20);
-	failures += check_byte_array(actual, 20, expect, 20);
-	failures += check_ptr(rv, actual);
+	test_byte_array(actual, 20, expect, 20);
+	eembed_crash_if_false((void *)rv == (void *)actual);
 
 	fill_array(actual, 20, '\0', '\0');
 	fill_array(expect, 20, 'X', '\0');
@@ -35,10 +43,10 @@ unsigned test_eembed_memcpy(void)
 	eembed_memcpy(actual, expect, 10);
 	fill_array(expect, 20, '\0', '\0');
 	fill_array(expect, 10, 'X', 'X');
-	failures += check_byte_array(actual, 20, expect, 20);
-	failures += check_ptr(rv, actual);
+	test_byte_array(actual, 20, expect, 20);
+	eembed_crash_if_false((void *)rv == (void *)actual);
 
-	return failures;
+	return 0;
 }
 
-ECHECK_TEST_MAIN(test_eembed_memcpy)
+EEMBED_FUNC_MAIN(test_eembed_memcpy)
