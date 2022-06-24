@@ -18,11 +18,12 @@
 # dir, notdir :
 #	https://www.gnu.org/software/make/manual/html_node/File-Name-Functions.html
 
+CC ?= gcc
 BROWSER	?= firefox
 VALGRIND ?= $(shell which valgrind)
 
 # pushd, popd are bash-ism
-SHELL=/bin/bash
+SHELL := /bin/bash
 UNAME := $(shell uname)
 
 VERSION=$(shell grep AC_INIT configure.ac | sed -e 's/AC_INIT(\[libecheck\], \[\([0-9\.]*\)], \[eric@freesa.org\])/\1/g')
@@ -54,10 +55,12 @@ build_dirs=\
  debug-coverage \
  debug-coverage-faux-fs
 
-all:all-obj check-all
+.PHONY:
+all: all-obj check-all
 	find . -name '*.$(SHAREDEXT)' -o -name '*.o'
 	@echo "SUCCESS $@"
 
+# .PHONY:
 all-obj: $(foreach DIR,$(build_dirs),\
 	$(DIR)/eembed.o $(DIR)/libeembed.$(SHAREDEXT) $(DIR)/libeembed.a \
 	$(DIR)/echeck.o $(DIR)/libecheck.$(SHAREDEXT) $(DIR)/libecheck.a \
@@ -80,6 +83,8 @@ COVERAGE_CFLAGS=-O0 -g -Werror \
 	-fno-inline-small-functions \
 	-fkeep-inline-functions \
 	-fkeep-static-functions \
+	-fprofile-arcs \
+	-ftest-coverage \
 	--coverage
 COVERAGE_LDFLAGS=--coverage
 
@@ -91,42 +96,44 @@ build/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(NORMAL_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-build/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
+build/%: BUILD_LDFLAGS = $(LDFLAGS)
 
 faux-fs/%: BUILD_DIR = faux-fs
 faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(NORMAL_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-faux-fs/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
+faux-fs/%: BUILD_LDFLAGS = $(LDFLAGS)
 
 debug/%: BUILD_DIR = debug
 debug/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(DEBUG_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-debug/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
+debug/%: BUILD_LDFLAGS = $(LDFLAGS)
 
 debug-faux-fs/%: BUILD_DIR = debug-faux-fs
 debug-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(DEBUG_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-faux-fs/%: BUILD_LDFLAGS = -L. $(LDFLAGS)
+debug-faux-fs/%: BUILD_LDFLAGS = $(LDFLAGS)
 
 debug-coverage/%: BUILD_DIR = debug-coverage
 debug-coverage/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-coverage/%: BUILD_LDFLAGS = -L. $(COVERAGE_LDFLAGS) $(LDFLAGS)
+debug-coverage/%: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS) $(LDFLAGS)
+debug-coverage/%: BUILD_LDADD = -lgcov
 
 debug-coverage-faux-fs/%: BUILD_DIR = debug-coverage-faux-fs
 debug-coverage-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
-debug-coverage-faux-fs/%s: BUILD_LDFLAGS = -L. $(COVERAGE_LDFLAGS) $(LDFLAGS)
+debug-coverage-faux-fs/%s: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS) $(LDFLAGS)
+debug-coverage-faux-fs/%: BUILD_LDADD = -lgcov
 
 
 test_progs=\
@@ -181,7 +188,7 @@ test_progs=\
 # output files from getting automatically cleaned up.
 # https://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 # https://www.gnu.org/software/make/manual/html_node/Special-Targets.html
-PRECIOUS=%.o $(foreach DIR,$(build_dirs),\
+PRECIOUS=%.o %.$(SHAREDEXT) %.a %.html $(foreach DIR,$(build_dirs),\
 			$(foreach TEST,$(test_progs), \
 				$(DIR)/tests/$(TEST)))
 .PRECIOUS:$(PRECIOUS)
@@ -192,7 +199,7 @@ define build-o
 	cd $(BUILD_DIR) && \
 		$(CC) -c -fPIC -I../src $(BUILD_CFLAGS) \
 			../$2 \
-			-o $(subst $(BUILD_DIR)/,,$1)
+			-o $(subst $(BUILD_DIR)/,,$1) $(BUILD_LDADD)
 endef
 
 # usage build-exe(path/test_name,tests/test_src.c)
@@ -201,14 +208,14 @@ define build-exe
 	cd $(BUILD_DIR) && \
 		$(CC) -I../src $(BUILD_CFLAGS) \
 			eembed.o echeck.o ../$2 \
-			-o $(subst $(BUILD_DIR)/,,$1)
+			-o $(subst $(BUILD_DIR)/,,$1) $(BUILD_LDADD)
 endef
 
 # usage build-so(so_name,major,minor,patch,so_objs)
 define build-so
 	@mkdir -pv $(BUILD_DIR)
 	cd $(BUILD_DIR) && $(CC) $(call make-shared-flags,$1) \
-		-o $(subst $(BUILD_DIR)/,,$1).$2.$3.$4 $5
+		-o $(subst $(BUILD_DIR)/,,$1).$2.$3.$4 $5 $(BUILD_LDADD)
 	{ pushd $(BUILD_DIR); \
 		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1.$2.$3); \
 		ln -sfv $(notdir $1.$2.$3.$4) $(notdir $1.$2); \
@@ -219,6 +226,7 @@ endef
 
 # usage build-a(a_name,so_objs)
 define build-a
+	@echo "build-a($1,$2)"
 	@mkdir -pv $(BUILD_DIR)
 	ar -r $1 $(shell readlink -f $2)
 	ar -t $1
@@ -291,22 +299,22 @@ $(foreach %,$(build_dirs),%/echeck.o): src/echeck.c
 # libecheck.so
 #
 build/libecheck.$(SHAREDEXT): build/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),echeck.o)
 
 faux-fs/libecheck.$(SHAREDEXT): faux-fs/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),echeck.o)
 
 debug/libecheck.$(SHAREDEXT): debug/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),echeck.o)
 
 debug-faux-fs/libecheck.$(SHAREDEXT): debug-faux-fs/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),echeck.o)
 
 debug-coverage/libecheck.$(SHAREDEXT): debug-coverage/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),echeck.o)
 
 debug-coverage-faux-fs/libecheck.$(SHAREDEXT): debug-coverage-faux-fs/echeck.o
-	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH), echeck.o)
+	$(call build-so,$@,$(VER_MAJOR),$(VER_MINOR),$(VER_PATCH),echeck.o)
 
 #
 # libecheck.a
@@ -344,8 +352,13 @@ check-%: build/tests/%
 	pushd build && ../$<
 	@echo "SUCCESS $@"
 
+check_static_asserts=\
+	demo-eembed-static-assert \
+	demo-eembed-static-assert-dl \
+	demo-eembed-static-assert-fail \
+
 .PHONY:
-build-check: $(patsubst %, check-%, $(test_progs))
+build-check: $(patsubst %, check-%, $(test_progs) $(check_static_asserts))
 	@echo "SUCCESS $@"
 
 
@@ -357,12 +370,13 @@ faux-fs/tests/test%: tests/test%.c \
 	$(call build-exe,$@,$<)
 
 .PHONY:
-check-faux-fs-%: faux-fs/tests/%
+faux-fs-check-%: faux-fs/tests/%
 	pushd faux-fs && ../$<
 	@echo "SUCCESS $@"
 
 .PHONY:
-faux-fs-check: $(patsubst %, check-faux-fs-%, $(test_progs))
+faux-fs-check: $(patsubst %, faux-fs-check-%, $(test_progs) \
+		$(check_static_asserts))
 	@echo "SUCCESS $@"
 
 
@@ -383,7 +397,7 @@ debug-check-%: debug/tests/%
 	@echo "SUCCESS $@"
 
 .PHONY:
-debug-check: $(patsubst %, debug-check-%, $(test_progs))
+debug-check: $(patsubst %, debug-check-%, $(test_progs) $(check_static_asserts))
 	@echo "SUCCESS $@"
 
 
@@ -400,7 +414,8 @@ debug-faux-fs-check-%: debug-faux-fs/tests/%
 	@echo "SUCCESS $@"
 
 .PHONY:
-debug-faux-fs-check: $(patsubst %, debug-faux-fs-check-%, $(test_progs))
+debug-faux-fs-check: $(patsubst %, debug-faux-fs-check-%, $(test_progs) \
+		$(check_static_asserts))
 	@echo "SUCCESS $@"
 
 
@@ -417,7 +432,8 @@ debug-coverage-check-%: debug-coverage/tests/%
 	@echo "SUCCESS $@"
 
 .PHONY:
-debug-coverage-check: $(patsubst %, debug-coverage-check-%, $(test_progs))
+debug-coverage-check: $(patsubst %, debug-coverage-check-%, $(test_progs) \
+		$(check_static_asserts))
 	@echo "SUCCESS $@"
 
 #
@@ -434,10 +450,109 @@ debug-coverage-faux-fs-check-%: debug-coverage-faux-fs/tests/%
 	@echo "SUCCESS $@"
 
 .PHONY:
-debug-coverage-faux-fs-check: \
-		$(patsubst %, debug-coverage-faux-fs-check-%, $(test_progs))
+debug-coverage-faux-fs-check: $(patsubst %, debug-coverage-faux-fs-check-%, \
+		$(test_progs) $(check_static_asserts))
 	@echo "SUCCESS $@"
 
+#
+# check demo-eembed-static-assert
+#
+$(foreach DIR,$(build_dirs),$(DIR)/demo-eembed-static-assert): \
+		tests/demo-eembed-static-assert.c all-obj
+	$(call build-exe,$@,$<)
+	@echo "SUCCESS $@"
+
+.PHONY:
+check-demo-eembed-static-assert: build/demo-eembed-static-assert
+	$<
+	@echo "SUCCESS $@"
+
+.PHONY:
+faux-fs-check-demo-eembed-static-assert: faux-fs/demo-eembed-static-assert
+	$<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-check-demo-eembed-static-assert: debug/demo-eembed-static-assert
+	$<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-faux-fs-check-demo-eembed-static-assert: \
+		debug-faux-fs/demo-eembed-static-assert
+	$<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-coverage-check-demo-eembed-static-assert: \
+		debug-coverage/demo-eembed-static-assert
+	cd debug-coverage && ./demo-eembed-static-assert
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-coverage-faux-fs-check-demo-eembed-static-assert: \
+		debug-coverage-faux-fs/demo-eembed-static-assert
+	cd debug-coverage-faux-fs && ./demo-eembed-static-assert
+	@echo "SUCCESS $@"
+
+
+$(foreach DIR,$(build_dirs),$(DIR)/demo-eembed-static-assert-dl): \
+		tests/demo-eembed-static-assert.c all-obj
+	cd $(BUILD_DIR) && \
+		$(CC) $(BUILD_CFLAGS) -I ../src \
+			-L . $(BUILD_LDFLAGS) \
+			./libeembed.$(SHAREDEXT) \
+			../$< -o $(subst $(BUILD_DIR)/,,$@) \
+			$(BUILD_LDADD) -leembed
+	@echo "SUCCESS $@"
+
+.PHONY:
+check-demo-eembed-static-assert-dl: build/demo-eembed-static-assert-dl
+	LD_LIBRARY_PATH=build $<
+	@echo "SUCCESS $@"
+
+.PHONY:
+faux-fs-check-demo-eembed-static-assert-dl: faux-fs/demo-eembed-static-assert-dl
+	LD_LIBRARY_PATH=faux-fs $<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-check-demo-eembed-static-assert-dl: debug/demo-eembed-static-assert-dl
+	LD_LIBRARY_PATH=debug $<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-faux-fs-check-demo-eembed-static-assert-dl: \
+		debug-faux-fs/demo-eembed-static-assert-dl
+	LD_LIBRARY_PATH=debug-faux-fs $<
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-coverage-check-demo-eembed-static-assert-dl: \
+		debug-coverage/demo-eembed-static-assert-dl
+	cd debug-coverage && \
+		LD_LIBRARY_PATH=. ./demo-eembed-static-assert-dl
+	@echo "SUCCESS $@"
+
+.PHONY:
+debug-coverage-faux-fs-check-demo-eembed-static-assert-dl: \
+		debug-coverage-faux-fs/demo-eembed-static-assert-dl
+	cd debug-coverage-faux-fs && \
+		LD_LIBRARY_PATH=. ./demo-eembed-static-assert-dl
+	@echo "SUCCESS $@"
+
+.PHONY:
+$(foreach DIR,$(build_dirs),$(DIR)-check-demo-eembed-static-assert-fail): \
+		tests/demo-eembed-static-assert.c
+	if $(CC) -DFAIL=1 $(BUILD_CFLAGS) -I src $(BUILD_DIR)/eembed.o \
+		$< -o $@ > $@.out 2>&1; then false; else true; fi
+	if [ $$(grep -c 'static_assert' $@.out) -eq 0 ]; \
+		then false; else true; fi
+	@echo "SUCCESS $@"
+
+.PHONY:
+check-demo-eembed-static-assert-fail: build-check-demo-eembed-static-assert-fail
+	@echo "SUCCESS $@"
 
 .PHONY:
 check: build-check
