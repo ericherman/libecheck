@@ -321,22 +321,24 @@ which is not used.
 
 Code should have tests demonstrating the use and have test coverage
 via:
-	./configure --enable-debug
 	make coverage
 
 
-Packaging
+Including
 ---------
-Typically for embedded including the git repo as a submodule is
-the way to go. Alternatively, one can use autotools for creating
-tarball releases:
+Typically, including the git repo as a submodule is the way to go:
 
-autoreconf -iv &&
- ./configure &&
- make &&
- make distcheck &&
- echo "Success."
+    git submodule add https://github.com/ericherman/libecheck \
+	submodules/libecheck
+    git submodule update --init --recursive
 
+Alternatively, one can build locally and copy the .h files and .so
+files from the ./build/ or ./debug/ directory to /usr/local or
+similar.
+
+For embedded work, you may wish to copy or symlink the files directly
+in to your project's source directory, as can be seen in the sample
+echeck_arduino_demo directory.
 
 License
 -------

@@ -1,5 +1,52 @@
 echeck Changelog
 
+2022-06-24  Eric Herman <eric@freesa.org>
+
+	VERSION 2.0.5
+
+	Good code coverage in tests! Went with a few uses of LCOV_EXCL
+	in order to deal with optimized-out code, despite the use of
+	many CFLAGS options to avoid optimizations.
+
+	Provide a default Makefile which builds in separate directories
+	depending on type: "build" for normal, "faux-fs" for a fake
+	free-standing-like build which does not use libc functions except
+	in tests, "debug", "debug-faux-fs", "debug-coverage" which provides
+	insights into test code coverage, and "debug-coverage-faux-fs".
+
+	Makefile has only been tested on linux, and is unlikely to work
+	on other platforms. Autotools are still available for creating
+	a makefile on other platforms.
+
+	CFLAGS now include -Wc++-compat to reduce chance of problems when
+	used in Arduino projects as .cpp files.
+
+	Replace some NULL checks and similar with asserts, as there little
+	sense in returning "1" on a programmer error, better to just crash.
+
+	Add eembed_static_assert(expr, msg) c89 compat (Visual Studio)
+	Prior to C11, ISO C did not specify _Static_assert(expr, msg)
+
+	* configure.ac: bump version -> 2.0.5
+	* Makefile: provide a default Makefile with "coverage-all" target
+	* src/echeck.h: check_err_injecting_allocator_init now void
+	* src/echeck.c: replace checks with asserts, LCOV_EXCL
+	* src/eemebd.h: expose eembed_bytes_allocator_min_buf_size
+	* src/eembed.c: add a LCOV_EXCL for optimized-out code
+	* tests/demo-eembed-static-assert.c: show eembed_static_assert
+	* tests/test-eembed-assert.c: echeck_err_injecting_allocator_init
+	* tests/test-eembed-chunk-realloc.c: more realloc
+	* tests/test-eembed-log.c: test NULL init case
+	* tests/test-eembed-malloc-free.c: avoid valgrind limit
+	* tests/test-eembed-memcmp.c: make test more clear and robust
+	* tests/test-eembed-ulong-to-hex.c: add a check
+	* tests/test_check_status.c: clear log buf before each loop run
+	* tests/test_check_str.c: tests for the same actual pointer
+	* tests/test_echeck_err_log.c: close file when done
+	* tests/test_out_of_memory.c: corner case with faux-freestanding
+	* Makefile.am: CFLAGS and some coverage tooling
+	* .gitignore: ignore coverage directories and ".out" files
+
 2021-09-10  Eric Herman <eric@freesa.org>
 
 	Improve testing of print functions.

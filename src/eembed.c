@@ -640,7 +640,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 		f = -f;
 		--avail;
 		if (!avail) {
-			return NULL; /* LCOV_EXCL_LINE */
+			return NULL;	/* LCOV_EXCL_LINE */
 		}
 	}
 
@@ -926,7 +926,7 @@ int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 	int d;
 
 	if (a1 == a2 || n == 0) {
-		return 0; /* LCOV_EXCL_LINE */
+		return 0;	/* LCOV_EXCL_LINE */
 	}
 
 	/* glibc explodes on NULL */
@@ -992,7 +992,7 @@ void *eembed_diy_memset(void *dest, int val, size_t n)
 	unsigned char *d;
 	unsigned char v;
 	if (!n || !dest) {
-		return dest; /* LCOV_EXCL_LINE */
+		return dest;	/* LCOV_EXCL_LINE */
 	}
 
 	d = (unsigned char *)dest;
@@ -1121,7 +1121,7 @@ char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 	size_t i = 0;
 
 	if (!dest) {
-		return NULL; /* LCOV_EXCL_LINE */
+		return NULL;	/* LCOV_EXCL_LINE */
 	}
 
 	if (src) {
@@ -1197,7 +1197,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 	size_t hlen = 0;
 
 	if (!haystack || !needle) {
-		return NULL; /* LCOV_EXCL_LINE */
+		return NULL;	/* LCOV_EXCL_LINE */
 	}
 
 	nlen = eembed_strlen(needle);
@@ -1206,7 +1206,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 	}
 	hlen = eembed_strlen(haystack);
 	if (nlen > hlen) {
-		return NULL; /* LCOV_EXCL_LINE */
+		return NULL;	/* LCOV_EXCL_LINE */
 	}
 	for (i = 0; i < (hlen - (nlen - 1)); ++i) {
 		found = 1;

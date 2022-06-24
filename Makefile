@@ -26,6 +26,7 @@ VALGRIND ?= $(shell which valgrind)
 SHELL := /bin/bash
 UNAME := $(shell uname)
 
+# VERSION=2.0.5
 VERSION=$(shell grep AC_INIT configure.ac | sed -e 's/AC_INIT(\[libecheck\], \[\([0-9\.]*\)], \[eric@freesa.org\])/\1/g')
 VER_MAJOR := `echo $(VERSION) | cut -f1 -d'.'`
 VER_MINOR := `echo $(VERSION) | cut -f2 -d'.'`
@@ -57,7 +58,9 @@ build_dirs=\
 
 .PHONY:
 all: all-obj check-all
-	find . -name '*.$(SHAREDEXT)' -o -name '*.o'
+	find $(build_dirs) \
+		-type f -name '*.o' \
+		-o -type f -name '*.$(SHAREDEXT)*'
 	@echo "SUCCESS $@"
 
 # .PHONY:
@@ -79,6 +82,9 @@ NORMAL_CFLAGS=-g -O2 -DNDEBUG -fomit-frame-pointer
 
 DEBUG_CFLAGS=-g -O2 -Werror
 
+# -Xlinker \
+# -zmuldefs \
+#
 COVERAGE_CFLAGS=-O0 -g -Werror \
 	-fno-inline-small-functions \
 	-fkeep-inline-functions \
@@ -97,6 +103,7 @@ build/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
 build/%: BUILD_LDFLAGS = $(LDFLAGS)
+check-%: BUILD_DIR = build
 
 faux-fs/%: BUILD_DIR = faux-fs
 faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
@@ -104,6 +111,7 @@ faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
 faux-fs/%: BUILD_LDFLAGS = $(LDFLAGS)
+faux-fs-check-%: BUILD_DIR = faux-fs
 
 debug/%: BUILD_DIR = debug
 debug/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
@@ -111,6 +119,7 @@ debug/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(HOSTED_ENV_CFLAGS) \
 	$(CFLAGS)
 debug/%: BUILD_LDFLAGS = $(LDFLAGS)
+debug-check-%: BUILD_DIR = debug
 
 debug-faux-fs/%: BUILD_DIR = debug-faux-fs
 debug-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
@@ -118,6 +127,7 @@ debug-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(FAUX_FREESTANDING_ENV_CFLAGS) \
 	$(CFLAGS)
 debug-faux-fs/%: BUILD_LDFLAGS = $(LDFLAGS)
+debug-faux-fs-check-%: BUILD_DIR = debug-faux-fs
 
 debug-coverage/%: BUILD_DIR = debug-coverage
 debug-coverage/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
@@ -126,6 +136,7 @@ debug-coverage/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(CFLAGS)
 debug-coverage/%: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS) $(LDFLAGS)
 debug-coverage/%: BUILD_LDADD = -lgcov
+debug-coverage-check-%: BUILD_DIR = debug-coverage
 
 debug-coverage-faux-fs/%: BUILD_DIR = debug-coverage-faux-fs
 debug-coverage-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
@@ -134,6 +145,7 @@ debug-coverage-faux-fs/%: BUILD_CFLAGS = $(COMMON_CFLAGS) \
 	$(CFLAGS)
 debug-coverage-faux-fs/%s: BUILD_LDFLAGS = $(COVERAGE_LDFLAGS) $(LDFLAGS)
 debug-coverage-faux-fs/%: BUILD_LDADD = -lgcov
+debug-coverage-faux-fs-check-%: BUILD_DIR = debug-coverage-faux-fs
 
 
 test_progs=\
@@ -188,7 +200,8 @@ test_progs=\
 # output files from getting automatically cleaned up.
 # https://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 # https://www.gnu.org/software/make/manual/html_node/Special-Targets.html
-PRECIOUS=%.o %.$(SHAREDEXT) %.a %.html $(foreach DIR,$(build_dirs),\
+PRECIOUS=%.o %.$(SHAREDEXT) %.$(SHAREDEXT).% %.a %.html \
+		$(foreach DIR,$(build_dirs),\
 			$(foreach TEST,$(test_progs), \
 				$(DIR)/tests/$(TEST)))
 .PRECIOUS:$(PRECIOUS)
@@ -541,12 +554,24 @@ debug-coverage-faux-fs-check-demo-eembed-static-assert-dl: \
 		LD_LIBRARY_PATH=. ./demo-eembed-static-assert-dl
 	@echo "SUCCESS $@"
 
+$(foreach DIR,$(build_dirs),$(DIR)/demo-eembed-static-assert-fail.out): \
+		tests/demo-eembed-static-assert.c all-obj
+	mkdir -pv $(BUILD_DIR)
+	cd $(BUILD_DIR) && \
+		if $(CC) -DFAIL=1 $(BUILD_CFLAGS) -I ../src ./eembed.o \
+		../$< -o a.out > \
+		../$@ \
+		2>&1; then false; else true; fi
+	ls -l $@
+	@echo "SUCCESS $@"
+
 .PHONY:
 $(foreach DIR,$(build_dirs),$(DIR)-check-demo-eembed-static-assert-fail): \
-		tests/demo-eembed-static-assert.c
-	if $(CC) -DFAIL=1 $(BUILD_CFLAGS) -I src $(BUILD_DIR)/eembed.o \
-		$< -o $@ > $@.out 2>&1; then false; else true; fi
-	if [ $$(grep -c 'static_assert' $@.out) -eq 0 ]; \
+		$(foreach DIR,$(build_dirs),\
+			$(DIR)/demo-eembed-static-assert-fail.out)
+	if [ $$(grep -c 'static_assert' \
+		$(BUILD_DIR)/demo-eembed-static-assert-fail.out ) \
+		-eq 0 ]; \
 		then false; else true; fi
 	@echo "SUCCESS $@"
 
