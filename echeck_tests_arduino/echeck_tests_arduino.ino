@@ -26,7 +26,6 @@ unsigned test_eembed_strcpy(void);
 unsigned test_eembed_strlen(void);
 unsigned test_eembed_strstr(void);
 unsigned test_eembed_malloc_free(void);
-unsigned test_eembed_alloca_freea(void);
 
 unsigned test_check_byte_array(void);
 unsigned test_check_byte_array_m(void);
@@ -116,7 +115,6 @@ void loop(void)
 	failures += Run_test(test_eembed_strlen);
 	failures += Run_test(test_eembed_strstr);
 	failures += Run_test(test_eembed_malloc_free);
-	failures += Run_test(test_eembed_alloca_freea);
 
 	Serial.println();
 	failures += Run_test(test_check_byte_array);
@@ -144,6 +142,10 @@ void loop(void)
 	failures += Run_test(test_check_unsigned_long_m);
 
 	Serial.println();
+	Serial.println("==================================================");
+	Serial.println("Ending test run");
+	Serial.println("==================================================");
+
 	if (failures == 1) {
 		Serial.println("There was 1 failure.");
 		Serial.println("FAIL");

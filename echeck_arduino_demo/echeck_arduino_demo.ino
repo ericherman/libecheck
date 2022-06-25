@@ -43,7 +43,7 @@ void loop(void)
 {
 	++loop_count;
 	Serial.println("==================================================");
-	Serial.print("Starting test run #");
+	Serial.print("Starting demo run #");
 	Serial.println(loop_count);
 	Serial.println("==================================================");
 
@@ -51,31 +51,33 @@ void loop(void)
 	unsigned expected_failures = 0;
 	Serial.println("check_int");
 	delay_print_separator(0, '-', 50);
-	Serial.println("checking that two integers match");
+	Serial.println("checking that two integers match (expect a fail)");
 	Serial.println("int val = 13;");
 	int val = 13;
 	Serial.println("int expected = 42;");
 	int expected = 42;
 	Serial.println("expected_failures += check_int(val, expected);");
 	expected_failures += check_int(val, expected);
-	Serial.println();
 	delay_print_separator(loop_delay_ms, '-', 50);
-	Serial.println("check_int again with a message string:");
-	Serial.println
-	    ("expected_failures += check_int_m(val, expected, \"msg 1\");");
-	expected_failures += check_int_m(val, expected, "msg 1");
+	Serial.println("check_int again with a message string");
+	Serial.println(" (expect a fail with our string included):");
+	Serial.println("expected_failures +="
+		       " check_int_m(val, expected, \"OUR CONTEXT\");");
+	expected_failures += check_int_m(val, expected, "OUR CONTEXT");
 	delay_print_separator(loop_delay_ms, '-', 50);
 	Serial.println("check_int is silent when the parameters match:");
 	Serial.println("val = expected;");
 	val = expected;
 	Serial.println("failures += check_int_m(val, expected, \"msg 2\");");
 	failures += check_int_m(val, expected, "msg 2");
+	Serial.println("(nothing was printed)");
 	delay_print_separator(loop_delay_ms, '-', 50);
 	Serial.println("All check_ functions return 0 on success, 1 on error");
 	Serial.print("expected_failures == ");
 	Serial.println(expected_failures);
 	Serial.print("failures == ");
 	Serial.println(failures);
+	Serial.println();
 	Serial.println();
 
 	delay_print_separator(loop_delay_ms, '-', 50);
@@ -84,8 +86,8 @@ void loop(void)
 	delay_print_separator(0, '-', 50);
 	Serial.println("const char *actual = NULL;");
 	const char *actual = NULL;
-	Serial.println("check_str_m(actual, \"expect me 1\", \"msg 3\")");
-	check_str_m(actual, "expect me 1", "msg 3");
+	Serial.println("check_str_m(actual, \"expect me 1\", \"FOO\")");
+	check_str_m(actual, "expect me 1", "FOO");
 	delay_print_separator(loop_delay_ms, '-', 50);
 	Serial.println();
 	Serial.println("check_str(actual, \"expect me 2\")");
@@ -138,6 +140,7 @@ void loop(void)
 	Serial.println();
 	delay_print_separator(loop_delay_ms, '.', 50);
 	Serial.println();
+	delay(10 * 1000);
 }
 
 void delay_print_separator(uint16_t delay_ms, char c, size_t chars)
