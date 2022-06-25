@@ -239,23 +239,15 @@ struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 #define FAUX_FREESTANDING 0
 #endif
 
-#if (EEMBED_HOSTED || FAUX_FREESTANDING)
+void eembed_system_print_init(void);
 
-#define EEMBED_DECLARE_FAUX_FREESTANDING_SYSTEM_PRINT \
-int printf(const char *format, ...); \
-void eembed_faux_freestanding_system_print(const char *str) \
-{ \
-	printf("%s", str); \
-}
+#if (EEMBED_HOSTED || FAUX_FREESTANDING)
 
 #ifndef EEMBED_FUNC_MAIN
 #define EEMBED_FUNC_MAIN(pfunc) \
-EEMBED_DECLARE_FAUX_FREESTANDING_SYSTEM_PRINT \
 int main(void) \
 { \
-	if (FAUX_FREESTANDING) { \
-		eembed_system_print = eembed_faux_freestanding_system_print; \
-	} \
+	eembed_system_print_init(); \
 	return pfunc() ? 1 : 0; \
 }
 #endif

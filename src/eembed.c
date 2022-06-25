@@ -1742,3 +1742,25 @@ struct eembed_allocator *eembed_global_allocator = &eembed_system_alloctor;
 struct eembed_allocator *eembed_global_allocator = &eembed_null_chunk_allocator;
 
 #endif
+
+#if (EEMBED_HOSTED || FAUX_FREESTANDING)
+/* LCOV_EXCL_START */
+int printf(const char *format, ...);
+void eembed_faux_freestanding_system_print(const char *str)
+{
+	printf("%s", str);
+}
+
+void eembed_system_print_init(void)
+{
+	if (FAUX_FREESTANDING) {
+		eembed_system_print = eembed_faux_freestanding_system_print;
+	}
+}
+#else
+void eembed_system_print_init(void)
+{
+}
+
+/* LCOV_EXCL_STOP */
+#endif
