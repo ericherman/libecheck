@@ -2,7 +2,7 @@
 /* test-eembed-memmove.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 static void test_byte_arrays(unsigned char *actual, size_t actual_len,
 			     unsigned char *expect, size_t expect_len)

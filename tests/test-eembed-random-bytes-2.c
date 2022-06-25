@@ -2,7 +2,7 @@
 /* libeembed: "E(asy)Embed": easier writing and testing of embedded libraries */
 /* Copyright (C) 2020, 2021 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 #if EEMBED_HOSTED
 #include <errno.h>

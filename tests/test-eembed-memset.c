@@ -2,7 +2,7 @@
 /* test-eembed-memset.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 static void fill_str(char *str, size_t len, char c, char term)
 {

@@ -2,7 +2,7 @@
 /* test-eembed-ulong-to-hex.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 #include <limits.h>
 
 void test_ulong_to_hex_nothing_explodes(void)

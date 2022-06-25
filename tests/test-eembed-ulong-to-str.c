@@ -2,7 +2,7 @@
 /* test-eembed-ulong-to-str.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 #include <limits.h>
 
 void test_ulong_to_str_nothing_explodes(void)

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* Copyright (C) 2021 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 char *global_buf = NULL;
 size_t global_buf_size = 0;

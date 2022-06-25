@@ -2,7 +2,7 @@
 /* test-eembed-mempy.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 unsigned test_eembed_chunk_alloc(void)
 {

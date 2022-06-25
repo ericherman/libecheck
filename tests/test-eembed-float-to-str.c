@@ -2,7 +2,7 @@
 /* test-eembed-float-to-str.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 #include <limits.h>
 #include <float.h>
 

@@ -2,7 +2,7 @@
 /* test-eembed-assert.c */
 /* Copyright (C) 2021 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 #define bad_line(log) \
 	do { \

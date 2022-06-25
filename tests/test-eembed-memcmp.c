@@ -2,7 +2,7 @@
 /* test-eembed-memcmp.c */
 /* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 static void fill_array_terminated(void *dest, size_t len, unsigned char c)
 {

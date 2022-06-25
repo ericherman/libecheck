@@ -2,7 +2,7 @@
 /* test-eembed-strlen.c */
 /* Copyright (C) 2016, 2020 Eric Herman <eric@freesa.org> */
 
-#include <eembed.h>
+#include "eembed.h"
 
 unsigned test_eembed_strlen(void)
 {
