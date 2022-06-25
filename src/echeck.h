@@ -395,13 +395,12 @@ int main(void) \
 
 #ifndef ECHECK_TEST_MAIN_V
 #define ECHECK_TEST_MAIN_V(pfunc) \
-int atoi(const char *nptr); \
 int main(int argc, char **argv) \
 { \
 	int verbose = 0; \
 	unsigned failures = 0; \
 	eembed_system_print_init(); \
-	verbose = (argc > 1) ? atoi(argv[1]) : 0; \
+	verbose = (argc > 1) ? eembed_str_to_long(argv[1], NULL) : 0; \
 	failures = pfunc(verbose); \
 	echeck_test_main_log_failures(failures, #pfunc, __FILE__); \
 	return check_status(failures); \
