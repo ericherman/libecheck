@@ -180,7 +180,7 @@ unsigned char echeck_str_contains_m(struct eembed_log *err, const char *func,
 				    const char *msg)
 {
 	if (haystack == needle) {
-		return 0;	/* LCOV_EXCL_LINE optimized out? more CFLAGS! */
+		return 0;
 	}
 
 	if (haystack != NULL && needle != NULL
@@ -381,7 +381,7 @@ char echeck_status_m(struct eembed_log *err, const char *func, const char *file,
 		return val;
 	}
 	if (val < -128) {
-		c = -128;	/* LCOV_EXCL_LINE optimized out? more CFLAGS */
+		c = -128;
 	} else {
 		c = 127;
 	}
@@ -479,12 +479,12 @@ void *echeck_err_injecting_realloc(struct eembed_allocator *ea, void *ptr,
 	eembed_memcpy(&size, tracking_buffer, sizeof(size_t));
 
 	if (newsize == size) {
-		return ptr;	/* LCOV_EXCL_LINE optimized out; but CLFAGS */
+		return ptr;
 	}
 
 	ptr2 = ea->calloc(ea, 1, newsize);
 	if (!ptr2) {
-		return ptr2;	/* LCOV_EXCL_LINE optimized out; but CLFAGS */
+		return ptr2;
 	}
 
 	eembed_memcpy(ptr2, ptr, newsize < size ? newsize : size);

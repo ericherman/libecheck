@@ -1021,10 +1021,8 @@ char *eembed_diy_strcat(char *dest, const char *src)
 
 char *(*eembed_strcat)(char *dest, const char *src) = eembed_diy_strcat;
 
-/* LCOV_EXCL_START */
 char *eembed_diy_strncat(char *dest, const char *src, size_t n)
 {
-/* LCOV_EXCL_STOP */
 	size_t dest_len = 0;
 	size_t i = 0;
 
@@ -1062,7 +1060,6 @@ int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) = strncmp;
 int eembed_diy_strcmp(const char *s1, const char *s2)
 {
 	return eembed_strncmp(s1, s2, SIZE_MAX);
-/* LCOV_EXCL_START */
 }
 
 int (*eembed_strcmp)(const char *s1, const char *s2) = eembed_diy_strcmp;
@@ -1073,9 +1070,8 @@ int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 	int d;
 
 	if (s1 == s2 || max_len == 0) {
-		return 0;
+		return 0;	/* LCOV_EXCL_LINE */
 	}
-	/* LCOV_EXCL_STOP */
 
 	/* LCOV_EXCL_START */
 	/* glibc explodes on NULL, do all libc memcpy? */
@@ -1182,9 +1178,9 @@ size_t (*eembed_strnlen)(const char *s, size_t maxlen) = eembed_diy_strnlen;
 #endif
 
 #if EEMBED_HOSTED
-/* LCOV_EXCL_START */
+
 char *(*eembed_strstr)(const char *haystack, const char *needle) = strstr;
-/* LCOV_EXCL_STOP */
+
 #else
 
 char *eembed_diy_strstr(const char *haystack, const char *needle)
@@ -1654,11 +1650,9 @@ eembed_align(sizeof(struct eembed_allocator)) +
 eembed_align(sizeof(struct eembed_alloc_chunk)) +
 eembed_align(sizeof(size_t)) + eembed_align(1);
 
-/* LCOV_EXCL_START */
 struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 						size_t len)
 {
-/* LCOV_EXCL_STOP */
 	struct eembed_allocator *ea = NULL;
 	struct eembed_alloc_chunk *chunk = NULL;
 	size_t used = 0;
@@ -1741,8 +1735,7 @@ struct eembed_allocator *eembed_global_allocator = &eembed_null_chunk_allocator;
 
 #endif
 
-#if (EEMBED_HOSTED || FAUX_FREESTANDING)
-/* LCOV_EXCL_START */
+#if (FAUX_FREESTANDING)
 int printf(const char *format, ...);
 void eembed_faux_freestanding_system_print(const char *str)
 {
@@ -1760,5 +1753,4 @@ void eembed_system_print_init(void)
 {
 }
 
-/* LCOV_EXCL_STOP */
 #endif
