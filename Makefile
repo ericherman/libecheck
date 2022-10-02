@@ -27,8 +27,7 @@ SHELL := /bin/bash
 UNAME := $(shell uname)
 
 # VERSION=2.0.6
-VERSION=$(shell grep AC_INIT configure.ac \
- | sed -e 's/AC_INIT(\[libecheck\], \[\([0-9\.]*\)], \[eric@freesa.org\])/\1/g')
+VERSION=$(cat VERSION | xargs)
 VER_MAJOR := `echo $(VERSION) | cut -f1 -d'.'`
 VER_MINOR := `echo $(VERSION) | cut -f2 -d'.'`
 VER_PATCH := `echo $(VERSION) | cut -f3 -d'.'`
@@ -424,7 +423,11 @@ debug-faux-fs/tests/test%: tests/test%.c \
 
 .PHONY:
 debug-faux-fs-check-%: debug-faux-fs/tests/%
-	pushd debug-faux-fs && ../$<
+	pushd debug-faux-fs && $(VALGRIND) ../$< > $@.out 2>&1
+	if [ $$(grep -c 'definitely lost' debug-faux-fs/$@.out) -eq 0 ]; \
+		then true; else false; fi && \
+		if [ $$(grep -c 'probably lost' debug-faux-fs/$@.out) -eq 0 ]; \
+		then true; else false; fi
 	@echo "SUCCESS $@"
 
 .PHONY:
@@ -589,7 +592,7 @@ check-all: build-check faux-fs-check debug-check debug-faux-fs-check \
 		check-coverage check-coverage-faux-fs
 	@echo "SUCCESS $@"
 
-valgrind: debug-check
+valgrind: debug-check debug-faux-fs-check
 	@echo "SUCCESS $@"
 
 debug-coverage/coverage.info: debug-coverage-check
@@ -615,8 +618,8 @@ check-coverage: debug-coverage/tests/coverage_html/src/index.html
 	fi
 	@echo "SUCCESS $@"
 
-.PHONY: coverage
-coverage: debug-coverage/tests/coverage_html/src/index.html
+.PHONY: coverage-debug
+coverage-debug: debug-coverage/tests/coverage_html/src/index.html
 	$(BROWSER) $<
 
 
@@ -650,8 +653,9 @@ coverage-faux-fs: \
  debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html
 	$(BROWSER) $<
 
-.PHONY: coverage-all
-coverage-all: coverage-faux-fs coverage
+.PHONY: coverage
+coverage: coverage-faux-fs coverage-debug
+	@echo "SUCCESS $@"
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0

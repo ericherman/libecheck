@@ -1,6 +1,19 @@
 echeck Changelog
 
+2022-10-02  Eric Herman <eric@freesa.org>
+
+	Remove autoconf/automake in favor of Makefile, as there is so
+	little need for platform detection and adjustment, and a Makefile
+	allows direct control of the build artifacts, especially building
+	regular, debug, and faux-freestanding side-by-side.
+
+	* VERSION: new file to store the version (2.0.6)
+	* Makefile: use VERSION file, "make coverage" replaces "coverage-all"
+	* Makefile.am: removed, replaced by Makefile
+	* configure.ac: removed, replaced by Makefile, VERSION
+
 2022-06-26  Eric Herman <eric@freesa.org>
+
 	VERSION 2.0.6
 
 	Make the eembed tests not rely upon echeck, breaking circular
@@ -483,5 +496,5 @@ Added test lcov reporting
 
 	* tagging as release version 1.0.0
 
-	* Makefile: replaceing with Makefile.am and configure.ac
+	* Makefile: replacing with Makefile.am and configure.ac
 	* ChangeLog: Freshly created ChangeLog.
