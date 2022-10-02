@@ -321,7 +321,7 @@ which is not used.
 
 Code should have tests demonstrating the use and have test coverage
 via:
-	make coverage
+	make coverage-all
 
 
 Including
