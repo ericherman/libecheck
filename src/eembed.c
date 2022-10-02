@@ -77,7 +77,7 @@ FILE *eembed_stdout(void)
 	return stdout;
 }
 
-FILE *eembed_stream(FILE *stream)
+static FILE *eembed_stream_ok(FILE *stream)
 {
 	if (!stream || stream == stderr) {
 		return eembed_stderr();
@@ -90,14 +90,14 @@ FILE *eembed_stream(FILE *stream)
 
 void eembed_stream_eol(FILE *stream)
 {
-	eembed_stream(stream);
+	stream = eembed_stream_ok(stream);
 	eembed_system_fprintf(stream, "\n");
 	eembed_system_fflush(stream);
 }
 
 static FILE *eembed_fprintf_context(struct eembed_log *log)
 {
-	return eembed_stream((FILE *)log->context);
+	return eembed_stream_ok((FILE *)log->context);
 }
 
 void eembed_stdout_print(const char *str)
