@@ -7,16 +7,16 @@
 # $^ : all of the prerequisite files
 # $* : wildcard matched part
 # Target-specific Variable syntax:
-# https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
+#  https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 #
 # patsubst, subst, foreach : $(patsubst pattern,replacement,text)
-#	https://www.gnu.org/software/make/manual/html_node/Text-Functions.html
+#  https://www.gnu.org/software/make/manual/html_node/Text-Functions.html
 # call : $(call func,param1,param2,...)
-#       https://www.gnu.org/software/make/manual/html_node/Call-Function.html
+#  https://www.gnu.org/software/make/manual/html_node/Call-Function.html
 # define :
-#       https://www.gnu.org/software/make/manual/html_node/Multi_002dLine.html
+#  https://www.gnu.org/software/make/manual/html_node/Multi_002dLine.html
 # dir, notdir :
-#	https://www.gnu.org/software/make/manual/html_node/File-Name-Functions.html
+#  https://www.gnu.org/software/make/manual/html_node/File-Name-Functions.html
 
 CC ?= gcc
 BROWSER	?= firefox
@@ -27,7 +27,8 @@ SHELL := /bin/bash
 UNAME := $(shell uname)
 
 # VERSION=2.0.6
-VERSION=$(shell grep AC_INIT configure.ac | sed -e 's/AC_INIT(\[libecheck\], \[\([0-9\.]*\)], \[eric@freesa.org\])/\1/g')
+VERSION=$(shell grep AC_INIT configure.ac \
+ | sed -e 's/AC_INIT(\[libecheck\], \[\([0-9\.]*\)], \[eric@freesa.org\])/\1/g')
 VER_MAJOR := `echo $(VERSION) | cut -f1 -d'.'`
 VER_MINOR := `echo $(VERSION) | cut -f2 -d'.'`
 VER_PATCH := `echo $(VERSION) | cut -f3 -d'.'`
