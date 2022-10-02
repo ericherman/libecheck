@@ -724,7 +724,6 @@ char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
 	size_t pos = 0;
 
 	eembed_assert(buf);
-	/* LCOV_EXCL_LINE */
 
 	if (buf_len < eembed_bytes_to_hex_min_buf(bytes_len)) {
 		return NULL;
@@ -1450,7 +1449,6 @@ static void eembed_alloc_chunk_split(struct eembed_alloc_chunk *from,
 	if ((aligned_request + min_size) >= from->available_length) {
 		return;
 	}
-	/* LCOV_EXCL_LINE */
 
 	remaining_available_length = from->available_length - aligned_request;
 	eembed_assert(remaining_available_length >= min_size);
@@ -1557,7 +1555,7 @@ void *eembed_chunk_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
 		} else {
 			chunk = chunk->next;
 		}
-	}			/* LCOV_EXCL_LINE */
+	}
 
 	eembed_assert(found);
 #ifdef NDEBUG
