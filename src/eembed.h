@@ -39,6 +39,7 @@ uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
 
 struct eembed_log;
 extern struct eembed_log *eembed_err_log;
+extern struct eembed_log *eembed_null_log;
 
 struct eembed_log {
 	void *context;

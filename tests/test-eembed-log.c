@@ -87,6 +87,14 @@ unsigned int test_eembed_log(void)
 		++failures;
 	}
 
+	eembed_null_log->append_c(eembed_null_log, 'c');
+	eembed_null_log->append_s(eembed_null_log, "str");
+	eembed_null_log->append_ul(eembed_null_log, 4);
+	eembed_null_log->append_l(eembed_null_log, -2);
+	eembed_null_log->append_f(eembed_null_log, 4.0);
+	eembed_null_log->append_vp(eembed_null_log, NULL);
+	eembed_null_log->append_eol(eembed_null_log);
+
 	return 0;
 }
 

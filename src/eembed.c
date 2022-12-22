@@ -38,6 +38,60 @@ void (*eembed_assert_crash)(void) = eembed_exit_failure;
 void (*eembed_assert_crash)(void) = NULL;
 #endif
 
+void eembed_no_op_append_c(struct eembed_log *log, char c)
+{
+	(void)log;
+	(void)c;
+}
+
+void eembed_no_op_append_s(struct eembed_log *log, const char *str)
+{
+	(void)log;
+	(void)str;
+}
+
+void eembed_no_op_append_ul(struct eembed_log *log, uint64_t ul)
+{
+	(void)log;
+	(void)ul;
+}
+
+void eembed_no_op_append_l(struct eembed_log *log, int64_t l)
+{
+	(void)log;
+	(void)l;
+}
+
+void eembed_no_op_append_f(struct eembed_log *log, long double f)
+{
+	(void)log;
+	(void)f;
+}
+
+void eembed_no_op_append_vp(struct eembed_log *log, const void *ptr)
+{
+	(void)log;
+	(void)ptr;
+}
+
+void eembed_no_op_append_eol(struct eembed_log *log)
+{
+	(void)log;
+}
+
+struct eembed_log eembed_no_op_log = {
+	NULL,
+	eembed_no_op_append_c,
+	eembed_no_op_append_s,
+	eembed_no_op_append_ul,
+	eembed_no_op_append_l,
+	eembed_no_op_append_f,
+	eembed_no_op_append_vp,
+	eembed_no_op_append_eol,
+};
+
+struct eembed_log *eembed_null_log = &eembed_no_op_log;
+
 #if EEMBED_HOSTED
 
 int (*eembed_system_fprintf)(FILE *stream, const char *format, ...) = fprintf;

@@ -30,13 +30,8 @@ unsigned test_eembed_chunk_alloc(void)
 	size_t allocs2 = 0;
 	int stringify_contents = 1;
 	size_t width = 64;
-	struct eembed_str_buf log_ctx;
-	struct eembed_log buf_log;
-	const size_t mem_buf_len = 2 * 200 * sizeof(size_t);
-	char mem_buf[2 * 200 * sizeof(size_t)];
 	struct eembed_log *log;
 
-	eembed_memset(mem_buf, 0x00, mem_buf_len);
 	eembed_memset(bytes, 0x00, bytes_len);
 
 	ea = eembed_bytes_allocator(bytes, bytes_len);
@@ -92,15 +87,23 @@ unsigned test_eembed_chunk_alloc(void)
 	key = (char *)ea->realloc(ea, keys[0], len);
 	eembed_crash_if_false(key != NULL);
 
-	log = NOISY_TESTS ? eembed_err_log :
-	    eembed_char_buf_log_init(&buf_log, &log_ctx, mem_buf, mem_buf_len);
+	log = NOISY_TESTS ? eembed_err_log : eembed_null_log;
+
+	log->append_s(log, "eembed_bytes_allocator_dump:");
+	log->append_eol(log);
 	eembed_bytes_allocator_dump(log, ea);
+	log->append_eol(log);
+
+	stringify_contents = 0;
+	log->append_s(log, "eembed_bytes_allocator_visual:");
+	log->append_eol(log);
+	eembed_bytes_allocator_visual(log, ea, stringify_contents, width);
+
+	log->append_s(log, "eembed_bytes_allocator_visual (stringified):");
 	log->append_eol(log);
 	stringify_contents = 1;
 	eembed_bytes_allocator_visual(log, ea, stringify_contents, width);
 	log->append_eol(log);
-	stringify_contents = 0;
-	eembed_bytes_allocator_visual(log, ea, stringify_contents, width);
 
 	for (i = 0; i < keys_len; ++i) {
 		ea->free(ea, keys[i]);
