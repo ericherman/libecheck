@@ -1634,6 +1634,116 @@ void eembed_chunk_free(struct eembed_allocator *ea, void *ptr)
 	}
 }
 
+void eembed_bytes_allocator_dump(struct eembed_log *log,
+				 struct eembed_allocator *bytes_allocator)
+{
+	void *ctx = (bytes_allocator) ? bytes_allocator->context : NULL;
+	struct eembed_alloc_chunk *chunk = (struct eembed_alloc_chunk *)ctx;
+	char hexaddr[2 + (2 * sizeof(uint64_t)) + 1];
+	eembed_memset(hexaddr, 0x00, sizeof(hexaddr));
+	while (chunk) {
+		eembed_ulong_to_hex(hexaddr, sizeof(hexaddr), (uint64_t)chunk);
+		log->append_s(log, hexaddr);
+		log->append_s(log, ": {");
+		log->append_eol(log);
+
+		eembed_ulong_to_hex(hexaddr, sizeof(hexaddr),
+				    (uint64_t)chunk->start);
+		log->append_s(log, "\tstart: ");
+		log->append_s(log, hexaddr);
+		log->append_c(log, ',');
+		log->append_eol(log);
+
+		log->append_s(log, "\tavailable_length: ");
+		log->append_ul(log, (uint64_t)chunk->available_length);
+		log->append_c(log, ',');
+		log->append_eol(log);
+
+		log->append_s(log, "\tin use: ");
+		log->append_ul(log, (uint64_t)chunk->in_use);
+		log->append_c(log, ',');
+		log->append_eol(log);
+
+		eembed_ulong_to_hex(hexaddr, sizeof(hexaddr),
+				    (uint64_t)chunk->prev);
+		log->append_s(log, "\tprev: ");
+		log->append_s(log, hexaddr);
+		log->append_c(log, ',');
+		log->append_eol(log);
+
+		eembed_ulong_to_hex(hexaddr, sizeof(hexaddr),
+				    (uint64_t)chunk->next);
+		log->append_s(log, "\tnext: ");
+		log->append_s(log, hexaddr);
+		log->append_eol(log);
+		log->append_c(log, '}');
+		log->append_eol(log);
+
+		chunk = chunk->next;
+	}
+}
+
+static size_t eembed_bytes_allocator_visual_inner(struct eembed_log *log,
+						  size_t pos, const char *str,
+						  char fill,
+						  size_t size, size_t width)
+{
+	size_t i;
+	int str_end_found = !str;
+	for (i = 0; i < size; ++i) {
+		char c = (str_end_found) ? fill : str[i];
+		if (!c) {
+			c = '0';
+			str_end_found = 1;
+		}
+		log->append_c(log, c);
+		++pos;
+		if ((pos % width) == 0) {
+			log->append_eol(log);
+		}
+	}
+	return pos;
+}
+
+void eembed_bytes_allocator_visual(struct eembed_log *log,
+				   struct eembed_allocator *bytes_allocator,
+				   int strinify_contents, size_t width)
+{
+	void *ctx = (bytes_allocator) ? bytes_allocator->context : NULL;
+	struct eembed_alloc_chunk *chunk = (struct eembed_alloc_chunk *)ctx;
+	const char *str = NULL;
+	char fill = 'A';
+	size_t len = eembed_align(sizeof(struct eembed_allocator));
+	size_t pos = 0;
+
+	pos =
+	    eembed_bytes_allocator_visual_inner(log, pos, str, fill, len,
+						width);
+
+	while (chunk) {
+		str = NULL;
+		fill = 'O';
+		len = eembed_align(sizeof(struct eembed_alloc_chunk));
+		pos =
+		    eembed_bytes_allocator_visual_inner(log, pos, str, fill,
+							len, width);
+		len = chunk->available_length;
+		if (chunk->in_use) {
+			if (strinify_contents) {
+				str = (const char *)chunk->start;
+			}
+			fill = '_';
+		} else {
+			fill = '.';
+		}
+		pos =
+		    eembed_bytes_allocator_visual_inner(log, pos, str, fill,
+							len, width);
+
+		chunk = chunk->next;
+	}
+}
+
 struct eembed_allocator eembed_null_chunk_allocator = {
 	NULL,
 	eembed_chunk_malloc,

@@ -110,6 +110,11 @@ struct eembed_allocator {
 extern const size_t eembed_bytes_allocator_min_buf_size;
 struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 						size_t len);
+void eembed_bytes_allocator_dump(struct eembed_log *log,
+				 struct eembed_allocator *bytes_allocator);
+void eembed_bytes_allocator_visual(struct eembed_log *log,
+				   struct eembed_allocator *bytes_allocator,
+				   int strinify_contents, size_t width);
 
 #ifndef EEMBED_NOP
 #define EEMBED_NOP() do { ((void)0); } while (0)

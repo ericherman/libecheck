@@ -26,7 +26,7 @@ VALGRIND ?= $(shell which valgrind)
 SHELL := /bin/bash
 UNAME := $(shell uname)
 
-# VERSION=2.0.6
+# VERSION=2.1.0
 VERSION=$(cat VERSION | xargs)
 VER_MAJOR := `echo $(VERSION) | cut -f1 -d'.'`
 VER_MINOR := `echo $(VERSION) | cut -f2 -d'.'`

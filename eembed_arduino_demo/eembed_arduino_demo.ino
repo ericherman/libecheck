@@ -57,14 +57,14 @@ void setup(void)
 void loop(void)
 {
 	size_t idx = loops_completed % buffers_len;
-
+	Serial.println();
+	Serial.println();
+	Serial.println("==================================================");
 	Serial.print(" Starting run number ");
 	Serial.print(loops_completed);
 	Serial.print(" using b[");
 	Serial.print(idx);
 	Serial.println("]");
-	Serial.println("==================================================");
-	Serial.println();
 
 	// if there is a pre-existing string at this index,
 	// free the old string
@@ -78,7 +78,30 @@ void loop(void)
 		buffers[idx] = NULL;
 
 		Serial.println(" done.");
-		Serial.println();
+	}
+
+	Serial.println("==================================================");
+	if (eembed_global_allocator && eembed_global_allocator->context) {
+		if (0) {
+			eembed_bytes_allocator_dump(eembed_err_log,
+						    eembed_global_allocator);
+		}
+		if (1) {
+			Serial.println();
+			Serial.println("A: allocator overhead");
+			Serial.println("O: chunk overhead");
+			Serial.println(".: free memory");
+			Serial.println("_: used memory");
+			Serial.println("memory layout:");
+			int stringify_contents = 1;
+			size_t width = 64;
+			eembed_bytes_allocator_visual(eembed_err_log,
+						      eembed_global_allocator,
+						      stringify_contents,
+						      width);
+		}
+		Serial.println
+		    ("==================================================");
 	}
 	// choose an arbitrary size ... after several loops, we can
 	// expect some pretty fragmented memory
@@ -154,11 +177,5 @@ void loop(void)
 
 char char_for(size_t n)
 {
-	n = (n % 36);
-	if (n < 10) {
-		return '0' + n;
-	} else {
-		n -= 10;
-		return 'a' + n;
-	}
+	return 'a' + (n % 26);
 }
