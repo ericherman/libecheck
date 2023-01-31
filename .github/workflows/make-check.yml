@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# GitHub build file
+# Copyright (C) 2016-2022 Eric Herman <eric@freesa.org>
+
+name: make-check
+on:
+    - push
+    - pull_request
+
+defaults:
+    run:
+        shell: bash
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v3
+        - name: install-deps
+          # https://yaml.org/spec/1.2.2/#65-line-folding
+          run: >
+              sudo apt-get install -y
+              make
+              gcc
+              lcov
+        - name: make
+          run: make all-obj
+        - name: check
+          run: make build-check
+        - name: check-coverage
+          run: make check-all
