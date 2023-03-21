@@ -584,12 +584,12 @@ check-demo-eembed-static-assert-fail: build-check-demo-eembed-static-assert-fail
 	@echo "SUCCESS $@"
 
 .PHONY:
-check: build-check
+check: build-check faux-fs-check
 	@echo "SUCCESS $@"
 
 check-all: build-check faux-fs-check debug-check debug-faux-fs-check \
 		debug-coverage-check debug-coverage-faux-fs-check \
-		check-coverage check-coverage-faux-fs
+		check-coverage
 	@echo "SUCCESS $@"
 
 valgrind: debug-check debug-faux-fs-check
@@ -609,8 +609,8 @@ debug-coverage/tests/coverage_html/src/index.html: debug-coverage/coverage.info
 		./debug-coverage/tests/coverage_html
 	ls -l $@
 
-.PHONY: check-coverage
-check-coverage: debug-coverage/tests/coverage_html/src/index.html
+.PHONY: check-coverage-debug
+check-coverage-debug: debug-coverage/tests/coverage_html/src/index.html
 	if [ $$(grep -c 'headerCovTableEntryHi">100.0 %' $< ) -eq 2 ]; then \
 		true; \
 	else grep headerCovTableEntryHi $< && \
@@ -652,6 +652,10 @@ check-coverage-faux-fs: \
 coverage-faux-fs: \
  debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html
 	$(BROWSER) $<
+
+.PHONY: check-coverage
+check-coverage: check-coverage-debug check-coverage-faux-fs
+	@echo "SUCCESS $@"
 
 .PHONY: coverage
 coverage: coverage-faux-fs coverage-debug
