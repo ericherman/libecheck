@@ -32,7 +32,6 @@ unsigned test_eembed_strstr(void)
 	expect = NULL;
 	eembed_crash_if_false(rv == expect);
 
-
 #if (!EEMBED_HOSTED)
 	rv = eembed_strstr(haystack, NULL);
 	expect = NULL;

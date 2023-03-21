@@ -4,12 +4,12 @@ echeck Changelog
 
 	VERSION 2.0.7
 
-	Very minor refactorings and test coverage improvements.
+	Refactorings and test coverage improvements.
 
 	* src/echeck.c: minor refactor, removed LCOV_EXCL
-	* src/eembed.c: minor refactor, removed LCOV_EXCL
+	* src/eembed.c: refactor, reduce varargs, removed LCOV_EXCL
 	* VERSION: 2.0.7
-	* Makefile: "make check" now also checks faux-freestanding
+	* Makefile: "make check" now also checks faux-freestanding, stacksmash
 	* tests/test-eembed-chunk-alloc.c: test malloc of size 0
 	* tests/test-eembed-float-to-str.c: float_to_str with not enough_space
 	* tests/test-eembed-log.c: buf_log_init with size zero

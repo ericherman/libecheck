@@ -23,7 +23,6 @@ unsigned test_eembed_strcat(void)
 	expect = "foo bar whiz bang";
 	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
 
-
 #if (!EEMBED_HOSTED)
 	rv = eembed_strcat(actual, NULL);
 	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);

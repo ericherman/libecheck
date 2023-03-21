@@ -14,6 +14,7 @@ unsigned int test_eembed_log(void)
 	int failures = 0;
 	const char *expected = NULL;
 	char *found = NULL;
+	size_t i = 0;
 
 	buf[0] = '\0';
 	log = eembed_char_buf_log_init(NULL, &bctx, buf, buf_len);
@@ -92,6 +93,10 @@ unsigned int test_eembed_log(void)
 		eembed_err_log->append_s(eembed_err_log, "'");
 		eembed_err_log->append_eol(eembed_err_log);
 		++failures;
+	}
+
+	for (i = 0; i < 10; ++i) {
+		log->append_s(log, "this will run out of space but not crash");
 	}
 
 	eembed_null_log->append_c(eembed_null_log, 'c');

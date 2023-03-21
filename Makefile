@@ -71,14 +71,16 @@ all-obj: $(foreach DIR,$(build_dirs),\
 	@echo "SUCCESS $@"
 
 
-# this will become -std=c11 once that is "everywhere enough"
+# As c11 is probably "everywhere enough", most should use it,
+# however the code should still compile and run with -std=c89
 CSTD_CFLAGS=-std=c89
+# CSTD_CFLAGS=-std=c11
 
 NOISY_CFLAGS=-Wall -Wextra -pedantic -Wcast-qual -Wc++-compat
 
 COMMON_CFLAGS=$(CSTD_CFLAGS) $(NOISY_CFLAGS) -pipe
 
-NORMAL_CFLAGS=-g -O2 -DNDEBUG -fomit-frame-pointer
+NORMAL_CFLAGS=-g -O2 -DNDEBUG -fomit-frame-pointer -fstack-protector-all
 
 DEBUG_CFLAGS=-g -O2 -Werror
 
