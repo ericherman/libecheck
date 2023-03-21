@@ -283,8 +283,7 @@ Firmware testing can be tedious. To enable easier early testing of
 firmware, EasyCheck and EasyEmbed can be "faked" into a building
 almost as if in a freestanding environment. Try this:
 
-	./configure --enable-faux-freestanding
-	make check
+	make faux-fs-check
 
 Or if hand-rolling, you can set the #defines yourself, a bit like:
 
