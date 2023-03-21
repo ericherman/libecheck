@@ -818,7 +818,7 @@ static char *eembed_ignore_const_s(const char *str)
 
 #ifndef Eembed_use_diy_str_to_64
 #if (LONG_MAX <= INT64_MAX)
-#if (!(_ISOC99_SOURCEA))
+#if (!(_ISOC99_SOURCE))
 #define Eembed_use_diy_str_to_64 1
 #endif
 #endif
