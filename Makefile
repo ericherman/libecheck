@@ -27,7 +27,7 @@ SHELL := /bin/bash
 UNAME := $(shell uname)
 
 # VERSION=2.1.0
-VERSION=$(cat VERSION | xargs)
+VERSION := $(shell cat VERSION | xargs)
 VER_MAJOR := `echo $(VERSION) | cut -f1 -d'.'`
 VER_MINOR := `echo $(VERSION) | cut -f2 -d'.'`
 VER_PATCH := `echo $(VERSION) | cut -f3 -d'.'`
