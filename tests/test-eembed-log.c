@@ -26,6 +26,13 @@ unsigned int test_eembed_log(void)
 	eembed_crash_if_false(log == NULL);
 
 	buf[0] = '\0';
+	log = eembed_char_buf_log_init(&llog, &bctx, buf, 0);
+	if (log) {
+		++failures;
+	}
+	log = &llog;
+	log->append_s(log, "foo ");
+
 	log = eembed_char_buf_log_init(&llog, &bctx, buf, buf_len);
 	if (!log) {
 		++failures;

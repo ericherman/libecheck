@@ -42,6 +42,22 @@ void assert_float_to_str(double d, const char *fltstr)
 	eembed_crash_if_false(eembed_strstr(buf, fltstr) != NULL);
 }
 
+void assert_float_to_str_if_not_enough_space(void)
+{
+	char buf[2];
+	char *rv;
+
+	rv = eembed_float_to_str(buf, 2, 2.0);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strcmp("2", buf) == 0);
+
+	rv = eembed_float_to_str(buf, 2, -2.0);
+	eembed_crash_if_false(rv == NULL);
+
+	rv = eembed_float_to_str(buf, 2, FLT_MAX);
+	eembed_crash_if_false(rv == NULL);
+}
+
 unsigned int test_eembed_float_to_str(void)
 {
 	static const double eembed_zero = 0.0;
@@ -54,6 +70,8 @@ unsigned int test_eembed_float_to_str(void)
 	assert_float_to_str(-0.5, "-0.5");
 	assert_float_to_str(-0.6, "-0.6");
 	assert_float_to_str(eembed_nan, "nan");
+
+	assert_float_to_str_if_not_enough_space();
 
 	test_float_to_str_nothing_explodes();
 

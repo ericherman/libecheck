@@ -235,10 +235,9 @@ void eembed_sprintf_append(struct eembed_log *log, const char *format, ...)
 
 	eembed_assert(ctx);
 	eembed_assert(ctx->buf);
-	eembed_assert(ctx->len);
 
 	used = eembed_strnlen(ctx->buf, ctx->len);
-	if (used < (ctx->len - 1)) {
+	if (ctx->len && used < (ctx->len - 1)) {
 		buf = ctx->buf + used;
 		len = ctx->len - used;
 		va_start(ap, format);
@@ -477,12 +476,9 @@ void eembed_ctx_strcpy_append_s(struct eembed_log *log, const char *str)
 
 	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
 
-	/* LCOV_EXCL_START */
-	/* TODO: can we eembed_assert here, or is that recursion? */
 	if (!ctx || !ctx->buf || !ctx->len) {
 		return;
 	}
-	/* LCOV_EXCL_STOP */
 
 	used = eembed_strnlen(ctx->buf, ctx->len);
 	if (used < (ctx->len - 1)) {
@@ -694,7 +690,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 		f = -f;
 		--avail;
 		if (!avail) {
-			return NULL;	/* LCOV_EXCL_LINE */
+			return NULL;
 		}
 	}
 
@@ -979,7 +975,7 @@ int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 	int d;
 
 	if (a1 == a2 || n == 0) {
-		return 0;	/* LCOV_EXCL_LINE */
+		return 0;
 	}
 
 	/* glibc explodes on NULL */
@@ -1045,7 +1041,7 @@ void *eembed_diy_memset(void *dest, int val, size_t n)
 	unsigned char *d;
 	unsigned char v;
 	if (!n || !dest) {
-		return dest;	/* LCOV_EXCL_LINE */
+		return dest;
 	}
 
 	d = (unsigned char *)dest;
@@ -1080,12 +1076,10 @@ char *eembed_diy_strncat(char *dest, const char *src, size_t n)
 	size_t dest_len = 0;
 	size_t i = 0;
 
-	/* LCOV_EXCL_START */
 	/* should we assert here? Wouldn't GLibC just crash? */
 	if (!dest) {
 		return NULL;
 	}
-	/* LCOV_EXCL_STOP */
 
 	dest_len = eembed_strlen(dest);
 	if (src) {
@@ -1124,17 +1118,15 @@ int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 	int d;
 
 	if (s1 == s2 || max_len == 0) {
-		return 0;	/* LCOV_EXCL_LINE */
+		return 0;
 	}
 
-	/* LCOV_EXCL_START */
 	/* glibc explodes on NULL, do all libc memcpy? */
 	if (!s1) {
 		return -1;
 	} else if (!s2) {
 		return 1;
 	}
-	/* LCOV_EXCL_STOP */
 
 	for (i = 0; i < max_len; ++i) {
 		d = s1[i] - s2[i];
@@ -1170,7 +1162,7 @@ char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 	size_t i = 0;
 
 	if (!dest) {
-		return NULL;	/* LCOV_EXCL_LINE */
+		return NULL;
 	}
 
 	if (src) {
@@ -1246,7 +1238,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 	size_t hlen = 0;
 
 	if (!haystack || !needle) {
-		return NULL;	/* LCOV_EXCL_LINE */
+		return NULL;
 	}
 
 	nlen = eembed_strlen(needle);
@@ -1255,7 +1247,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 	}
 	hlen = eembed_strlen(haystack);
 	if (nlen > hlen) {
-		return NULL;	/* LCOV_EXCL_LINE */
+		return NULL;
 	}
 	for (i = 0; i < (hlen - (nlen - 1)); ++i) {
 		found = 1;
@@ -1522,11 +1514,9 @@ void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
 	struct eembed_alloc_chunk *chunk =
 	    (struct eembed_alloc_chunk *)ea->context;
 
-	/* LCOV_EXCL_START only happens in the FREESTANDING case */
 	if (!chunk || !size) {
 		return NULL;
 	}
-	/* LCOV_EXCL_STOP */
 
 	while (chunk != NULL) {
 		if (chunk->in_use == 0) {

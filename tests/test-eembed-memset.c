@@ -20,11 +20,20 @@ unsigned test_eembed_memset(void)
 	char expect[20];
 	char actual[20];
 	char *rv;
+	size_t bytes;
 
 	fill_str(actual, 20, 'Y', '\0');
 	fill_str(expect, 10, 'X', 'X');
 	fill_str(expect + 10, 10, 'Y', '\0');
-	rv = (char *)eembed_memset(actual, 'X', 10);
+	bytes = 10;
+	rv = (char *)eembed_memset(actual, 'X', bytes);
+	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
+	eembed_crash_if_false(rv == actual);
+
+	fill_str(actual, 20, 'Z', '\0');
+	fill_str(expect, 20, 'Z', '\0');
+	bytes = 0;
+	rv = (char *)eembed_memset(actual, 'Q', bytes);
 	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
 	eembed_crash_if_false(rv == actual);
 

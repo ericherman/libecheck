@@ -37,6 +37,9 @@ unsigned test_eembed_chunk_alloc(void)
 	ea = eembed_bytes_allocator(bytes, bytes_len);
 	eembed_crash_if_false(ea);
 
+	key = (char *)ea->malloc(ea, 0);
+	eembed_crash_if_false(key == NULL);
+
 	for (i = 0, allocs = 0; i < keys_len; ++i) {
 		eembed_ulong_to_str(buf, buf_len, allocs);
 		len = eembed_strnlen(buf, buf_len);

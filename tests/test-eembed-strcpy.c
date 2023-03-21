@@ -29,9 +29,17 @@ unsigned test_eembed_strcpy(void)
 
 	fill_str(actual, 80, '\0');
 	expect = "foo";
-	eembed_strncpy(actual, "foo bar", 3);
+	rv = eembed_strncpy(actual, "foo bar", 3);
 	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
 	eembed_crash_if_false(rv == actual);
+
+#if (!EEMBED_HOSTED)
+	rv = eembed_strcpy(NULL, "foo bar");
+	eembed_crash_if_false(rv == NULL);
+
+	rv = eembed_strncpy(NULL, "foo bar", 7);
+	eembed_crash_if_false(rv == NULL);
+#endif
 
 	return 0;
 }
