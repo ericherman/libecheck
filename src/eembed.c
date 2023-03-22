@@ -92,10 +92,109 @@ struct eembed_log eembed_no_op_log = {
 
 struct eembed_log *eembed_null_log = &eembed_no_op_log;
 
-#if EEMBED_HOSTED
+void eembed_log_strbuf_append_s(struct eembed_log *log, const char *str)
+{
+	size_t used = 0;
+	char *buf = NULL;
+	size_t size = 0;
+	size_t len = 0;
+	size_t max = 0;
+	struct eembed_str_buf *ctx = NULL;
 
-int (*eembed_system_fprintf)(FILE *stream, const char *format, ...) = fprintf;
-int (*eembed_system_fflush)(FILE *stream) = fflush;
+	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
+
+	if (!ctx || !ctx->buf || !ctx->size) {
+		return;
+	}
+
+	used = eembed_strnlen(ctx->buf, ctx->size);
+	if (used < (ctx->size - 1)) {
+		buf = ctx->buf + used;
+		size = ctx->size - used;
+		len = eembed_strlen(str);
+		max = len < size ? len : size;
+		eembed_strncpy(buf, str, max);
+		if (max < size) {
+			buf[max] = '\0';
+		}
+	}
+	ctx->buf[ctx->size - 1] = '\0';
+}
+
+void eembed_log_str_append_c(struct eembed_log *log, char c)
+{
+	char str[2] = { '\0', '\0' };
+	str[0] = c;
+	log->append_s(log, str);
+}
+
+void eembed_log_str_append_ul(struct eembed_log *log, uint64_t ul)
+{
+	char str[25] = { '\0' };
+	eembed_ulong_to_str(str, sizeof(str), ul);
+	log->append_s(log, str);
+}
+
+void eembed_log_str_append_l(struct eembed_log *log, int64_t l)
+{
+	char str[25] = { '\0' };
+	eembed_long_to_str(str, sizeof(str), l);
+	log->append_s(log, str);
+}
+
+void eembed_log_str_append_f(struct eembed_log *log, long double f)
+{
+	char str[25] = { '\0' };
+	eembed_float_to_str(str, sizeof(str), f);
+	log->append_s(log, str);
+}
+
+void eembed_log_str_append_vp(struct eembed_log *log, const void *ptr)
+{
+	char str[25] = { '\0' };
+	size_t zptr = (size_t)ptr;
+	eembed_ulong_to_hex(str, sizeof(str), zptr);
+	log->append_s(log, str);
+}
+
+void eembed_log_str_append_eol(struct eembed_log *log)
+{
+	log->append_s(log, "\n");
+}
+
+struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
+					    struct eembed_str_buf *ctx,
+					    char *buf, size_t size)
+{
+	if (!log) {
+		return NULL;
+	}
+
+	log->context = ctx;
+	log->append_c = eembed_log_str_append_c;
+	log->append_s = eembed_log_strbuf_append_s;
+	log->append_ul = eembed_log_str_append_ul;
+	log->append_l = eembed_log_str_append_l;
+	log->append_f = eembed_log_str_append_f;
+	log->append_vp = eembed_log_str_append_vp;
+	log->append_eol = eembed_log_str_append_eol;
+
+	if (!log->context) {
+		return NULL;
+	}
+
+	ctx->buf = buf;
+	if (!ctx->buf) {
+		ctx->size = 0;
+		return NULL;
+	}
+
+	ctx->size = size;
+
+	return ctx->size ? log : NULL;
+}
+
+#if EEMBED_HOSTED
 
 #ifndef EEMBDED_IO_HAVE_SNPRINTF
 #if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _GNU_SOURCE || _BSD_SOURCE
@@ -104,6 +203,12 @@ int (*eembed_system_fflush)(FILE *stream) = fflush;
 #define EEMBDED_IO_HAVE_SNPRINTF 0
 #endif
 #endif
+
+/* function pointers for fprintf and fflush
+ * it seems unlikely that these will be used often, but it is not high
+ * over-head, and they are used in one test */
+int (*eembed_fprintf)(FILE *stream, const char *format, ...) = fprintf;
+int (*eembed_fflush)(FILE *stream) = fflush;
 
 /* To avoid undefined behavior when writing to stderr, first flush
 * stdout, thus ensuring stdout and stderr are "coordinated":
@@ -116,102 +221,82 @@ int (*eembed_system_fflush)(FILE *stream) = fflush;
 */
 static unsigned char eembed_posix1_2017_2_5_1_stdout_clean = 0;
 
-FILE *eembed_stderr(void)
+void *eembed_stderr(void *p)
 {
+	(void)p;
 	if (!eembed_posix1_2017_2_5_1_stdout_clean) {
-		eembed_system_fflush(stdout);
+		eembed_fflush(stdout);
 		eembed_posix1_2017_2_5_1_stdout_clean = 1;
 	}
 	return stderr;
 }
 
-FILE *eembed_stdout(void)
+struct eembed_function_context eembed_stderr_context = { NULL, eembed_stderr };
+
+void *eembed_stdout(void *p)
 {
+	(void)p;
 	eembed_posix1_2017_2_5_1_stdout_clean = 0;
 	return stdout;
 }
 
-static FILE *eembed_stream_ok(FILE *stream)
+struct eembed_function_context eembed_stdout_context = { NULL, eembed_stdout };
+
+static FILE *eembed_log_get_stream_from_context(struct eembed_log *log)
 {
-	if (!stream || stream == stderr) {
-		return eembed_stderr();
-	}
-	if (stream == stdout) {
-		return eembed_stdout();
-	}
-	return stream;
+	struct eembed_function_context *ctx
+	    = (struct eembed_function_context *)log->context;
+	return (FILE *)ctx->func(ctx->data);
 }
-
-void eembed_stream_eol(FILE *stream)
-{
-	stream = eembed_stream_ok(stream);
-	eembed_system_fprintf(stream, "\n");
-	eembed_system_fflush(stream);
-}
-
-static FILE *eembed_fprintf_context(struct eembed_log *log)
-{
-	return eembed_stream_ok((FILE *)log->context);
-}
-
-void eembed_stdout_print(const char *str)
-{
-	eembed_system_fprintf(eembed_stdout(), "%s", str);
-}
-
-void (*eembed_system_print)(const char *str) = eembed_stdout_print;
-
-void eembed_stdout_printc(char c)
-{
-	eembed_system_fprintf(eembed_stdout(), "%c", c);
-}
-
-void (*eembed_system_printc)(char c) = eembed_stdout_printc;
-
-void eembed_stdout_println(void)
-{
-	eembed_stream_eol(eembed_stdout());
-}
-
-void (*eembed_system_println)(void) = eembed_stdout_println;
 
 void eembed_fprintf_append_c(struct eembed_log *log, char c)
 {
-	eembed_system_fprintf(eembed_fprintf_context(log), "%c", c);
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	eembed_fprintf(stream, "%c", c);
 }
 
 void eembed_fprintf_append_s(struct eembed_log *log, const char *str)
 {
-	eembed_system_fprintf(eembed_fprintf_context(log), "%s", str);
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	eembed_fprintf(stream, "%s", str);
 }
 
 void eembed_fprintf_append_ul(struct eembed_log *log, uint64_t ul)
 {
-	eembed_system_fprintf(eembed_fprintf_context(log), "%" PRIu64, ul);
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	eembed_fprintf(stream, "%" PRIu64, ul);
 }
 
 void eembed_fprintf_append_l(struct eembed_log *log, int64_t l)
 {
-	eembed_system_fprintf(eembed_fprintf_context(log), "%" PRId64, l);
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	eembed_fprintf(stream, "%" PRId64, l);
 }
 
 void eembed_fprintf_append_f(struct eembed_log *log, long double f)
 {
-	eembed_system_fprintf(eembed_fprintf_context(log), "%Lg", f);
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	eembed_fprintf(stream, "%Lg", f);
 }
 
 void eembed_fprintf_append_vp(struct eembed_log *log, const void *ptr)
 {
-	eembed_system_fprintf(eembed_fprintf_context(log), "%p", ptr);
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	eembed_fprintf(stream, "%p", ptr);
 }
 
 void eembed_fprintf_append_eol(struct eembed_log *log)
 {
-	eembed_stream_eol(eembed_fprintf_context(log));
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	eembed_fprintf(stream, "\n");
+	eembed_fflush(stream);
+	if (stream == stdout) {
+		eembed_posix1_2017_2_5_1_stdout_clean = 1;
+	}
 }
 
-struct eembed_log eembed_default_fprintf_log = {
-	NULL,
+struct eembed_log eembed_stderr_log = {
+	&eembed_stderr_context,
 	eembed_fprintf_append_c,
 	eembed_fprintf_append_s,
 	eembed_fprintf_append_ul,
@@ -221,109 +306,20 @@ struct eembed_log eembed_default_fprintf_log = {
 	eembed_fprintf_append_eol
 };
 
-struct eembed_log *eembed_err_log = &eembed_default_fprintf_log;
+struct eembed_log *eembed_err_log = &eembed_stderr_log;
 
-void eembed_sprintf_append_s(struct eembed_log *log, const char *str)
-{
-	char *buf = NULL;
-	struct eembed_str_buf *ctx = NULL;
-	size_t used = 0;
-	size_t len = 0;
+struct eembed_log eembed_stdout_log = {
+	&eembed_stdout_context,
+	eembed_fprintf_append_c,
+	eembed_fprintf_append_s,
+	eembed_fprintf_append_ul,
+	eembed_fprintf_append_l,
+	eembed_fprintf_append_f,
+	eembed_fprintf_append_vp,
+	eembed_fprintf_append_eol
+};
 
-	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
-
-	eembed_assert(ctx);
-	eembed_assert(ctx->buf);
-
-	used = eembed_strnlen(ctx->buf, ctx->len);
-	if (ctx->len && used < (ctx->len - 1)) {
-		buf = ctx->buf + used;
-		len = ctx->len - used;
-#if EEMBDED_IO_HAVE_SNPRINTF
-		snprintf(buf, len, "%s", str);
-#else
-		if (len > strlen(str)) {
-			sprintf(buf, "%s", str);
-		} else {
-			memcpy(buf, str, len - 1);
-			buf[len - 1] = '\0';
-		}
-#endif
-	}
-}
-
-void eembed_sprintf_append_c(struct eembed_log *log, char c)
-{
-	char buf[2];
-	sprintf(buf, "%c", c);
-	eembed_sprintf_append_s(log, buf);
-}
-
-void eembed_sprintf_append_ul(struct eembed_log *log, uint64_t ul)
-{
-	char buf[25];
-	sprintf(buf, "%" PRIu64, ul);
-	eembed_sprintf_append_s(log, buf);
-}
-
-void eembed_sprintf_append_l(struct eembed_log *log, int64_t l)
-{
-	char buf[25];
-	sprintf(buf, "%" PRId64, l);
-	eembed_sprintf_append_s(log, buf);
-}
-
-void eembed_sprintf_append_f(struct eembed_log *log, long double f)
-{
-	char buf[25];
-	sprintf(buf, "%Lg", f);
-	eembed_sprintf_append_s(log, buf);
-}
-
-void eembed_sprintf_append_vp(struct eembed_log *log, const void *ptr)
-{
-	char buf[25];
-	sprintf(buf, "%p", ptr);
-	eembed_sprintf_append_s(log, buf);
-}
-
-void eembed_sprintf_append_eol(struct eembed_log *log)
-{
-	char buf[2] = { '\n', '\0' };
-	eembed_sprintf_append_s(log, buf);
-}
-
-struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
-					    struct eembed_str_buf *ctx,
-					    char *buf, size_t len)
-{
-	if (!log) {
-		return NULL;
-	}
-
-	log->context = ctx;
-	log->append_c = eembed_sprintf_append_c;
-	log->append_s = eembed_sprintf_append_s;
-	log->append_ul = eembed_sprintf_append_ul;
-	log->append_l = eembed_sprintf_append_l;
-	log->append_f = eembed_sprintf_append_f;
-	log->append_vp = eembed_sprintf_append_vp;
-	log->append_eol = eembed_sprintf_append_eol;
-
-	if (!log->context) {
-		return NULL;
-	}
-
-	ctx->buf = buf;
-	if (!ctx->buf) {
-		ctx->len = 0;
-		return NULL;
-	}
-
-	ctx->len = len;
-
-	return ctx->len ? log : NULL;
-}
+struct eembed_log *eembed_out_log = &eembed_stdout_log;
 
 char *eembed_sprintf_to_str(char *buf, size_t size, const char *str)
 {
@@ -349,270 +345,68 @@ char *eembed_sprintf_to_str(char *buf, size_t size, const char *str)
 	return (printed < 0 || ((size_t)printed) > strlen(buf)) ? NULL : buf;
 }
 
-char *eembed_long_to_str(char *buf, size_t len, int64_t l)
+char *eembed_long_to_str(char *buf, size_t size, int64_t l)
 {
 	char str[25];
 	sprintf(str, "%" PRId64, l);
-	return eembed_sprintf_to_str(buf, len, str);
+	return eembed_sprintf_to_str(buf, size, str);
 }
 
-char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul)
+char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
 	char str[25];
 	sprintf(str, "%" PRIu64, ul);
-	return eembed_sprintf_to_str(buf, len, str);
+	return eembed_sprintf_to_str(buf, size, str);
 }
 
-char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t ul)
+char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t ul)
 {
 	char str[25];
 	sprintf(str, "0x%02" PRIX64, ul);
-	return eembed_sprintf_to_str(buf, len, str);
+	return eembed_sprintf_to_str(buf, size, str);
 }
 
-char *eembed_float_to_str(char *buf, size_t len, long double f)
+char *eembed_float_to_str(char *buf, size_t size, long double f)
 {
 	char str[25];
 	sprintf(str, "%Lg", f);
-	return eembed_sprintf_to_str(buf, len, str);
+	return eembed_sprintf_to_str(buf, size, str);
 }
 
 #else /* #if EEMBED_HOSTED */
 
-void eembed_no_op_print(const char *str)
-{
-	(void)str;
-}
+struct eembed_log *eembed_err_log = &eembed_no_op_log;
+struct eembed_log *eembed_out_log = &eembed_no_op_log;
 
-void (*eembed_system_print)(const char *str) = eembed_no_op_print;
-
-void eembed_sys_print_printc(char c)
-{
-	char str[2];
-	str[0] = c;
-	str[1] = '\0';
-	eembed_system_print(str);
-}
-
-void (*eembed_system_printc)(char c) = eembed_sys_print_printc;
-
-void eembed_sys_print_println(void)
-{
-	eembed_system_printc('\n');
-}
-
-void (*eembed_system_println)(void) = eembed_sys_print_println;
-
-void eembed_sys_print_str_append_c(struct eembed_log *log, char c)
-{
-	(void)log;
-	eembed_system_printc(c);
-}
-
-void eembed_sys_print_str_append_s(struct eembed_log *log, const char *str)
-{
-	(void)log;
-	eembed_system_print(str);
-}
-
-void eembed_sys_print_str_append_ul(struct eembed_log *log, uint64_t ul)
-{
-	char buf[25];
-
-	(void)log;
-	buf[0] = '\0';
-
-	eembed_system_print(eembed_ulong_to_str(buf, 25, ul));
-}
-
-void eembed_sys_print_str_append_l(struct eembed_log *log, int64_t l)
-{
-	char buf[25];
-
-	(void)log;
-	buf[0] = '\0';
-
-	eembed_system_print(eembed_long_to_str(buf, 25, l));
-}
-
-void eembed_sys_print_str_append_f(struct eembed_log *log, long double f)
-{
-	char buf[25];
-
-	(void)log;
-	buf[0] = '\0';
-
-	eembed_system_print(eembed_float_to_str(buf, 25, f));
-}
-
-void eembed_sys_print_str_append_vp(struct eembed_log *log, const void *ptr)
-{
-	char buf[25];
-	size_t z = (size_t)ptr;
-
-	(void)log;
-	buf[0] = '\0';
-
-	eembed_system_print(eembed_ulong_to_hex(buf, 25, z));
-}
-
-void eembed_sys_print_str_append_eol(struct eembed_log *log)
-{
-	(void)log;
-	eembed_system_println();
-}
-
-struct eembed_log eembed_default_sys_print_str_log = {
-	NULL,
-	eembed_sys_print_str_append_c,
-	eembed_sys_print_str_append_s,
-	eembed_sys_print_str_append_ul,
-	eembed_sys_print_str_append_l,
-	eembed_sys_print_str_append_f,
-	eembed_sys_print_str_append_vp,
-	eembed_sys_print_str_append_eol
-};
-
-struct eembed_log *eembed_err_log = &eembed_default_sys_print_str_log;
-
-void eembed_ctx_strcpy_append_s(struct eembed_log *log, const char *str)
-{
-	size_t used = 0;
-	char *buf = NULL;
-	size_t len = 0;
-	size_t len2 = 0;
-	size_t min = 0;
-	struct eembed_str_buf *ctx = NULL;
-
-	ctx = log ? (struct eembed_str_buf *)log->context : NULL;
-
-	if (!ctx || !ctx->buf || !ctx->len) {
-		return;
-	}
-
-	used = eembed_strnlen(ctx->buf, ctx->len);
-	if (used < (ctx->len - 1)) {
-		buf = ctx->buf + used;
-		len = ctx->len - used;
-		len2 = eembed_strlen(str);
-		min = len2 < len ? len2 : len;
-		eembed_strncpy(buf, str, min);
-		if (min < len) {
-			buf[min] = '\0';
-		}
-	}
-	ctx->buf[ctx->len - 1] = '\0';
-}
-
-void eembed_ctx_strcpy_append_c(struct eembed_log *log, char c)
-{
-	char str[2];
-
-	str[0] = c;
-	str[1] = '\0';
-
-	eembed_ctx_strcpy_append_s(log, str);
-}
-
-void eembed_ctx_strcpy_append_ul(struct eembed_log *log, uint64_t ul)
-{
-	char buf[25];
-
-	buf[0] = '\0';
-	eembed_ctx_strcpy_append_s(log, eembed_ulong_to_str(buf, 25, ul));
-}
-
-void eembed_ctx_strcpy_append_l(struct eembed_log *log, int64_t l)
-{
-	char buf[25];
-
-	buf[0] = '\0';
-	eembed_ctx_strcpy_append_s(log, eembed_long_to_str(buf, 25, l));
-}
-
-void eembed_ctx_strcpy_append_f(struct eembed_log *log, long double f)
-{
-	char buf[25];
-
-	buf[0] = '\0';
-	eembed_ctx_strcpy_append_s(log, eembed_float_to_str(buf, 25, f));
-}
-
-void eembed_ctx_strcpy_append_vp(struct eembed_log *log, const void *ptr)
-{
-	char buf[25];
-	size_t zptr = (size_t)ptr;
-
-	buf[0] = '\0';
-	eembed_ctx_strcpy_append_s(log, eembed_ulong_to_hex(buf, 25, zptr));
-}
-
-void eembed_ctx_strcpy_append_eol(struct eembed_log *log)
-{
-	eembed_ctx_strcpy_append_s(log, "\n");
-}
-
-struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
-					    struct eembed_str_buf *ctx,
-					    char *buf, size_t len)
-{
-	if (!log) {
-		return NULL;
-	}
-
-	log->context = ctx;
-	log->append_c = eembed_ctx_strcpy_append_c;
-	log->append_s = eembed_ctx_strcpy_append_s;
-	log->append_ul = eembed_ctx_strcpy_append_ul;
-	log->append_l = eembed_ctx_strcpy_append_l;
-	log->append_f = eembed_ctx_strcpy_append_f;
-	log->append_vp = eembed_ctx_strcpy_append_vp;
-	log->append_eol = eembed_ctx_strcpy_append_eol;
-
-	if (!log->context) {
-		return NULL;
-	}
-
-	ctx->buf = buf;
-	if (!ctx->buf) {
-		ctx->len = 0;
-		return NULL;
-	}
-
-	ctx->len = len;
-
-	return ctx->len ? log : NULL;
-}
-
-char *eembed_long_to_str(char *buf, size_t len, int64_t l)
+char *eembed_long_to_str(char *buf, size_t size, int64_t l)
 {
 	char *b;
 	char *out;
-	size_t blen = 0;
+	size_t bsize = 0;
 	uint64_t ul = 0;
 
-	if (!buf || !len) {
+	if (!buf || !size) {
 		return buf;
 	}
 
 	if (l < 0) {
 		buf[0] = '-';
 		b = buf + 1;
-		blen = len - 1;
+		bsize = size - 1;
 		ul = (-l);
 	} else {
 		b = buf;
-		blen = 25;
+		bsize = size;
 		ul = l;
 	}
-	if (blen) {
+	if (bsize) {
 		b[0] = '\0';
 	}
-	out = eembed_ulong_to_str(b, blen, ul);
+	out = eembed_ulong_to_str(b, bsize, ul);
 	return out ? buf : NULL;
 }
 
-char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul)
+char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
 	char tmp[22];
 	size_t i = 0;
@@ -620,9 +414,9 @@ char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul)
 
 	tmp[0] = '\0';
 
-	if (!buf || !len) {
+	if (!buf || !size) {
 		return NULL;
-	} else if (len == 1) {
+	} else if (size == 1) {
 		buf[0] = '\0';
 		return NULL;
 	}
@@ -637,22 +431,22 @@ char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul)
 		tmp[i] = '0' + (ul % 10);
 		ul = ul / 10;
 	}
-	for (j = 0; i && j < len; ++j, --i) {
+	for (j = 0; i && j < size; ++j, --i) {
 		buf[j] = tmp[i - 1];
 	}
 
-	buf[j < len ? j : len - 1] = '\0';
+	buf[j < size ? j : size - 1] = '\0';
 
 	return buf;
 }
 
-char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z)
+char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t z)
 {
-	const size_t ul_bytes_len = sizeof(uint64_t);
+	const size_t ul_bytes_size = sizeof(uint64_t);
 	unsigned char ul_bytes[sizeof(uint64_t)];
 	size_t i = 0;
 
-	if (!buf || len < eembed_bytes_to_hex_min_buf(ul_bytes_len)) {
+	if (!buf || size < eembed_bytes_to_hex_min_buf(ul_bytes_size)) {
 		return NULL;
 	}
 
@@ -661,10 +455,10 @@ char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z)
 		byte = (0xFF & (z >> (8 * ((sizeof(uint64_t) - 1) - i))));
 		ul_bytes[i] = byte;
 	}
-	return eembed_bytes_to_hex(buf, len, ul_bytes, ul_bytes_len);
+	return eembed_bytes_to_hex(buf, size, ul_bytes, ul_bytes_size);
 }
 
-char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
+char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 {
 	size_t pos = 0;
 	size_t avail = 0;
@@ -677,15 +471,15 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 
 	c[0] = 0;
 	c[1] = 0;
-	if (buf && len) {
+	if (buf && size) {
 		buf[0] = '\0';
-		buf[len - 1] = '\0';
+		buf[size - 1] = '\0';
 	}
 
-	if (!buf || len < 2) {
+	if (!buf || size < 2) {
 		return NULL;
 	}
-	avail = len - 1;
+	avail = size - 1;
 
 	if (f != f) {
 		eembed_strncat(buf, "nan", avail < 3 ? avail : 3);
@@ -726,17 +520,17 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 	}
 
 	ul = (unsigned long)f;
-	pos = eembed_strnlen(buf, len);
-	avail = (pos > len) ? 0 : len - pos;
+	pos = eembed_strnlen(buf, size);
+	avail = (pos > size) ? 0 : size - pos;
 	eembed_ulong_to_str(buf + pos, avail, ul);
 	f = f - (long double)ul;
-	if (eembed_strnlen(buf, len) < (len - 1)) {
+	if (eembed_strnlen(buf, size) < (size - 1)) {
 		eembed_strncat(buf, ".", 1);
 	} else {
 		return f > min_to_print ? NULL : buf;
 	}
-	pos = eembed_strnlen(buf, len);
-	avail = (pos > (len - 1)) ? 0 : (len - 1) - pos;
+	pos = eembed_strnlen(buf, size);
+	avail = (pos > (size - 1)) ? 0 : (size - 1) - pos;
 	if (!avail) {
 		return f > min_to_print ? NULL : buf;
 	}
@@ -756,9 +550,9 @@ char *eembed_bogus_float_to_str(char *buf, size_t len, long double f)
 	return buf;
 }
 
-char *eembed_float_to_str(char *buf, size_t len, long double f)
+char *eembed_float_to_str(char *buf, size_t size, long double f)
 {
-	return eembed_bogus_float_to_str(buf, len, f);
+	return eembed_bogus_float_to_str(buf, size, f);
 }
 #endif
 
@@ -1286,15 +1080,15 @@ int (*eembed_system_close)(int fd) = close;
 /* from Insane Coding blog "A good idea with bad usage: /dev/urandom"
 http://insanecoding.blogspot.nl/2014/05/a-good-idea-with-bad-usage-devurandom.html
 */
-static ssize_t eembed_retrying_read(int fd, void *buf, size_t len)
+static ssize_t eembed_retrying_read(int fd, void *buf, size_t size)
 {
 	size_t amount_read = 0;
 	unsigned char *cbuf = NULL;
 	ssize_t r = 0;
 
-	while (amount_read < len) {
+	while (amount_read < size) {
 		cbuf = ((unsigned char *)buf) + amount_read;
-		r = eembed_system_read(fd, cbuf, len - amount_read);
+		r = eembed_system_read(fd, cbuf, size - amount_read);
 		if (r > 0) {
 			amount_read += r;
 		} else {
@@ -1309,7 +1103,7 @@ static ssize_t eembed_retrying_read(int fd, void *buf, size_t len)
 	return amount_read;
 }
 
-int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
+int eembed_dev_urandom_bytes(unsigned char *buf, size_t size)
 {
 	int err = 0;
 	int save_errno = 0;
@@ -1360,7 +1154,7 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 		goto eembed_dev_urandom_bytes_end;
 	}
 
-	if (entropy < ((long)(len * 8))) {
+	if (entropy < ((long)(size * 8))) {
 		/* This is highly unlikely even on a misconfigured system */
 		if (log) {
 			log->append_s(log, __FILE__);
@@ -1369,14 +1163,14 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 			log->append_s(log, ": ");
 			log->append_s(log, urandom_str);
 			log->append_s(log, " lacks : ");
-			log->append_ul(log, len * 8);
+			log->append_ul(log, size * 8);
 			log->append_s(log, "entropy");
 			log->append_eol(log);
 		}
 	}
 
-	bytes_read = eembed_retrying_read(urandom_fd, buf, len);
-	if (bytes_read < ((long)len)) {
+	bytes_read = eembed_retrying_read(urandom_fd, buf, size);
+	if (bytes_read < ((long)size)) {
 		err = 1;
 		/* something very strange would have to have happened */
 		if (log) {
@@ -1385,7 +1179,7 @@ int eembed_dev_urandom_bytes(unsigned char *buf, size_t len)
 			log->append_ul(log, __LINE__);
 			log->append_s(log, ": ");
 			log->append_s(log, "wanted to read ");
-			log->append_ul(log, len);
+			log->append_ul(log, size);
 			log->append_s(log, " bytes from ");
 			log->append_s(log, urandom_str);
 			log->append_s(log, ", read ");
@@ -1417,14 +1211,14 @@ eembed_dev_urandom_bytes_end:
 	return err;
 }
 
-int (*eembed_random_bytes)(unsigned char *buf, size_t len) =
+int (*eembed_random_bytes)(unsigned char *buf, size_t size) =
     eembed_dev_urandom_bytes;
 
 #else
 
 size_t eembed_bogus_random_seed = 0;
 
-int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t len)
+int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t size)
 {
 	const uint8_t eembed_bogus_random[] = {
 		2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
@@ -1445,7 +1239,7 @@ int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t len)
 	pos = (eembed_bogus_random_seed % eembed_bogus_random_len);
 	byte = eembed_bogus_random[pos];
 
-	for (i = 0; i < len; ++i) {
+	for (i = 0; i < size; ++i) {
 		bogus = bogus + (byte + i) + (bogus * 31) + buf_addr;
 		byte = bogus > 255 ? (bogus >> (i % 8)) : bogus;
 		buf[i] = byte;
@@ -1455,30 +1249,29 @@ int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t len)
 	return 0;
 }
 
-int (*eembed_random_bytes)(unsigned char *buf, size_t len) =
+int (*eembed_random_bytes)(unsigned char *buf, size_t size) =
     eembed_totally_bogus_random_bytes;
 #endif
 
 struct eembed_alloc_chunk {
 	unsigned char *start;
-	size_t available_length;
+	size_t available_size;
 	unsigned char in_use;
 	struct eembed_alloc_chunk *prev;
 	struct eembed_alloc_chunk *next;
 };
 
 static struct eembed_alloc_chunk *eembed_alloc_chunk_init(unsigned char *bytes,
-							  size_t
-							  available_length)
+							  size_t available_size)
 {
 	struct eembed_alloc_chunk *chunk = (struct eembed_alloc_chunk *)bytes;
 	size_t size = eembed_align(sizeof(struct eembed_alloc_chunk));
 
 	eembed_assert(bytes);
-	eembed_assert(available_length >= size);
+	eembed_assert(available_size >= size);
 
 	chunk->start = bytes + size;
-	chunk->available_length = available_length - size;
+	chunk->available_size = available_size - size;
 	chunk->in_use = 0;
 	chunk->prev = (struct eembed_alloc_chunk *)NULL;
 	chunk->next = (struct eembed_alloc_chunk *)NULL;
@@ -1489,7 +1282,7 @@ static struct eembed_alloc_chunk *eembed_alloc_chunk_init(unsigned char *bytes,
 static void eembed_alloc_chunk_split(struct eembed_alloc_chunk *from,
 				     size_t request)
 {
-	size_t remaining_available_length = 0;
+	size_t remaining_available_size = 0;
 	size_t aligned_request = 0;
 	struct eembed_alloc_chunk *orig_next = NULL;
 	size_t min_size = eembed_align(sizeof(struct eembed_alloc_chunk)) +
@@ -1498,18 +1291,18 @@ static void eembed_alloc_chunk_split(struct eembed_alloc_chunk *from,
 	aligned_request = eembed_align(request);
 	from->in_use = 1;
 
-	if ((aligned_request + min_size) >= from->available_length) {
+	if ((aligned_request + min_size) >= from->available_size) {
 		return;
 	}
 
-	remaining_available_length = from->available_length - aligned_request;
-	eembed_assert(remaining_available_length >= min_size);
+	remaining_available_size = from->available_size - aligned_request;
+	eembed_assert(remaining_available_size >= min_size);
 
-	from->available_length = aligned_request;
+	from->available_size = aligned_request;
 	orig_next = from->next;
 	from->next =
-	    eembed_alloc_chunk_init((from->start + from->available_length),
-				    remaining_available_length);
+	    eembed_alloc_chunk_init((from->start + from->available_size),
+				    remaining_available_size);
 	from->next->prev = from;
 	if (orig_next) {
 		from->next->next = orig_next;
@@ -1530,7 +1323,7 @@ void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
 
 	while (chunk != NULL) {
 		if (chunk->in_use == 0) {
-			if (chunk->available_length >= size) {
+			if (chunk->available_size >= size) {
 				eembed_alloc_chunk_split(chunk, size);
 				return chunk->start;
 			}
@@ -1544,7 +1337,7 @@ void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
 static void eembed_alloc_chunk_join_next(struct eembed_alloc_chunk *chunk)
 {
 	struct eembed_alloc_chunk *next = NULL;
-	size_t additional_available_length = 0;
+	size_t additional_available_size = 0;
 
 	next = chunk->next;
 	if (!next) {
@@ -1556,15 +1349,15 @@ static void eembed_alloc_chunk_join_next(struct eembed_alloc_chunk *chunk)
 	}
 
 	chunk->next = next->next;
-	additional_available_length =
+	additional_available_size =
 	    eembed_align(sizeof(struct eembed_alloc_chunk)) +
-	    next->available_length;
-	chunk->available_length += additional_available_length;
+	    next->available_size;
+	chunk->available_size += additional_available_size;
 	if (chunk->next) {
 		chunk->next->prev = chunk;
 	}
 	if (!chunk->in_use) {
-		eembed_memset(chunk->start, 0x00, chunk->available_length);
+		eembed_memset(chunk->start, 0x00, chunk->available_size);
 	}
 }
 
@@ -1601,7 +1394,7 @@ void *eembed_chunk_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
 	while (chunk != NULL && !found) {
 		if (ptr == chunk->start) {
 			found = 1;
-			old_size = chunk->available_length;
+			old_size = chunk->available_size;
 		} else {
 			chunk = chunk->next;
 		}
@@ -1621,9 +1414,9 @@ void *eembed_chunk_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
 
 	if (chunk->next && chunk->next->in_use == 0) {
 		eembed_alloc_chunk_join_next(chunk);
-		if (chunk->available_length >= size) {
+		if (chunk->available_size >= size) {
 			eembed_memset(((unsigned char *)ptr) + old_size, 0x00,
-				      chunk->available_length - old_size);
+				      chunk->available_size - old_size);
 			eembed_alloc_chunk_split(chunk, size);
 			return ptr;
 		}
@@ -1642,31 +1435,31 @@ void *eembed_chunk_realloc(struct eembed_allocator *ea, void *ptr, size_t size)
 }
 
 void *eembed_chunk_calloc(struct eembed_allocator *ea, size_t nmemb,
-			  size_t size)
+			  size_t msize)
 {
 	/* this could overflow, but we elect to not care */
-	size_t len = nmemb * size;
+	size_t size = nmemb * msize;
 	void *ptr = NULL;
-	ptr = len ? ea->malloc(ea, len) : NULL;
+	ptr = size ? ea->malloc(ea, size) : NULL;
 	if (ptr) {
-		eembed_memset(ptr, 0x00, len);
+		eembed_memset(ptr, 0x00, size);
 	}
 	return ptr;
 }
 
 void *eembed_chunk_reallocarray(struct eembed_allocator *ea, void *ptr,
-				size_t nmemb, size_t size)
+				size_t nmemb, size_t msize)
 {
 	/* this could overflow, but we elect to not care */
-	size_t len = nmemb * size;
-	return len ? ea->realloc(ea, ptr, len) : NULL;
+	size_t size = nmemb * msize;
+	return size ? ea->realloc(ea, ptr, size) : NULL;
 }
 
 void eembed_chunk_free(struct eembed_allocator *ea, void *ptr)
 {
 	struct eembed_alloc_chunk *chunk =
 	    (struct eembed_alloc_chunk *)ea->context;
-	size_t len = 0;
+	size_t size = 0;
 
 	if (!chunk || !ptr) {
 		return;
@@ -1680,8 +1473,8 @@ void eembed_chunk_free(struct eembed_allocator *ea, void *ptr)
 				chunk = chunk->prev;
 				eembed_alloc_chunk_join_next(chunk);
 			}
-			len = chunk->available_length;
-			eembed_memset(chunk->start, 0x00, len);
+			size = chunk->available_size;
+			eembed_memset(chunk->start, 0x00, size);
 			return;
 		}
 		chunk = chunk->next;
@@ -1708,8 +1501,8 @@ void eembed_bytes_allocator_dump(struct eembed_log *log,
 		log->append_c(log, ',');
 		log->append_eol(log);
 
-		log->append_s(log, "\tavailable_length: ");
-		log->append_ul(log, (uint64_t)chunk->available_length);
+		log->append_s(log, "\tavailable_size: ");
+		log->append_ul(log, (uint64_t)chunk->available_size);
 		log->append_c(log, ',');
 		log->append_eol(log);
 
@@ -1767,21 +1560,21 @@ void eembed_bytes_allocator_visual(struct eembed_log *log,
 	struct eembed_alloc_chunk *chunk = (struct eembed_alloc_chunk *)ctx;
 	const char *str = NULL;
 	char fill = 'A';
-	size_t len = eembed_align(sizeof(struct eembed_allocator));
+	size_t size = eembed_align(sizeof(struct eembed_allocator));
 	size_t pos = 0;
 
 	pos =
-	    eembed_bytes_allocator_visual_inner(log, pos, str, fill, len,
+	    eembed_bytes_allocator_visual_inner(log, pos, str, fill, size,
 						width);
 
 	while (chunk) {
 		str = NULL;
 		fill = 'O';
-		len = eembed_align(sizeof(struct eembed_alloc_chunk));
+		size = eembed_align(sizeof(struct eembed_alloc_chunk));
 		pos =
 		    eembed_bytes_allocator_visual_inner(log, pos, str, fill,
-							len, width);
-		len = chunk->available_length;
+							size, width);
+		size = chunk->available_size;
 		if (chunk->in_use) {
 			if (strinify_contents) {
 				str = (const char *)chunk->start;
@@ -1792,7 +1585,7 @@ void eembed_bytes_allocator_visual(struct eembed_log *log,
 		}
 		pos =
 		    eembed_bytes_allocator_visual_inner(log, pos, str, fill,
-							len, width);
+							size, width);
 
 		chunk = chunk->next;
 	}
@@ -1815,19 +1608,19 @@ eembed_align(sizeof(struct eembed_alloc_chunk)) +
 eembed_align(sizeof(size_t)) + eembed_align(1);
 
 struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
-						size_t len)
+						size_t size)
 {
 	struct eembed_allocator *ea = NULL;
 	struct eembed_alloc_chunk *chunk = NULL;
 	size_t used = 0;
 
 	eembed_assert(bytes);
-	eembed_assert(len >= eembed_bytes_allocator_min_buf_size);
+	eembed_assert(size >= eembed_bytes_allocator_min_buf_size);
 
 	ea = (struct eembed_allocator *)bytes;
 	used = eembed_align(sizeof(struct eembed_allocator));
 
-	chunk = eembed_alloc_chunk_init(bytes + used, len - used);
+	chunk = eembed_alloc_chunk_init(bytes + used, size - used);
 
 	ea->context = chunk;
 
@@ -1861,18 +1654,18 @@ void *eembed_system_calloc(struct eembed_allocator *ea, size_t nmemb,
 }
 
 void *eembed_system_reallocarray(struct eembed_allocator *ea, void *ptr,
-				 size_t nmemb, size_t size)
+				 size_t nmemb, size_t msize)
 {
-	size_t len;
+	size_t size;
 
 	(void)ea;
 #if (_DEFAULT_SOURCE || _GNU_SOURCE)
 	(void)len;
-	return reallocarray(ptr, nmemb, size);
+	return reallocarray(ptr, nmemb, msize);
 #else
 	/* this could overflow, but we elect to not care */
-	len = nmemb * size;
-	return len ? realloc(ptr, len) : NULL;
+	size = nmemb * msize;
+	return size ? realloc(ptr, size) : NULL;
 #endif
 }
 
@@ -1901,15 +1694,28 @@ struct eembed_allocator *eembed_global_allocator = &eembed_null_chunk_allocator;
 
 #if (FAUX_FREESTANDING)
 int printf(const char *format, ...);
-void eembed_faux_freestanding_system_print(const char *str)
+void eembed_faux_freestanding_append_s(struct eembed_log *log, const char *str)
 {
+	(void)log;
 	printf("%s", str);
 }
+
+struct eembed_log eembed_faux_freestanding_log = {
+	NULL,
+	eembed_log_str_append_c,
+	eembed_faux_freestanding_append_s,
+	eembed_log_str_append_ul,
+	eembed_log_str_append_l,
+	eembed_log_str_append_f,
+	eembed_log_str_append_vp,
+	eembed_log_str_append_eol,
+};
 
 void eembed_system_print_init(void)
 {
 	if (FAUX_FREESTANDING) {
-		eembed_system_print = eembed_faux_freestanding_system_print;
+		eembed_out_log = &eembed_faux_freestanding_log;
+		eembed_err_log = &eembed_faux_freestanding_log;
 	}
 }
 #else

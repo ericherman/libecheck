@@ -11,8 +11,8 @@ size_t global_buf_size = 0;
 #include <inttypes.h>
 #include <stdio.h>
 
-extern int (*eembed_system_fprintf)(FILE *stream, const char *format, ...);
-extern int (*eembed_system_fflush)(FILE *stream);
+extern int (*eembed_fprintf)(FILE *stream, const char *format, ...);
+extern int (*eembed_fflush)(FILE *stream);
 
 extern void eembed_stream_eol(FILE *stream);
 
@@ -22,7 +22,7 @@ unsigned int flush_stderr_cnt = 0;
 FILE *expect_stream = NULL;
 FILE *actual_stream = NULL;
 
-static int test_eembed_system_fprintf(FILE *stream, const char *format, ...)
+static int test_eembed_fprintf(FILE *stream, const char *format, ...)
 {
 	int rv = 0;
 	va_list ap;
@@ -38,7 +38,7 @@ static int test_eembed_system_fprintf(FILE *stream, const char *format, ...)
 	return rv;
 }
 
-static int test_eembed_system_fflush(FILE *stream)
+static int test_eembed_fflush(FILE *stream)
 {
 	if (stream == stdout) {
 		++flush_stdout_cnt;
@@ -53,11 +53,11 @@ static int test_eembed_system_fflush(FILE *stream)
 }
 #else /* EEMBED_HOSTED */
 
-extern void eembed_no_op_print(const char *str);
-extern void (*eembed_system_print)(const char *str);
+extern void eembed_no_op_append_s(struct eembed_log *log, const char *str);
 
-static void test_eembed_system_print(const char *str)
+static void test_eembed_global_append_s(struct eembed_log *log, const char *str)
 {
+	(void)log;
 	eembed_memset(global_buf, 0x00, global_buf_size);
 	eembed_strncpy(global_buf, str, global_buf_size);
 }
@@ -68,10 +68,11 @@ unsigned int test_eembed_print(void)
 {
 #if EEMBED_HOSTED
 	int (*orig_fprintf)(FILE *stream, const char *format, ...) =
-	    eembed_system_fprintf;
-	int (*orig_fflush)(FILE *stream) = eembed_system_fflush;
+	    eembed_fprintf;
+	int (*orig_fflush)(FILE *stream) = eembed_fflush;
 #else
-	void (*orig_system_print)(const char *str) = eembed_system_print;
+	void (*orig_append_s)(struct eembed_log *log, const char *str) =
+	    eembed_out_log->append_s;
 #endif /* EEMBED_HOSTED */
 
 	char buf[24];
@@ -81,24 +82,24 @@ unsigned int test_eembed_print(void)
 	global_buf_size = 24;
 
 #if EEMBED_HOSTED
-	eembed_system_fprintf = test_eembed_system_fprintf;
-	eembed_system_fflush = test_eembed_system_fflush;
+	eembed_fprintf = test_eembed_fprintf;
+	eembed_fflush = test_eembed_fflush;
 
 	flush_stdout_cnt = 0;
 	flush_stderr_cnt = 0;
 	expect_stream = stdout;
 #else
-	eembed_no_op_print("\n\n\n\n"
-			   "===============================================\n"
-			   __FILE__ " eembed_no_op_print()\n"
-			   "ERROR! WE SHOULD NOT SEE OUTPUT!\n"
-			   "===============================================\n"
-			   "\n\n\n\n");
-	eembed_system_print = test_eembed_system_print;
+	eembed_no_op_append_s(eembed_out_log, "\n\n\n\n"
+			      "=============================================\n"
+			      __FILE__ " eembed_out_log->append_s\n"
+			      "ERROR! WE SHOULD NOT SEE OUTPUT!\n"
+			      "=============================================\n"
+			      "\n\n\n\n");
+	eembed_out_log->append_s = test_eembed_global_append_s;
 #endif /* EEMBED_HOSTED */
 
 	buf[0] = '\0';
-	eembed_system_print("foo");
+	eembed_out_log->append_s(eembed_out_log, "foo");
 	eembed_crash_if_false(eembed_strcmp(buf, "foo") == 0);
 #if EEMBED_HOSTED
 	eembed_crash_if_false(flush_stdout_cnt == 0);
@@ -148,20 +149,20 @@ unsigned int test_eembed_print(void)
 #if EEMBED_HOSTED
 	expect_stream = stdout;
 #endif /* EEMBED_HOSTED */
-	eembed_system_printc('c');
+	eembed_out_log->append_c(eembed_out_log, 'c');
 	eembed_crash_if_false(eembed_strcmp(buf, "c") == 0);
 #if EEMBED_HOSTED
 	eembed_crash_if_false(expect_stream == actual_stream);
 #endif /* EEMBED_HOSTED */
 
-	eembed_system_println();
+	eembed_out_log->append_eol(eembed_out_log);
 	eembed_crash_if_false(eembed_strcmp(buf, "\n") == 0);
 
 #if EEMBED_HOSTED
-	eembed_system_fprintf = orig_fprintf;
-	eembed_system_fflush = orig_fflush;
+	eembed_fprintf = orig_fprintf;
+	eembed_fflush = orig_fflush;
 #else
-	eembed_system_print = orig_system_print;
+	eembed_out_log->append_s = orig_append_s;
 #endif /* EEMBED_HOSTED */
 
 	return 0;

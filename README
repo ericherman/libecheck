@@ -123,9 +123,11 @@ can be used just like "assert" and also honors NDEBUG:
 
 	eembed_assert(a == b);
 
-In a hosted environment, the global eembed_err_log is a wrapper
-for fprintf(stderr). In a freestanding environment, it may be NULL
-unless the it is initialized by the firmware.
+In a hosted environment, the global eembed_err_log is a wrapper for
+fprintf with stderr, the eembed_out_log is a wrapper for fprintf (stdout),
+and the eembed_null_log ignores the input. In a freestanding environment,
+the eembed_out_log and eembed_err_log point to the same eembed_null_log
+instance, and thus they ignores input.
 
 This is the structure of the eembed_log:
 
@@ -140,21 +142,18 @@ This is the structure of the eembed_log:
 		void (*append_eol)(struct eembed_log *log);
 	}
 
+	extern struct eembed_log *eembed_out_log;
 	extern struct eembed_log *eembed_err_log;
+	extern struct eembed_log *eembed_null_log;
 
+Exmple useage:
 
-In addition to writing to "stderr", it's often handy to write use stdout for
-basic reporting. The "eembed.h" file declares two function pointers which can
-be used:
+	struct eembed_log *out = eembed_out_log;
 
-	extern void (*eembed_system_print)(const char *str);
-	extern void (*eembed_system_println)(void);
+	out->append_s(out, "hello, world.");
 
-In a hosted environment, these are thinn wrappers around fprintf(stdout),
-but in the freestanding environment they default to no-op unless they are
-set to a different function. The "eembed-arduino.cpp" gives an example of
-how the eembed_err_log and the eembed_system_print functions can be set
-to use serial printing.
+The "eembed-arduino.cpp" gives an example of how the eembed_err_log and the
+eembed_system_print functions can be set to use serial printing.
 
 Because it can be handy to print numbers, simple number-to-string functions
 are provided. In the hosted case, these simply wrap sprintf; in the

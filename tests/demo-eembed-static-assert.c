@@ -7,7 +7,7 @@
    gcc -DFAIL -Isrc src/eembed.c tests/demo-eembed-static-assert.c
 */
 
-#include <eembed.h>
+#include "eembed.h"
 
 struct foo {
 	int i;
@@ -30,12 +30,13 @@ void print_stuct_size(const char *msg, size_t struct_size)
 {
 	const size_t size = 40;
 	char buf[40];
+	struct eembed_log *out = eembed_out_log;
 
 	eembed_ulong_to_str(buf, size, struct_size);
 
-	eembed_system_print(msg);
-	eembed_system_print(buf);
-	eembed_system_println();
+	out->append_s(out, msg);
+	out->append_s(out, buf);
+	out->append_eol(out);
 }
 
 int main(void)

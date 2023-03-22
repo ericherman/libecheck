@@ -21,21 +21,6 @@ void die(void)
 	call_null_pointer_to_crash_and_reboot();
 }
 
-void serial_print_c(char c)
-{
-	Serial.print(c);
-}
-
-void serial_print_s(const char *s)
-{
-	Serial.print(s);
-}
-
-void serial_println(void)
-{
-	Serial.println();
-}
-
 struct eembed_log serial_log;
 
 void serial_log_print_c(struct eembed_log *log, char c)
@@ -91,10 +76,7 @@ void eembed_arduino_serial_log_init(void)
 	serial_log.append_vp = serial_log_print_vp;
 	serial_log.append_eol = serial_log_print_eol;
 	eembed_err_log = &serial_log;
-
-	eembed_system_printc = serial_print_c;
-	eembed_system_print = serial_print_s;
-	eembed_system_println = serial_println;
+	eembed_out_log = &serial_log;
 
 	eembed_assert_crash = die;
 }

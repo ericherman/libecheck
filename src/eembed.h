@@ -18,28 +18,13 @@ Eembed_begin_C_functions
 #undef Eembed_begin_C_functions
 #include <stddef.h>		/* for size_t */
 #include <stdint.h>		/* for uint64_t */
-/* these wrap stdout in a hosted, NULL in freesetanding */
-extern void (*eembed_system_printc)(char c);
-extern void (*eembed_system_print)(const char *str);
-extern void (*eembed_system_println)(void);
-
-char *eembed_long_to_str(char *buf, size_t len, int64_t l);
-char *eembed_ulong_to_str(char *buf, size_t len, uint64_t ul);
-char *eembed_float_to_str(char *buf, size_t len, long double f);
-
-/* ("0x" + (two hex digits per byte) + NULL terminator) */
-#define eembed_bytes_to_hex_min_buf(num_bytes) (2 + (2 * num_bytes) + 1)
-char *eembed_ulong_to_hex(char *buf, size_t len, uint64_t z);
-char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
-			  size_t bytes_len);
-
-int64_t eembed_str_to_long(const char *str, char **endptr);
-uint64_t eembed_str_to_ulong(const char *str, char **endptr);
-uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
-
-struct eembed_log;
-extern struct eembed_log *eembed_err_log;
+/* forward declaring */
+    struct eembed_log;
 extern struct eembed_log *eembed_null_log;
+
+/* eembed_out_log and eembed_err_log may point to the same struct */
+extern struct eembed_log *eembed_out_log;
+extern struct eembed_log *eembed_err_log;
 
 struct eembed_log {
 	void *context;
@@ -52,15 +37,33 @@ struct eembed_log {
 	void (*append_eol)(struct eembed_log *log);
 };
 
+struct eembed_function_context {
+	void *data;
+	void *(*func)(void *data);
+};
+
 struct eembed_str_buf {
 	char *buf;
-	size_t len;
+	size_t size;
 };
 
 struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 					    struct eembed_str_buf *ctx,
-					    char *buf, size_t len);
+					    char *buf, size_t size);
 
+char *eembed_long_to_str(char *buf, size_t size, int64_t l);
+char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul);
+char *eembed_float_to_str(char *buf, size_t size, long double f);
+
+/* ("0x" + (two hex digits per byte) + NULL terminator) */
+#define eembed_bytes_to_hex_min_buf(num_bytes) (2 + (2 * num_bytes) + 1)
+char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t z);
+char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
+			  size_t bytes_len);
+
+int64_t eembed_str_to_long(const char *str, char **endptr);
+uint64_t eembed_str_to_ulong(const char *str, char **endptr);
+uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
 extern void (*eembed_assert_crash)(void);
 
 extern int (*eembed_memcmp)(const void *s1, const void *s2, size_t n);
