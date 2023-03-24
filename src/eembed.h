@@ -66,6 +66,10 @@ uint64_t eembed_str_to_ulong(const char *str, char **endptr);
 uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
 extern void (*eembed_assert_crash)(void);
 
+/* a strncpy()-like function which always NULL-terminates.
+ * returns 0 on success or non-zero if the value was truncated. */
+int eembed_strcpy_safe(char *buf, size_t size, const char *str);
+
 extern int (*eembed_memcmp)(const void *s1, const void *s2, size_t n);
 
 extern void *(*eembed_memcpy)(void *dest, const void *src, size_t n);

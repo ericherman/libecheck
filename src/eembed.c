@@ -97,7 +97,6 @@ void eembed_log_strbuf_append_s(struct eembed_log *log, const char *str)
 	size_t used = 0;
 	char *buf = NULL;
 	size_t size = 0;
-	size_t len = 0;
 	size_t max = 0;
 	struct eembed_str_buf *ctx = NULL;
 
@@ -107,18 +106,14 @@ void eembed_log_strbuf_append_s(struct eembed_log *log, const char *str)
 		return;
 	}
 
+	max = ctx->size - 1;
 	used = eembed_strnlen(ctx->buf, ctx->size);
-	if (used < (ctx->size - 1)) {
+	if (used < max) {
 		buf = ctx->buf + used;
 		size = ctx->size - used;
-		len = eembed_strlen(str);
-		max = len < size ? len : size;
-		eembed_strncpy(buf, str, max);
-		if (max < size) {
-			buf[max] = '\0';
-		}
+		eembed_strcpy_safe(buf, size, str);
 	}
-	ctx->buf[ctx->size - 1] = '\0';
+	ctx->buf[max] = '\0';
 }
 
 void eembed_log_str_append_c(struct eembed_log *log, char c)
@@ -194,16 +189,37 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 	return ctx->size ? log : NULL;
 }
 
-#if EEMBED_HOSTED
+int eembed_strcpy_safe(char *buf, size_t size, const char *str)
+{
+	size_t len = 0;
+	size_t max = 0;
+
+	if (!buf || !size || !str) {
+		return (str && eembed_strlen(str)) ? 1 : 0;
+	}
 
 #ifndef EEMBDED_IO_HAVE_SNPRINTF
+#if EEMBED_HOSTED
 #if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _GNU_SOURCE || _BSD_SOURCE
 #define EEMBDED_IO_HAVE_SNPRINTF 1
-#else
+#endif
+#endif
+#endif
+#ifndef EEMBDED_IO_HAVE_SNPRINTF
 #define EEMBDED_IO_HAVE_SNPRINTF 0
 #endif
+#if EEMBDED_IO_HAVE_SNPRINTF
+	len = (size_t)snprintf(buf, size, "%s", str);
+#else
+	len = eembed_strlen(str);
+	max = (size > len) ? len : size - 1;
+	eembed_memcpy(buf, str, max);
+	buf[max] = '\0';
 #endif
+	return len >= size ? 1 : 0;
+}
 
+#if EEMBED_HOSTED
 /* function pointers for fprintf and fflush
  * it seems unlikely that these will be used often, but it is not high
  * over-head, and they are used in one test */
@@ -321,56 +337,32 @@ struct eembed_log eembed_stdout_log = {
 
 struct eembed_log *eembed_out_log = &eembed_stdout_log;
 
-char *eembed_sprintf_to_str(char *buf, size_t size, const char *str)
-{
-	int printed = 0;
-	size_t len = 0;
-
-	if (!buf || !size || !str) {
-		return (str && strlen(str)) ? NULL : buf;
-	}
-
-#if EEMBDED_IO_HAVE_SNPRINTF
-	printed = vsnprintf(buf, size, "%s", str);
-#else
-	len = strlen(str);
-	if (size > len) {
-		printed = sprintf(buf, "%s", str);
-	} else {
-		memcpy(buf, str, size - 1);
-		buf[size - 1] = '\0';
-		printed = len;
-	}
-#endif
-	return (printed < 0 || ((size_t)printed) > strlen(buf)) ? NULL : buf;
-}
-
 char *eembed_long_to_str(char *buf, size_t size, int64_t l)
 {
 	char str[25];
 	sprintf(str, "%" PRId64, l);
-	return eembed_sprintf_to_str(buf, size, str);
+	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
 char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
 	char str[25];
 	sprintf(str, "%" PRIu64, ul);
-	return eembed_sprintf_to_str(buf, size, str);
+	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
 char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t ul)
 {
 	char str[25];
 	sprintf(str, "0x%02" PRIX64, ul);
-	return eembed_sprintf_to_str(buf, size, str);
+	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
 char *eembed_float_to_str(char *buf, size_t size, long double f)
 {
 	char str[25];
 	sprintf(str, "%Lg", f);
-	return eembed_sprintf_to_str(buf, size, str);
+	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
 #else /* #if EEMBED_HOSTED */

@@ -41,6 +41,18 @@ unsigned test_eembed_strcpy(void)
 	eembed_crash_if_false(rv == NULL);
 #endif
 
+	/* strncpy will null-pad a buffer, but if it fits exactly,
+	 * will not NULL terminate */
+	eembed_strncpy(actual, "abc", 3);
+	eembed_crash_if_false(actual[2] == 'c');
+
+	/* strcpy_safe will always NULL terminate */
+	eembed_strcpy_safe(actual, 3, "abc");
+	eembed_crash_if_false(actual[2] == '\0');
+
+	/* and strcpy_safe will ignore NULL strings */
+	eembed_strcpy_safe(actual, 80, NULL);
+
 	return 0;
 }
 
