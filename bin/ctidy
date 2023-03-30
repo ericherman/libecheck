@@ -1,0 +1,93 @@
+#!/bin/bash
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# ctidy: a wrapper for GNU indent based on lindent
+# Copyright (C) 2016-2022 Eric Herman <eric@freesa.org>
+
+# extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
+LINDENT="indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0"
+
+set -e
+set -o pipefail
+
+
+CTIDY_INDENT_TYPES=$(
+	echo "\
+ FILE \
+ clock_t \
+ clockid_t \
+ comparison_fn_t \
+ div_t \
+ double_t \
+ errno_t \
+ error_t \
+ fenv_t \
+ fexcept_t \
+ float_t \
+ fpos64_t \
+ fpos_t \
+ imaxdiv_t \
+ int16_t \
+ int32_t \
+ int64_t \
+ int8_t \
+ int_fast16_t \
+ int_fast32_t \
+ int_fast64_t \
+ int_fast8_t \
+ int_least16_t \
+ int_least32_t \
+ int_least64_t \
+ int_least8_t \
+ intmax_t \
+ intptr_t \
+ ldiv_t \
+ lldiv_t \
+ locale_t \
+ mbstate_t \
+ mcontext_t \
+ off64_t \
+ off_t \
+ old_sigset_t \
+ onexit_t \
+ pid_t \
+ ptrdiff_t \
+ sig_atomic_t \
+ sig_t \
+ sighandler_t \
+ siginfo_t \
+ sigset_t \
+ size_t \
+ ssize_t \
+ stack_t \
+ suseconds_t \
+ time_t \
+ timer_t \
+ ucontext_t \
+ uid_t \
+ uint16_t \
+ uint32_t \
+ uint64_t \
+ uint8_t \
+ uint_fast16_t \
+ uint_fast32_t \
+ uint_fast64_t \
+ uint_fast8_t \
+ uint_least16_t \
+ uint_least32_t \
+ uint_least64_t \
+ uint_least8_t \
+ uintmax_t \
+ uintptr_t \
+ wchar_t \
+ wctrans_t \
+ wctype_t \
+ wint_t
+ " \
+	| sed -e 's/\([^ ]\+\)/-T \1/g'
+)
+
+if [ "_${VERBOSE}_" != "__" ] && [ "$VERBOSE" -gt 0 ]; then
+	set -x
+fi
+
+$LINDENT $CTIDY_INDENT_TYPES "$@"

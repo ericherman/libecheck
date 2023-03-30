@@ -663,15 +663,9 @@ check-coverage: check-coverage-debug check-coverage-faux-fs
 coverage: coverage-faux-fs coverage-debug
 	@echo "SUCCESS $@"
 
-# extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
-LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
-
 .PHONY: tidy
-tidy:
-	$(LINDENT) \
-		-T FILE \
-		-T ssize_t  -T  int8_t  -T  int16_t  -T  int32_t  -T  int64_t \
-		-T  size_t  -T uint8_t  -T uint16_t  -T uint32_t  -T uint64_t \
+tidy: bin/ctidy
+	bin/ctidy \
 		-T echeck_err_injecting_context \
 		-T eembed_allocator \
 		-T eembed_alloc_chunk \
