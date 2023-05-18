@@ -1208,41 +1208,41 @@ int (*eembed_random_bytes)(unsigned char *buf, size_t size) =
 
 #else
 
-size_t eembed_bogus_random_seed = 0;
+/* seed is initialized to any arbitrary number */
+#ifndef Eembed_lcg_pseudo_random_seed
+#define Eembed_lcg_pseudo_random_seed 15541
+#endif
+uint32_t eembed_lcg_pseudo_random_last = Eembed_lcg_pseudo_random_seed;
 
-int eembed_totally_bogus_random_bytes(unsigned char *buf, size_t size)
+/* https://en.wikipedia.org/wiki/Linear_congruential_generator */
+int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size)
 {
-	const uint8_t eembed_bogus_random[] = {
-		2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
-		31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
-		73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
-		127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
-		179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
-		233, 239, 241, 251,
-		0		/* zero terminated */
-	};
-	const size_t eembed_bogus_random_len = 54;
+	/* constants from VMS's MTH$RANDOM, old versions of glibc */
+	/* see: wiki/Linear_congruential_generator#Parameters_in_common_use */
+	const uint32_t a = 69069;
+	const uint32_t c = 1;
+
+	/* Note that while signed integer overflow is undefined, unsigned */
+	/* is defined, thus it should be safe to use uint32_t */
+	/* See section 6.2.5:9 (Types) in the standard: */
+	/* https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf */
+
 	size_t i = 0;
-	size_t pos = 0;
-	unsigned char byte = 0x00;
-	uint32_t bogus = 0;
-	size_t buf_addr = (size_t)buf;
+	size_t j = 0;
 
-	pos = (eembed_bogus_random_seed % eembed_bogus_random_len);
-	byte = eembed_bogus_random[pos];
-
-	for (i = 0; i < size; ++i) {
-		bogus = bogus + (byte + i) + (bogus * 31) + buf_addr;
-		byte = bogus > 255 ? (bogus >> (i % 8)) : bogus;
-		buf[i] = byte;
-		eembed_bogus_random_seed += bogus;
+	while (i < size) {
+		uint32_t x = (eembed_lcg_pseudo_random_last * a) + c;
+		for (j = 0; j < sizeof(x) && i < size; ++j) {
+			buf[i++] = (x >> (j * 8));
+		}
+		eembed_lcg_pseudo_random_last = x;
 	}
 
 	return 0;
 }
 
 int (*eembed_random_bytes)(unsigned char *buf, size_t size) =
-    eembed_totally_bogus_random_bytes;
+    eembed_lcg_pseudo_random_bytes;
 #endif
 
 struct eembed_alloc_chunk {

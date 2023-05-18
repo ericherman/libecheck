@@ -172,6 +172,26 @@ void loop(void)
 	}
 	Serial.println();
 
+	Serial.println("some pseudo-random bytes:");
+	for (size_t i = 0; i < 10; ++i) {
+		const size_t bin_buf_size = 16;
+		unsigned char bin_buf[bin_buf_size];
+		const size_t hex_buf_size = (2 + (2 * bin_buf_size) + 1);
+		char hex_buf[hex_buf_size];
+		eembed_random_bytes(bin_buf, bin_buf_size);
+		eembed_bytes_to_hex(hex_buf, hex_buf_size, bin_buf,
+				    bin_buf_size);
+		Serial.println(hex_buf);
+	}
+	Serial.println();
+
+	Serial.println();
+	for (size_t i = 0; i < 50; ++i) {
+		Serial.print("=");
+		delay(loop_delay_ms / 50);
+	}
+	Serial.println();
+
 	++loops_completed;
 }
 
