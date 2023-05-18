@@ -32,7 +32,6 @@ void test_ulong_to_hex(unsigned long ul, const char *ulhex)
 
 	rv = eembed_ulong_to_hex(buf, 30, ul);
 	eembed_crash_if_false(rv == buf);
-	eembed_crash_if_false(eembed_strstr(buf, "0x") != NULL);
 	eembed_crash_if_false(eembed_strstr(buf, ulhex) != NULL);
 
 	rul = eembed_hex_to_ulong(ulhex, &endptr);
@@ -42,7 +41,7 @@ void test_ulong_to_hex(unsigned long ul, const char *ulhex)
 
 unsigned int test_eembed_ulong_to_hex(void)
 {
-	test_ulong_to_hex(0, "0x00");
+	test_ulong_to_hex(0, "00");
 	test_ulong_to_hex(2147483000, "7FFFFD78");
 	test_ulong_to_hex(4294967295, "FFFFFFFF");
 	eembed_crash_if_false(eembed_hex_to_ulong("ff", NULL) == 255);

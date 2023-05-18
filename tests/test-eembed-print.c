@@ -131,7 +131,7 @@ unsigned int test_eembed_print(void)
 	eembed_crash_if_false(found == buf);
 
 	eembed_err_log->append_vp(eembed_err_log, NULL);
-	found = eembed_strstr(buf, "0x00");
+	found = eembed_strstr(buf, "00");
 	if (!found) {
 		found = eembed_strstr(buf, "nil");
 	}

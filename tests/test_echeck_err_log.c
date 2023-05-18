@@ -107,7 +107,7 @@ unsigned test_echeck_err_log(void)
 #endif
 
 	failures += check_str_contains(logbuf, "logbuf");
-	failures += check_str_contains(logbuf, "0x4BADC0DE");
+	failures += check_str_contains(logbuf, "4BADC0DE");
 	failures += check_str_contains(logbuf, "4211");
 	failures += check_str_contains(logbuf, "5.7");
 

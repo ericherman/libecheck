@@ -55,8 +55,8 @@ char *eembed_long_to_str(char *buf, size_t size, int64_t l);
 char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul);
 char *eembed_float_to_str(char *buf, size_t size, long double f);
 
-/* ("0x" + (two hex digits per byte) + NULL terminator) */
-#define eembed_bytes_to_hex_min_buf(num_bytes) (2 + (2 * num_bytes) + 1)
+/* ((two hex digits per byte) + NULL terminator) */
+#define eembed_bytes_to_hex_min_buf(num_bytes) ((2 * num_bytes) + 1)
 char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t z);
 char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
 			  size_t bytes_len);

@@ -79,7 +79,7 @@ unsigned int test_eembed_log(void)
 
 	eembed_memset(buf, 0x00, buf_len);
 	log->append_vp(log, NULL);
-	found = eembed_strstr(buf, "0x00");
+	found = eembed_strstr(buf, "00");
 	if (!found) {
 		found = eembed_strstr(buf, "null");
 	}

@@ -354,7 +354,7 @@ char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t ul)
 {
 	char str[25];
-	sprintf(str, "0x%02" PRIX64, ul);
+	sprintf(str, "%02" PRIX64, ul);
 	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
@@ -575,8 +575,10 @@ char *eembed_bytes_to_hex(char *buf, size_t buf_len, unsigned char *bytes,
 		return NULL;
 	}
 
-	buf[pos++] = '0';
-	buf[pos++] = 'x';
+	/*
+	   buf[pos++] = '0';
+	   buf[pos++] = 'x';
+	 */
 
 	for (i = 0; i < bytes_len; ++i) {
 		char h = 0;
