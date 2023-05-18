@@ -157,7 +157,7 @@ eembed_system_print functions can be set to use serial printing.
 
 Because it can be handy to print numbers, simple number-to-string functions
 are provided. In the hosted case, these simply wrap sprintf; in the
-freestanding case, straight-forward, if inefficient, implmentations are
+freestanding case, straight-forward, if inefficient, implementations are
 provided:
 
 	char *eembed_long_to_str(char *buf, size_t len, long l);
@@ -165,7 +165,7 @@ provided:
 	char *eembed_ulong_to_hex(char *buf, size_t len, unsigned long z);
 	char *eembed_float_to_str(char *buf, size_t len, double f);
 
-Additionally, there are a handful of functions which are requried by
+Additionally, there are a handful of functions which are requiried by
 echeck or are needed by nearly any program.  This library provides
 function pointers to a few of these functions which in the hosted
 case simply point to the standard library version. In the
@@ -260,8 +260,8 @@ The "attempts_to_fail_bitmask" is used to intercept allocation attempts
 and return NULL instead of attempting to call the allocation function.
 The obvious shortcoming of this approach is that it does not currently
 support failures for more than 32-ish (bits of unsigned long) attempts
-to allocate. Experience so far has shown that this is plenty, but if
-this may need to be extended in the future.
+to allocate. Experience so far has shown that this is plenty, but this
+may need to be extended in the future.
 
 To use EasyCheck's error injection, create a structure for the allocator,
 and a structure for the context, and pass in references to the logger
@@ -300,7 +300,7 @@ build. As such, a little extra work has gone into supporting it. Try the
 'eembed_arduino_demo' to see how to use the 'eembed_bytes_allocator' and
 the 'eembed_strlen' functions.
 
-The tests for echeck and eembed also can be run on the Arudio with the
+The tests for echeck and eembed also can be run on the Arduino with the
 'echeck_tests_arduino' sketch.
 
 Additionally, a bit of documentation of echeck is provided in the form
