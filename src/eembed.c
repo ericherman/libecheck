@@ -1654,7 +1654,7 @@ void *eembed_system_reallocarray(struct eembed_allocator *ea, void *ptr,
 
 	(void)ea;
 #if (_DEFAULT_SOURCE || _GNU_SOURCE)
-	(void)len;
+	(void)size;
 	return reallocarray(ptr, nmemb, msize);
 #else
 	/* this could overflow, but we elect to not care */
