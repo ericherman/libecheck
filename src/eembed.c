@@ -191,32 +191,17 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 
 int eembed_strcpy_safe(char *buf, size_t size, const char *str)
 {
-	size_t len = 0;
-	size_t max = 0;
-
 	if (!buf || !size || !str) {
-		return (str && eembed_strlen(str)) ? 1 : 0;
+		return (str && str[0]) ? 1 : 0;
 	}
 
-#ifndef EEMBDED_IO_HAVE_SNPRINTF
-#if EEMBED_HOSTED
-#if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _GNU_SOURCE || _BSD_SOURCE
-#define EEMBDED_IO_HAVE_SNPRINTF 1
-#endif
-#endif
-#endif
-#ifndef EEMBDED_IO_HAVE_SNPRINTF
-#define EEMBDED_IO_HAVE_SNPRINTF 0
-#endif
-#if EEMBDED_IO_HAVE_SNPRINTF
-	len = (size_t)snprintf(buf, size, "%s", str);
-#else
-	len = eembed_strlen(str);
-	max = (size > len) ? len : size - 1;
-	eembed_memcpy(buf, str, max);
-	buf[max] = '\0';
-#endif
-	return len >= size ? 1 : 0;
+	eembed_strncpy(buf, str, size);
+
+	if (buf[size - 1]) {
+		buf[size - 1] = '\0';
+		return 1;
+	}
+	return 0;
 }
 
 #if EEMBED_HOSTED
