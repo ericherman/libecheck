@@ -848,11 +848,17 @@ char *(*eembed_strncat)(char *dest, const char *src, size_t n) = strncat;
 
 char *eembed_diy_strcat(char *dest, const char *src)
 {
-	return eembed_strncat(dest, src, SIZE_MAX);
+	eembed_assert(src);
+	return eembed_strncat(dest, src, eembed_strlen(src));
 }
 
 char *(*eembed_strcat)(char *dest, const char *src) = eembed_diy_strcat;
 
+/*
+	If src contains n or more bytes, strncat() writes n+1 bytes to dest
+	(n from src plus  the  terminating null byte).  Therefore, the size
+	of dest must be at least strlen(dest)+n+1.
+*/
 char *eembed_diy_strncat(char *dest, const char *src, size_t n)
 {
 	size_t dest_len = 0;
@@ -928,11 +934,16 @@ char *(*eembed_strncpy)(char *dest, const char *src, size_t n) = strncpy;
 
 char *eembedd_diy_strcpy(char *dest, const char *src)
 {
-	return eembed_strncpy(dest, src, SIZE_MAX);
+	eembed_assert(src);
+	return eembed_strncpy(dest, src, 1 + eembed_strlen(src));
 }
 
 char *(*eembed_strcpy)(char *dest, const char *src) = eembedd_diy_strcpy;
 
+/*
+   If the length of src is less than n, strncpy() writes additional null
+   bytes to dest to ensure that a total of n bytes are written.
+*/
 char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 {
 	size_t i = 0;
@@ -946,7 +957,7 @@ char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 		++i;
 	}
 	if (i < n) {
-		dest[i] = '\0';
+		eembed_memset(dest + i, 0x00, n - i);
 	}
 
 	return dest;
