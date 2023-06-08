@@ -168,6 +168,7 @@ test_progs=\
  test-eembed-strcpy \
  test-eembed-strlen \
  test-eembed-strstr \
+ test-eembed-str-to-num \
  test-eembed-chunk-alloc \
  test-eembed-chunk-realloc \
  test-eembed-malloc-free \
