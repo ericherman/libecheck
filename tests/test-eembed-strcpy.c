@@ -33,14 +33,6 @@ unsigned test_eembed_strcpy(void)
 	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
 	eembed_crash_if_false(rv == actual);
 
-#if (!EEMBED_HOSTED)
-	rv = eembed_strcpy(NULL, "foo bar");
-	eembed_crash_if_false(rv == NULL);
-
-	rv = eembed_strncpy(NULL, "foo bar", 7);
-	eembed_crash_if_false(rv == NULL);
-#endif
-
 	/* strncpy will null-pad a buffer, but if it fits exactly,
 	 * will not NULL terminate */
 	eembed_strncpy(actual, "abc", 3);

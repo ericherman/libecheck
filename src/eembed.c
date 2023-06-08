@@ -772,13 +772,12 @@ int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 	const unsigned char *s2;
 	int d;
 
+	/* glibc explodes on NULL */
+	eembed_assert(a1);
+	eembed_assert(a2);
+
 	if (a1 == a2 || n == 0) {
 		return 0;
-	}
-
-	/* glibc explodes on NULL */
-	if (!a1 || !a2) {
-		return a1 ? 1 : -1;
 	}
 
 	s1 = (const unsigned char *)a1;
@@ -874,17 +873,14 @@ char *eembed_diy_strncat(char *dest, const char *src, size_t n)
 	size_t dest_len = 0;
 	size_t i = 0;
 
-	/* should we assert here? Wouldn't GLibC just crash? */
-	if (!dest) {
-		return NULL;
-	}
+	/* glibc crashes on NULL */
+	eembed_assert(dest);
+	eembed_assert(src);
 
 	dest_len = eembed_strlen(dest);
-	if (src) {
-		while (i < n && src[i] != '\0') {
-			dest[dest_len + i] = src[i];
-			++i;
-		}
+	while (i < n && src[i] != '\0') {
+		dest[dest_len + i] = src[i];
+		++i;
 	}
 	dest[dest_len + i] = '\0';
 
@@ -915,15 +911,12 @@ int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 	size_t i;
 	int d;
 
+	/* glibc explodes on NULL, do all libc memcpy? */
+	eembed_assert(s1);
+	eembed_assert(s2);
+
 	if (s1 == s2 || max_len == 0) {
 		return 0;
-	}
-
-	/* glibc explodes on NULL, do all libc memcpy? */
-	if (!s1) {
-		return -1;
-	} else if (!s2) {
-		return 1;
 	}
 
 	for (i = 0; i < max_len; ++i) {
@@ -959,15 +952,13 @@ char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 {
 	size_t i = 0;
 
-	if (!dest) {
-		return NULL;
-	}
+	/* glibc crashes on NULL */
+	eembed_assert(dest);
+	eembed_assert(src);
 
-	if (src) {
-		while (i < n && src[i] != '\0') {
-			dest[i] = src[i];
-			++i;
-		}
+	while (i < n && src[i] != '\0') {
+		dest[i] = src[i];
+		++i;
 	}
 	if (i < n) {
 		dest[i] = '\0';
@@ -1035,9 +1026,9 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 	size_t nlen = 0;
 	size_t hlen = 0;
 
-	if (!haystack || !needle) {
-		return NULL;
-	}
+	/* glibc crashes on NULL */
+	eembed_assert(haystack);
+	eembed_assert(needle);
 
 	nlen = eembed_strlen(needle);
 	if (!nlen) {

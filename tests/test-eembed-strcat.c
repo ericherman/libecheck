@@ -23,20 +23,6 @@ unsigned test_eembed_strcat(void)
 	expect = "foo bar whiz bang";
 	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
 
-#if (!EEMBED_HOSTED)
-	rv = eembed_strcat(actual, NULL);
-	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
-
-	rv = eembed_strcat(NULL, " whiz bang pow");
-	eembed_crash_if_false(rv == NULL);
-
-	rv = eembed_strncat(actual, NULL, 10);
-	eembed_crash_if_false(eembed_strcmp(actual, expect) == 0);
-
-	rv = eembed_strncat(NULL, " whiz bang pow", 0);
-	eembed_crash_if_false(rv == NULL);
-#endif
-
 	return 0;
 }
 

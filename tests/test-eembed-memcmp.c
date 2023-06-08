@@ -56,24 +56,6 @@ unsigned int test_eembed_memcmp(void)
 	rv2 = eembed_strncmp(s1, s2, 20 - 10);
 	eembed_crash_if_false(rv1 == rv2);
 
-#if (!EEMBED_HOSTED)
-	/* glibc explodes on NULL */
-	rv1 = eembed_memcmp(NULL, s2, 20);
-	eembed_crash_if_false((rv1 == 0 ? 0 : 1) == 1);
-	rv2 = eembed_memcmp(s1, NULL, 20);
-	eembed_crash_if_false((rv2 == 0 ? 0 : 1) == 1);
-
-	rv1 = eembed_strcmp(NULL, s2);
-	eembed_crash_if_false((rv1 == 0 ? 0 : 1) == 1);
-	rv2 = eembed_strcmp(s1, NULL);
-	eembed_crash_if_false((rv2 == 0 ? 0 : 1) == 1);
-
-	rv1 = eembed_strncmp(NULL, s2, 20);
-	eembed_crash_if_false((rv1 == 0 ? 0 : 1) == 1);
-	rv2 = eembed_strncmp(s1, NULL, 20);
-	eembed_crash_if_false((rv2 == 0 ? 0 : 1) == 1);
-#endif
-
 	return 0;
 }
 
