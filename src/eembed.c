@@ -113,7 +113,7 @@ void eembed_log_strbuf_append_s(struct eembed_log *log, const char *str)
 		size = ctx->size - used;
 		eembed_strcpy_safe(buf, size, str);
 	}
-	ctx->buf[max] = '\0';
+	eembed_assert(ctx->buf[max] == '\0');
 }
 
 void eembed_log_str_append_c(struct eembed_log *log, char c)
