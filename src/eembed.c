@@ -14,15 +14,11 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
-#include <linux/random.h>	/* #define RNDGETENTCNT */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>		/* read() POSIX.1-2001 */
+#include <sys/random.h>
 #endif
 
 #if EEMBED_HOSTED
@@ -1053,147 +1049,47 @@ char *(*eembed_strstr)(const char *haystack, const char *needle) =
 #endif
 
 #if EEMBED_HOSTED
-int (*eembed_system_open)(const char *pathname, int flags, ...) = open;
-ssize_t (*eembed_system_read)(int fd, void *buf, size_t count) = read;
-int (*eembed_system_ioctl)(int fd, unsigned long request, ...) = ioctl;
-int (*eembed_system_close)(int fd) = close;
+ssize_t (*eembed_system_getrandom)(void *buf, size_t buflen,
+				   unsigned int flags) = getrandom;
 
-/* from Insane Coding blog "A good idea with bad usage: /dev/urandom"
-http://insanecoding.blogspot.nl/2014/05/a-good-idea-with-bad-usage-devurandom.html
-*/
-static ssize_t eembed_retrying_read(int fd, void *buf, size_t size)
+int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size)
 {
-	size_t amount_read = 0;
-	unsigned char *cbuf = NULL;
-	ssize_t r = 0;
+	ssize_t bytes_read = 0;
 
-	while (amount_read < size) {
-		cbuf = ((unsigned char *)buf) + amount_read;
-		r = eembed_system_read(fd, cbuf, size - amount_read);
-		if (r > 0) {
-			amount_read += r;
-		} else {
-			/* Things are a bit weird the code gets here */
-			if (!r) {
-				break;
-			} else if (errno != EINTR) {
-				return -1;
+#ifdef SSIZE_MAX
+	eembed_assert(buf_size <= SSIZE_MAX);
+#endif
+
+	while (bytes_read < ((ssize_t)buf_size)) {
+		unsigned char *dest = buf + bytes_read;
+		size_t size = buf_size - bytes_read;
+		const unsigned int flags = 0;
+		ssize_t result = eembed_system_getrandom(dest, size, flags);
+		if (result < 0) {
+			int save_errno = errno;
+			struct eembed_log *log = eembed_err_log;
+			if (log) {
+				log->append_s(log, __FILE__);
+				log->append_s(log, ":");
+				log->append_ul(log, __LINE__);
+				log->append_s(log, ": ");
+				log->append_s(log, "getrandom() failed");
+				log->append_s(log, ", errno: ");
+				log->append_l(log, save_errno);
+				log->append_s(log, " (");
+				log->append_s(log, strerror(save_errno));
+				log->append_s(log, ")");
+				log->append_eol(log);
 			}
+			return save_errno ? save_errno : 1;
 		}
+		bytes_read += result;
 	}
-	return amount_read;
-}
-
-int eembed_dev_urandom_bytes(unsigned char *buf, size_t size)
-{
-	int err = 0;
-	int save_errno = 0;
-	int urandom_fd = 0;
-	int entropy = 0;
-	long bytes_read = 0;
-	const char *urandom_str = "/dev/urandom";
-	struct eembed_log *log = eembed_err_log;
-
-	urandom_fd = eembed_system_open(urandom_str, O_RDONLY);
-	if (-1 == urandom_fd) {
-		/* Seriously weird if open /dev/urandom fails */
-		save_errno = errno;
-		if (log) {
-			log->append_s(log, __FILE__);
-			log->append_s(log, ":");
-			log->append_ul(log, __LINE__);
-			log->append_s(log, ": ");
-			log->append_s(log, "open('");
-			log->append_s(log, urandom_str);
-			log->append_s(log, "') failed, errno: ");
-			log->append_l(log, save_errno);
-			log->append_s(log, " (");
-			log->append_s(log, strerror(save_errno));
-			log->append_s(log, ")");
-			log->append_eol(log);
-		}
-		return (save_errno) ? save_errno : 1;
-	}
-	if (-1 == eembed_system_ioctl(urandom_fd, RNDGETENTCNT, &entropy)) {
-		/* Unreasonably weird if /dev/urandom is not RNDGETENTCNT */
-		save_errno = errno;
-		if (log) {
-			log->append_s(log, __FILE__);
-			log->append_s(log, ":");
-			log->append_ul(log, __LINE__);
-			log->append_s(log, ": ");
-			log->append_s(log, "ioctl('");
-			log->append_s(log, urandom_str);
-			log->append_s(log, "') failed, errno: ");
-			log->append_l(log, save_errno);
-			log->append_s(log, " (");
-			log->append_s(log, strerror(save_errno));
-			log->append_s(log, ")");
-			log->append_eol(log);
-		}
-		err = (save_errno) ? save_errno : 1;
-		goto eembed_dev_urandom_bytes_end;
-	}
-
-	if (entropy < ((long)(size * 8))) {
-		/* This is highly unlikely even on a misconfigured system */
-		if (log) {
-			log->append_s(log, __FILE__);
-			log->append_s(log, ":");
-			log->append_ul(log, __LINE__);
-			log->append_s(log, ": ");
-			log->append_s(log, urandom_str);
-			log->append_s(log, " lacks : ");
-			log->append_ul(log, size * 8);
-			log->append_s(log, "entropy");
-			log->append_eol(log);
-		}
-	}
-
-	bytes_read = eembed_retrying_read(urandom_fd, buf, size);
-	if (bytes_read < ((long)size)) {
-		err = 1;
-		/* something very strange would have to have happened */
-		if (log) {
-			log->append_s(log, __FILE__);
-			log->append_s(log, ":");
-			log->append_ul(log, __LINE__);
-			log->append_s(log, ": ");
-			log->append_s(log, "wanted to read ");
-			log->append_ul(log, size);
-			log->append_s(log, " bytes from ");
-			log->append_s(log, urandom_str);
-			log->append_s(log, ", read ");
-			log->append_l(log, bytes_read);
-			log->append_eol(log);
-		}
-	}
-
-eembed_dev_urandom_bytes_end:
-	if (-1 == eembed_system_close(urandom_fd)) {
-		/* Very very weird if close /dev/urandom fails */
-		save_errno = errno;
-		if (log) {
-			log->append_s(log, __FILE__);
-			log->append_s(log, ":");
-			log->append_ul(log, __LINE__);
-			log->append_s(log, ": ");
-			log->append_s(log, "close('");
-			log->append_s(log, urandom_str);
-			log->append_s(log, "') failed, errno: ");
-			log->append_l(log, save_errno);
-			log->append_s(log, " (");
-			log->append_s(log, strerror(save_errno));
-			log->append_s(log, ")");
-			log->append_eol(log);
-		}
-	}
-
-	return err;
+	return 0;
 }
 
 int (*eembed_random_bytes)(unsigned char *buf, size_t size) =
-    eembed_dev_urandom_bytes;
+    eembed_system_getrandom_bytes;
 
 #else
 
