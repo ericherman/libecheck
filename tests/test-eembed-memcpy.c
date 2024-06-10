@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* test-eembed-mempy.c */
-/* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2017-2024 Eric Herman <eric@freesa.org> */
 
 #include "eembed.h"
 
@@ -25,7 +25,9 @@ static void test_byte_array(unsigned char *actual, size_t actual_len,
 	}
 }
 
-unsigned test_eembed_memcpy(void)
+unsigned test_eembed_memcpy_func(void *(*memcpy_func)(void *dest,
+						      const void *src, size_t n)
+    )
 {
 	unsigned char expect[20];
 	unsigned char actual[20];
@@ -33,19 +35,28 @@ unsigned test_eembed_memcpy(void)
 
 	fill_array(actual, 20, '\0', '\0');
 	fill_array(expect, 20, 'Y', '\0');
-	rv = (char *)eembed_memcpy(actual, expect, 20);
+	rv = (char *)memcpy_func(actual, expect, 20);
 	test_byte_array(actual, 20, expect, 20);
 	eembed_crash_if_false((void *)rv == (void *)actual);
 
 	fill_array(actual, 20, '\0', '\0');
 	fill_array(expect, 20, 'X', '\0');
 	fill_array(expect + 10, 20 - 10, 'Y', '\0');
-	eembed_memcpy(actual, expect, 10);
+	memcpy_func(actual, expect, 10);
 	fill_array(expect, 20, '\0', '\0');
 	fill_array(expect, 10, 'X', 'X');
 	test_byte_array(actual, 20, expect, 20);
 	eembed_crash_if_false((void *)rv == (void *)actual);
 
+	return 0;
+}
+
+unsigned test_eembed_memcpy(void)
+{
+	test_eembed_memcpy_func(eembed_memcpy);
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	test_eembed_memcpy_func(eembed_diy_memcpy);
+#endif
 	return 0;
 }
 

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 # Makefile: "E(asy)Check" boiler-plate to make simple testing easier
-# Copyright (C) 2016-2022 Eric Herman <eric@freesa.org>
+# Copyright (C) 2016-2024 Eric Herman <eric@freesa.org>
 
 # $@ : target label
 # $< : the first prerequisite after the colon
@@ -164,6 +164,7 @@ test_progs=\
  test-eembed-memset \
  test-eembed-random-bytes \
  test-eembed-random-bytes-2 \
+ test-eembed-random-bytes-3 \
  test-eembed-strcat \
  test-eembed-strcpy \
  test-eembed-strlen \

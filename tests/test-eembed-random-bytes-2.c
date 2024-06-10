@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* libeembed: "E(asy)Embed": easier writing and testing of embedded libraries */
-/* Copyright (C) 2020, 2021 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2020-2024 Eric Herman <eric@freesa.org> */
 
 #include "eembed.h"
 
-#if EEMBED_HOSTED
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -39,7 +39,7 @@ ssize_t fake_getrandom(void *buf, size_t buflen, unsigned int flags)
 	return buflen;
 }
 
-unsigned int test_dev_urandom_bytes(void)
+unsigned int test_sys_random_bytes(void)
 {
 	ssize_t (*orig_sys_getrandom)(void *buf, size_t buflen,
 				      unsigned int flags) =
@@ -94,10 +94,10 @@ unsigned int test_dev_urandom_bytes(void)
 	return 0;
 }
 #else
-unsigned int test_dev_urandom_bytes(void)
+unsigned int test_sys_random_bytes(void)
 {
 	return 0;
 }
 #endif
 
-EEMBED_FUNC_MAIN(test_dev_urandom_bytes)
+EEMBED_FUNC_MAIN(test_sys_random_bytes)

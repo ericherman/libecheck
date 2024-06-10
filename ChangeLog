@@ -1,5 +1,39 @@
 echeck Changelog
 
+2024-06-10  Eric Herman <eric@freesa.org>
+
+	Major change to replace function pointers with defines.
+
+	For example, on a hosted system, eembed.h provides:
+
+		#define print_s(s) printf("%s", s)
+
+	And on an Arduino, eembed.h provides:
+
+		#define eembed_out Serial
+		#define print_s(s) eembed_out.print(s)
+
+
+	While the function pointers are handy, for some types of testing,
+	the compilers were not reliably optimizing them out, mildly impacting
+	speed and also visible (barely) in the firmware size.
+
+	* src/eembed.h: replace function pointers with defines, ensure ssize_t
+	* src/eembed.c: remove FPs and replace /dev/urandom with getrandom(2)
+	* tests/test-eembed-memcmp.c: also test eembed_diy_memcmp if hosted
+	* tests/test-eembed-memcpy.c: also test _diy_ if hosted
+	* tests/test-eembed-memmove.c: also test _diy_ if hosted
+	* tests/test-eembed-memset.c: also test _diy_ if hosted
+	* tests/test-eembed-random-bytes-2.c: fix function name, condition
+	* tests/test-eembed-random-bytes-3.c: tests eembed_diy_getrandom
+	* tests/test-eembed-random-bytes.c: fix function name
+	* tests/test-eembed-strcat.c: also test _diy_ if hosted
+	* tests/test-eembed-strcpy.c: also test _diy_ if hosted
+	* tests/test-eembed-strlen.c: also test _diy_ if hosted
+	* tests/test-eembed-strstr.c: also test _diy_ if hosted
+	* Makefile: test-eembed-random-bytes-3.c
+
+
 2023-03-21  Eric Herman <eric@freesa.org>
 
 	VERSION 2.0.7

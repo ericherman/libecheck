@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* eembed.c */
 /* libeembed: "E(asy)Embed": easier writing and testing of embedded libraries */
-/* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2020-2024 Eric Herman <eric@freesa.org> */
 
 #include "eembed.h"
 
@@ -18,7 +18,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#ifdef __linux__
 #include <sys/random.h>
+#endif
 #endif
 
 #if EEMBED_HOSTED
@@ -740,12 +743,6 @@ void eembed_free(void *ptr)
 	}
 }
 
-#if EEMBED_HOSTED
-
-int (*eembed_memcmp)(const void *s1, const void *s2, size_t n) = memcmp;
-
-#else
-
 int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 {
 	size_t i;
@@ -772,17 +769,6 @@ int eembed_diy_memcmp(const void *a1, const void *a2, size_t n)
 	return 0;
 }
 
-int (*eembed_memcmp)(const void *s1, const void *s2, size_t n) =
-    eembed_diy_memcmp;
-#endif
-
-#if EEMBED_HOSTED
-
-void *(*eembed_memcpy)(void *dest, const void *src, size_t n) = memcpy;
-void *(*eembed_memmove)(void *dest, const void *src, size_t n) = memmove;
-
-#else
-
 void *eembed_diy_memmove(void *d, const void *s, size_t n)
 {
 	const unsigned char *src = (const unsigned char *)s;
@@ -801,18 +787,10 @@ void *eembed_diy_memmove(void *d, const void *s, size_t n)
 	return d;
 }
 
-void *(*eembed_memcpy)(void *dest, const void *src, size_t n) =
-    eembed_diy_memmove;
-void *(*eembed_memmove)(void *dest, const void *src, size_t n) =
-    eembed_diy_memmove;
-
-#endif
-
-#if EEMBED_HOSTED
-
-void *(*eembed_memset)(void *dest, int c, size_t n) = memset;
-
-#else
+void *eembed_diy_memcpy(void *d, const void *s, size_t n)
+{
+	return eembed_diy_memmove(d, s, n);
+}
 
 void *eembed_diy_memset(void *dest, int val, size_t n)
 {
@@ -831,24 +809,19 @@ void *eembed_diy_memset(void *dest, int val, size_t n)
 	return dest;
 }
 
-void *(*eembed_memset)(void *dest, int c, size_t n) = eembed_diy_memset;
-
+#if __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
-
-#if EEMBED_HOSTED
-
-char *(*eembed_strcat)(char *dest, const char *src) = strcat;
-char *(*eembed_strncat)(char *dest, const char *src, size_t n) = strncat;
-
-#else
-
 char *eembed_diy_strcat(char *dest, const char *src)
 {
 	eembed_assert(src);
 	return eembed_strncat(dest, src, eembed_strlen(src));
 }
 
-char *(*eembed_strcat)(char *dest, const char *src) = eembed_diy_strcat;
+#if __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 /*
 	If src contains n or more bytes, strncat() writes n+1 bytes to dest
@@ -874,24 +847,10 @@ char *eembed_diy_strncat(char *dest, const char *src, size_t n)
 	return dest;
 }
 
-char *(*eembed_strncat)(char *dest, const char *src, size_t n) =
-    eembed_diy_strncat;
-
-#endif
-
-#if EEMBED_HOSTED
-
-int (*eembed_strcmp)(const char *s1, const char *s2) = strcmp;
-int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) = strncmp;
-
-#else
-
 int eembed_diy_strcmp(const char *s1, const char *s2)
 {
-	return eembed_strncmp(s1, s2, SIZE_MAX);
+	return eembed_strncmp(s1, s2, 1 + eembed_strlen(s1));
 }
-
-int (*eembed_strcmp)(const char *s1, const char *s2) = eembed_diy_strcmp;
 
 int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 {
@@ -917,24 +876,20 @@ int eembed_diy_strncmp(const char *s1, const char *s2, size_t max_len)
 	return 0;
 }
 
-int (*eembed_strncmp)(const char *s1, const char *s2, size_t n) =
-    eembed_diy_strncmp;
+#if __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
 #endif
-
-#if EEMBED_HOSTED
-
-char *(*eembed_strcpy)(char *dest, const char *src) = strcpy;
-char *(*eembed_strncpy)(char *dest, const char *src, size_t n) = strncpy;
-
-#else
-
-char *eembedd_diy_strcpy(char *dest, const char *src)
+char *eembed_diy_strcpy(char *dest, const char *src)
 {
 	eembed_assert(src);
 	return eembed_strncpy(dest, src, 1 + eembed_strlen(src));
 }
 
-char *(*eembed_strcpy)(char *dest, const char *src) = eembedd_diy_strcpy;
+#if __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 /*
    If the length of src is less than n, strncpy() writes additional null
@@ -959,11 +914,6 @@ char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 	return dest;
 }
 
-char *(*eembed_strncpy)(char *dest, const char *src, size_t n) =
-    eembed_diy_strncpy;
-
-#endif
-
 #if (!((_POSIX_C_SOURCE >= 200809L) && (EEMBED_HOSTED)))
 #define Eembed_use_diy_strnlen 1
 size_t eembed_diy_strnlen(const char *str, size_t buf_size)
@@ -982,33 +932,10 @@ size_t eembed_diy_strnlen(const char *str, size_t buf_size)
 #define Eembed_use_diy_strnlen 0
 #endif
 
-#if EEMBED_HOSTED
-
-size_t (*eembed_strlen)(const char *s) = strlen;
-#if Eembed_use_diy_strnlen
-size_t (*eembed_strnlen)(const char *s, size_t maxlen) = eembed_diy_strnlen;
-#else
-size_t (*eembed_strnlen)(const char *s, size_t maxlen) = strnlen;
-#endif
-
-#else
-
 size_t eembed_diy_strlen(const char *s)
 {
 	return eembed_strnlen(s, SIZE_MAX);
 }
-
-size_t (*eembed_strlen)(const char *s) = eembed_diy_strlen;
-
-size_t (*eembed_strnlen)(const char *s, size_t maxlen) = eembed_diy_strnlen;
-
-#endif
-
-#if EEMBED_HOSTED
-
-char *(*eembed_strstr)(const char *haystack, const char *needle) = strstr;
-
-#else
 
 char *eembed_diy_strstr(const char *haystack, const char *needle)
 {
@@ -1044,13 +971,54 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 	return NULL;
 }
 
-char *(*eembed_strstr)(const char *haystack, const char *needle) =
-    eembed_diy_strstr;
+/* seed is initialized to any arbitrary number */
+#ifndef Eembed_lcg_pseudo_random_seed
+#define Eembed_lcg_pseudo_random_seed 15541
 #endif
+uint32_t eembed_lcg_pseudo_random_last = Eembed_lcg_pseudo_random_seed;
 
-#if EEMBED_HOSTED
+/* https://en.wikipedia.org/wiki/Linear_congruential_generator */
+int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size)
+{
+	/* constants from VMS's MTH$RANDOM, old versions of glibc */
+	/* see: wiki/Linear_congruential_generator#Parameters_in_common_use */
+	const uint32_t a = 69069;
+	const uint32_t c = 1;
+
+	/* Note that while signed integer overflow is undefined, unsigned */
+	/* is defined, thus it should be safe to use uint32_t */
+	/* See section 6.2.5:9 (Types) in the standard: */
+	/* https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf */
+
+	size_t i = 0;
+	size_t j = 0;
+
+	while (i < size) {
+		uint32_t x = (eembed_lcg_pseudo_random_last * a) + c;
+		for (j = 0; j < sizeof(x) && i < size; ++j) {
+			buf[i++] = (x >> (j * 8));
+		}
+		eembed_lcg_pseudo_random_last = x;
+	}
+
+	return 0;
+}
+
+ssize_t eembed_diy_getrandom(void *buf, size_t bufsize, unsigned int flags)
+{
+	(void)flags;
+	return eembed_lcg_pseudo_random_bytes((unsigned char *)buf, bufsize);
+}
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+
+#ifdef __linux__
 ssize_t (*eembed_system_getrandom)(void *buf, size_t buflen,
 				   unsigned int flags) = getrandom;
+#else
+ssize_t (*eembed_system_getrandom)(void *buf, size_t buflen,
+				   unsigned int flags) = eembed_diy_getrandom;
+#endif
 
 int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size)
 {
@@ -1087,48 +1055,7 @@ int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size)
 	}
 	return 0;
 }
-
-int (*eembed_random_bytes)(unsigned char *buf, size_t size) =
-    eembed_system_getrandom_bytes;
-
-#else
-
-/* seed is initialized to any arbitrary number */
-#ifndef Eembed_lcg_pseudo_random_seed
-#define Eembed_lcg_pseudo_random_seed 15541
-#endif
-uint32_t eembed_lcg_pseudo_random_last = Eembed_lcg_pseudo_random_seed;
-
-/* https://en.wikipedia.org/wiki/Linear_congruential_generator */
-int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size)
-{
-	/* constants from VMS's MTH$RANDOM, old versions of glibc */
-	/* see: wiki/Linear_congruential_generator#Parameters_in_common_use */
-	const uint32_t a = 69069;
-	const uint32_t c = 1;
-
-	/* Note that while signed integer overflow is undefined, unsigned */
-	/* is defined, thus it should be safe to use uint32_t */
-	/* See section 6.2.5:9 (Types) in the standard: */
-	/* https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf */
-
-	size_t i = 0;
-	size_t j = 0;
-
-	while (i < size) {
-		uint32_t x = (eembed_lcg_pseudo_random_last * a) + c;
-		for (j = 0; j < sizeof(x) && i < size; ++j) {
-			buf[i++] = (x >> (j * 8));
-		}
-		eembed_lcg_pseudo_random_last = x;
-	}
-
-	return 0;
-}
-
-int (*eembed_random_bytes)(unsigned char *buf, size_t size) =
-    eembed_lcg_pseudo_random_bytes;
-#endif
+#endif /* #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING))) */
 
 struct eembed_alloc_chunk {
 	unsigned char *start;
@@ -1194,7 +1121,7 @@ void *eembed_chunk_malloc(struct eembed_allocator *ea, size_t size)
 	struct eembed_alloc_chunk *chunk =
 	    (struct eembed_alloc_chunk *)ea->context;
 
-	if (!chunk || !size) {
+	if (!size) {
 		return NULL;
 	}
 
@@ -1338,7 +1265,7 @@ void eembed_chunk_free(struct eembed_allocator *ea, void *ptr)
 	    (struct eembed_alloc_chunk *)ea->context;
 	size_t size = 0;
 
-	if (!chunk || !ptr) {
+	if (!ptr) {
 		return;
 	}
 
