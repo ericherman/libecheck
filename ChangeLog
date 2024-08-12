@@ -2,7 +2,8 @@ echeck Changelog
 
 2024-08-12  Eric Herman <eric@freesa.org>
 
-	convert string to number wrapper-functions to #defines
+	rework eembed_ulong_to_str to avoid tmp buffer
+	convert string-to-number wrapper-functions to #defines
 
 	The following have been replaced with #define:
 
@@ -11,7 +12,7 @@ echeck Changelog
 		uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
 
 	* src/eembed.h: replace wrapper functions with #define
-	* src/eembed.c: remove wrapper functions
+	* src/eembed.c: remove wrapper functions, avoid buffer
 
 2024-06-10  Eric Herman <eric@freesa.org>
 

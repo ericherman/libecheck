@@ -16,13 +16,14 @@ void test_ulong_to_str_nothing_explodes(void)
 	eembed_ulong_to_str(buf, 30, ULONG_MAX);
 }
 
-void test_ulong_to_str(unsigned long ul, const char *ulstr)
+void test_ulong_to_str(char *buf, size_t size, uint64_t ul, const char *ulstr)
 {
-	char buf[30];
 	char *rv;
-	unsigned long rul = 0;
+	uint64_t rul = 0;
 
-	rv = eembed_ulong_to_str(buf, 30, ul);
+	eembed_assert(eembed_memset(buf, 0x00, size));
+
+	rv = eembed_ulong_to_str(buf, size, ul);
 	eembed_crash_if_false(rv == buf);
 	eembed_crash_if_false(eembed_strcmp(buf, ulstr) == 0);
 
@@ -30,13 +31,21 @@ void test_ulong_to_str(unsigned long ul, const char *ulstr)
 	eembed_crash_if_false(rul == ul);
 }
 
-#define Test_ulong_to_str(ul) test_ulong_to_str(ul, #ul)
+#define Test_ulong_to_str(ul) test_ulong_to_str(buf, sizeof(buf), ul, #ul)
 
 unsigned int test_eembed_ulong_to_str(void)
 {
+	char buf[30];
+
 	Test_ulong_to_str(0);
 	Test_ulong_to_str(2147483000);
 	Test_ulong_to_str(4294967295);
+
+	test_ulong_to_str(buf, 3, 10, "10");
+
+	test_ulong_to_str(buf, sizeof(buf), UINT64_MAX, "18446744073709551615");
+	test_ulong_to_str(buf, 1 + eembed_strlen("18446744073709551615"),
+			  UINT64_MAX, "18446744073709551615");
 
 	test_ulong_to_str_nothing_explodes();
 

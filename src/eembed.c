@@ -384,11 +384,10 @@ char *eembed_long_to_str(char *buf, size_t size, int64_t l)
 
 char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
-	char tmp[22];
+	uint64_t remaining = ul;
+	char *tmp = NULL;
 	size_t i = 0;
 	size_t j = 0;
-
-	tmp[0] = '\0';
 
 	if (!buf || !size) {
 		return NULL;
@@ -397,21 +396,28 @@ char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 		return NULL;
 	}
 
+	eembed_memset(buf, 0x00, size);
+
 	if (!ul) {
 		buf[0] = '0';
-		buf[1] = '\0';
 		return buf;
 	}
 
-	for (i = 0; ul && i < 22; ++i) {
-		tmp[i] = '0' + (ul % 10);
-		ul = ul / 10;
+	for (i = 0; remaining && i < (size-1); ++i) {
+		tmp = buf + ((size - 1) - (i+1));
+		tmp[0] = '0' + (remaining % 10);
+		remaining = remaining / 10;
 	}
-	for (j = 0; i && j < size; ++j, --i) {
-		buf[j] = tmp[i - 1];
+	if (remaining) {
+		eembed_memset(buf, 0x00, size);
+		return NULL;
 	}
 
-	buf[j < size ? j : size - 1] = '\0';
+	if (i < (size-1)) {
+		j = (size - 1) - i;
+		eembed_memmove(buf, buf + j, i);
+		eembed_memset(buf + i, 0x00, size - i);
+	}
 
 	return buf;
 }
@@ -849,9 +855,8 @@ char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 	eembed_assert(dest);
 	eembed_assert(src);
 
-	while (i < n && src[i] != '\0') {
+	for (i = 0; i < n && src[i] != '\0'; ++i) {
 		dest[i] = src[i];
-		++i;
 	}
 	if (i < n) {
 		eembed_memset(dest + i, 0x00, n - i);
