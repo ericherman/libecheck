@@ -30,6 +30,28 @@ void test_float_to_str_nothing_explodes(void)
 	eembed_float_to_str(buf, 30, LDBL_MAX * 2);
 
 	eembed_float_to_str(buf, 30, 0.000000001);
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	eembed_diy_float_to_str(NULL, 30, d);
+
+	eembed_diy_float_to_str(buf, 0, d);
+	eembed_diy_float_to_str(buf, 1, d);
+	eembed_diy_float_to_str(buf, 2, d);
+	eembed_diy_float_to_str(buf, 3, d);
+	eembed_diy_float_to_str(buf, 4, d);
+	eembed_diy_float_to_str(buf, 5, d);
+	eembed_diy_float_to_str(buf, 6, d);
+
+	eembed_diy_float_to_str(buf, 30, DBL_MAX);
+	eembed_diy_float_to_str(buf, 30, -DBL_MAX);
+	eembed_diy_float_to_str(buf, 30, DBL_MIN);
+	eembed_diy_float_to_str(buf, 30, -DBL_MIN);
+
+	eembed_diy_float_to_str(buf, 30, LDBL_MAX / 2);
+	eembed_diy_float_to_str(buf, 30, LDBL_MAX * 2);
+
+	eembed_diy_float_to_str(buf, 30, 0.000000001);
+#endif
 }
 
 void assert_float_to_str(double d, const char *fltstr)
@@ -40,6 +62,12 @@ void assert_float_to_str(double d, const char *fltstr)
 	rv = eembed_float_to_str(buf, 30, d);
 	eembed_crash_if_false(rv == buf);
 	eembed_crash_if_false(eembed_strstr(buf, fltstr) != NULL);
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	rv = eembed_diy_float_to_str(buf, 30, d);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strstr(buf, fltstr) != NULL);
+#endif
 }
 
 void assert_float_to_str_if_not_enough_space(void)
@@ -56,6 +84,18 @@ void assert_float_to_str_if_not_enough_space(void)
 
 	rv = eembed_float_to_str(buf, 2, FLT_MAX);
 	eembed_crash_if_false(rv == NULL);
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	rv = eembed_diy_float_to_str(buf, 2, 2.0);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strcmp("2", buf) == 0);
+
+	rv = eembed_diy_float_to_str(buf, 2, -2.0);
+	eembed_crash_if_false(rv == NULL);
+
+	rv = eembed_diy_float_to_str(buf, 2, FLT_MAX);
+	eembed_crash_if_false(rv == NULL);
+#endif
 }
 
 unsigned int test_eembed_float_to_str(void)

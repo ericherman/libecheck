@@ -507,7 +507,52 @@ Eembed_begin_C_functions
 #define print_err_eol(void) fprintf(eembed_err, "\n")
 #endif
 
+#ifndef eembed_long_to_str
+#define eembed_long_to_str(buf, size, l) \
+	eembed_sprintf_long_to_str(buf, size, l)
+#endif
+
+#ifndef eembed_ulong_to_str
+#define eembed_ulong_to_str(buf, size, ul) \
+	eembed_sprintf_ulong_to_str(buf, size, ul)
+#endif
+
+#ifndef eembed_float_to_str
+#define eembed_float_to_str(buf, size, f) \
+	eembed_sprintf_float_to_str(buf, size, f)
+#endif
+
+#ifndef eembed_ulong_to_hex
+#define eembed_ulong_to_hex(buf, size, z) \
+	eembed_sprintf_ulong_to_hex(buf, size, z)
+#endif
+
+char *eembed_sprintf_long_to_str(char *buf, size_t size, int64_t l);
+char *eembed_sprintf_ulong_to_str(char *buf, size_t size, uint64_t ul);
+char *eembed_sprintf_float_to_str(char *buf, size_t size, long double f);
+char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t z);
+
 #endif /* #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING))) */
+
+#ifndef eembed_long_to_str
+#define eembed_long_to_str(buf, size, l) \
+	eembed_diy_long_to_str(buf, size, l)
+#endif
+
+#ifndef eembed_ulong_to_str
+#define eembed_ulong_to_str(buf, size, ul) \
+	eembed_diy_ulong_to_str(buf, size, ul)
+#endif
+
+#ifndef eembed_float_to_str
+#define eembed_float_to_str(buf, size, f) \
+	eembed_diy_float_to_str(buf, size, f)
+#endif
+
+#ifndef eembed_ulong_to_hex
+#define eembed_ulong_to_hex(buf, size, z) \
+	eembed_diy_ulong_to_hex(buf, size, z)
+#endif
 
 /* forward declaring */
 struct eembed_log;
@@ -542,13 +587,13 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 					    struct eembed_str_buf *ctx,
 					    char *buf, size_t size);
 
-char *eembed_long_to_str(char *buf, size_t size, int64_t l);
-char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul);
-char *eembed_float_to_str(char *buf, size_t size, long double f);
+char *eembed_diy_long_to_str(char *buf, size_t size, int64_t l);
+char *eembed_diy_ulong_to_str(char *buf, size_t size, uint64_t ul);
+char *eembed_diy_float_to_str(char *buf, size_t size, long double f);
 
 /* ((two hex digits per byte) + NULL terminator) */
 #define eembed_bytes_to_hex_min_buf(num_bytes) ((2 * num_bytes) + 1)
-char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t z);
+char *eembed_diy_ulong_to_hex(char *buf, size_t size, uint64_t z);
 char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
 			  size_t bytes_len);
 
@@ -879,6 +924,7 @@ void eembed_bytes_allocator_visual(struct eembed_log *log,
 #define FAUX_FREESTANDING 0
 #endif
 
+/* TODO: should this allow a context pointer? */
 void eembed_system_print_init(void);
 
 #if (EEMBED_HOSTED || FAUX_FREESTANDING)

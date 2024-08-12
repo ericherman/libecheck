@@ -321,28 +321,28 @@ struct eembed_log eembed_stdout_log = {
 
 struct eembed_log *eembed_out_log = &eembed_stdout_log;
 
-char *eembed_long_to_str(char *buf, size_t size, int64_t l)
+char *eembed_sprintf_long_to_str(char *buf, size_t size, int64_t l)
 {
 	char str[25];
 	sprintf(str, "%" PRId64, l);
 	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
-char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
+char *eembed_sprintf_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
 	char str[25];
 	sprintf(str, "%" PRIu64, ul);
 	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
-char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t ul)
+char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t ul)
 {
 	char str[25];
 	sprintf(str, "%02" PRIX64, ul);
 	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
 }
 
-char *eembed_float_to_str(char *buf, size_t size, long double f)
+char *eembed_sprintf_float_to_str(char *buf, size_t size, long double f)
 {
 	char str[25];
 	sprintf(str, "%Lg", f);
@@ -354,7 +354,9 @@ char *eembed_float_to_str(char *buf, size_t size, long double f)
 struct eembed_log *eembed_err_log = &eembed_no_op_log;
 struct eembed_log *eembed_out_log = &eembed_no_op_log;
 
-char *eembed_long_to_str(char *buf, size_t size, int64_t l)
+#endif
+
+char *eembed_diy_long_to_str(char *buf, size_t size, int64_t l)
 {
 	char *b;
 	char *out;
@@ -382,7 +384,7 @@ char *eembed_long_to_str(char *buf, size_t size, int64_t l)
 	return out ? buf : NULL;
 }
 
-char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
+char *eembed_diy_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
 	uint64_t remaining = ul;
 	char *tmp = NULL;
@@ -403,8 +405,8 @@ char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 		return buf;
 	}
 
-	for (i = 0; remaining && i < (size-1); ++i) {
-		tmp = buf + ((size - 1) - (i+1));
+	for (i = 0; remaining && i < (size - 1); ++i) {
+		tmp = buf + ((size - 1) - (i + 1));
 		tmp[0] = '0' + (remaining % 10);
 		remaining = remaining / 10;
 	}
@@ -413,7 +415,7 @@ char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 		return NULL;
 	}
 
-	if (i < (size-1)) {
+	if (i < (size - 1)) {
 		j = (size - 1) - i;
 		eembed_memmove(buf, buf + j, i);
 		eembed_memset(buf + i, 0x00, size - i);
@@ -422,7 +424,7 @@ char *eembed_ulong_to_str(char *buf, size_t size, uint64_t ul)
 	return buf;
 }
 
-char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t z)
+char *eembed_diy_ulong_to_hex(char *buf, size_t size, uint64_t z)
 {
 	const size_t ul_bytes_size = sizeof(uint64_t);
 	unsigned char ul_bytes[sizeof(uint64_t)];
@@ -451,11 +453,9 @@ char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 	char c[2];
 	unsigned long ul = 0;
 
-	c[0] = 0;
-	c[1] = 0;
+	eembed_memset(c, 0x00, sizeof(c));
 	if (buf && size) {
-		buf[0] = '\0';
-		buf[size - 1] = '\0';
+		eembed_memset(buf, 0x00, size);
 	}
 
 	if (!buf || size < 2) {
@@ -464,11 +464,9 @@ char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 	avail = size - 1;
 
 	if (f != f) {
-		eembed_strncat(buf, "nan", avail < 3 ? avail : 3);
-		return avail < 3 ? NULL : buf;
+		return (avail < 3) ? NULL : eembed_strncat(buf, "nan", 4);
 	} else if (f == 0.0) {
-		eembed_strncat(buf, "0.0", avail < 3 ? avail : 3);
-		return avail < 3 ? NULL : buf;
+		return (avail < 3) ? NULL : eembed_strncat(buf, "0.0", 4);
 	}
 
 	if (f < 0.0) {
@@ -481,24 +479,19 @@ char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 	}
 
 	if (f == FLT_MAX || f == DBL_MAX || f == LDBL_MAX) {
-		eembed_strncat(buf, "max", avail < 3 ? avail : 3);
-		return avail < 3 ? NULL : buf;
+		return (avail < 3) ? NULL : eembed_strncat(buf, "max", 4);
 	} else if (f == FLT_MIN || f == DBL_MIN || f == LDBL_MIN) {
-		eembed_strncat(buf, "min", avail < 3 ? avail : 3);
-		return avail < 3 ? NULL : buf;
+		return (avail < 3) ? NULL : eembed_strncat(buf, "min", 4);
 	}
 
 	if ((f / 2) == f) {
-		eembed_strncat(buf, "inf", avail < 3 ? avail : 3);
-		return avail < 3 ? NULL : buf;
+		return (avail < 3) ? NULL : eembed_strncat(buf, "inf", 4);
 	}
 
 	if ((f - (long double)ULONG_MAX) >= 1.0) {
-		eembed_strncat(buf, "big", avail < 3 ? avail : 3);
-		return avail < 3 ? NULL : buf;
+		return (avail < 3) ? NULL : eembed_strncat(buf, "big", 4);
 	} else if (f < min_to_print) {
-		eembed_strncat(buf, "wee", avail < 3 ? avail : 3);
-		return avail < 3 ? NULL : buf;
+		return (avail < 3) ? NULL : eembed_strncat(buf, "wee", 4);
 	}
 
 	ul = (unsigned long)f;
@@ -507,7 +500,7 @@ char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 	eembed_ulong_to_str(buf + pos, avail, ul);
 	f = f - (long double)ul;
 	if (eembed_strnlen(buf, size) < (size - 1)) {
-		eembed_strncat(buf, ".", 1);
+		eembed_strncat(buf, ".", 2);
 	} else {
 		return f > min_to_print ? NULL : buf;
 	}
@@ -525,18 +518,17 @@ char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 		f = f * 10;
 		ul = (unsigned long)f;
 		c[0] = '0' + (ul % 10);
-		eembed_strncat(buf, c, 1);
+		eembed_strncat(buf, c, 2);
 		f = f - ul;
 		min_to_print = min_to_print * 10;
 	}
 	return buf;
 }
 
-char *eembed_float_to_str(char *buf, size_t size, long double f)
+char *eembed_diy_float_to_str(char *buf, size_t size, long double f)
 {
 	return eembed_bogus_float_to_str(buf, size, f);
 }
-#endif
 
 static char eembed_nibble_to_hex(unsigned char nibble)
 {
@@ -768,7 +760,7 @@ void *eembed_diy_memset(void *dest, int val, size_t n)
 char *eembed_diy_strcat(char *dest, const char *src)
 {
 	eembed_assert(src);
-	return eembed_strncat(dest, src, eembed_strlen(src));
+	return eembed_strncat(dest, src, eembed_strlen(src) + 1);
 }
 
 #if __GNUC__
@@ -783,18 +775,14 @@ char *eembed_diy_strcat(char *dest, const char *src)
 char *eembed_diy_strncat(char *dest, const char *src, size_t n)
 {
 	size_t dest_len = 0;
-	size_t i = 0;
+	size_t src_len = 0;
+	char *p = NULL;
 
-	/* glibc crashes on NULL */
-	eembed_assert(dest);
-	eembed_assert(src);
-
+	src_len = eembed_strnlen(src, n);
 	dest_len = eembed_strlen(dest);
-	while (i < n && src[i] != '\0') {
-		dest[dest_len + i] = src[i];
-		++i;
-	}
-	dest[dest_len + i] = '\0';
+	p = dest + dest_len;
+	eembed_memcpy(p, src, src_len);
+	dest[dest_len + src_len] = '\0';
 
 	return dest;
 }

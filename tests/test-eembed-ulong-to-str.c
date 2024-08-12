@@ -14,6 +14,14 @@ void test_ulong_to_str_nothing_explodes(void)
 	eembed_ulong_to_str(buf, 1, ULONG_MAX);
 	eembed_ulong_to_str(NULL, 30, ULONG_MAX);
 	eembed_ulong_to_str(buf, 30, ULONG_MAX);
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	eembed_diy_ulong_to_str(buf, 3, ULONG_MAX);
+	eembed_diy_ulong_to_str(buf, 0, ULONG_MAX);
+	eembed_diy_ulong_to_str(buf, 1, ULONG_MAX);
+	eembed_diy_ulong_to_str(NULL, 30, ULONG_MAX);
+	eembed_diy_ulong_to_str(buf, 30, ULONG_MAX);
+#endif
 }
 
 void test_ulong_to_str(char *buf, size_t size, uint64_t ul, const char *ulstr)
@@ -29,6 +37,15 @@ void test_ulong_to_str(char *buf, size_t size, uint64_t ul, const char *ulstr)
 
 	rul = eembed_str_to_ulong(rv, NULL);
 	eembed_crash_if_false(rul == ul);
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	rv = eembed_diy_ulong_to_str(buf, size, ul);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strcmp(buf, ulstr) == 0);
+
+	rul = eembed_str_to_ulong(rv, NULL);
+	eembed_crash_if_false(rul == ul);
+#endif
 }
 
 #define Test_ulong_to_str(ul) test_ulong_to_str(buf, sizeof(buf), ul, #ul)

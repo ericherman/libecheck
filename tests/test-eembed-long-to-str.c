@@ -14,6 +14,14 @@ void test_long_to_str_nothing_explodes(void)
 	eembed_long_to_str(buf, 0, LONG_MAX);
 	eembed_long_to_str(NULL, 30, LONG_MAX);
 	eembed_long_to_str(buf, 30, LONG_MAX);
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	eembed_diy_long_to_str(buf, 3, LONG_MAX);
+	eembed_diy_long_to_str(buf, 0, LONG_MAX);
+	eembed_diy_long_to_str(NULL, 30, LONG_MAX);
+	eembed_diy_long_to_str(buf, 30, LONG_MAX);
+#endif
+
 }
 
 void test_long_to_str(long l, const char *lstr)
@@ -28,6 +36,15 @@ void test_long_to_str(long l, const char *lstr)
 
 	rl = eembed_str_to_long(rv, NULL);
 	eembed_crash_if_false(rl == l);
+
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+	rv = eembed_diy_long_to_str(buf, 30, l);
+	eembed_crash_if_false(rv == buf);
+	eembed_crash_if_false(eembed_strcmp(buf, lstr) == 0);
+
+	rl = eembed_str_to_long(rv, NULL);
+	eembed_crash_if_false(rl == l);
+#endif
 }
 
 #define Test_long_to_str(ul) test_long_to_str(ul, #ul)
