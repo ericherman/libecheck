@@ -278,6 +278,7 @@ Eembed_begin_C_functions
 #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef eembed_out
 #define eembed_out stdout
@@ -551,9 +552,62 @@ char *eembed_ulong_to_hex(char *buf, size_t size, uint64_t z);
 char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
 			  size_t bytes_len);
 
-int64_t eembed_str_to_long(const char *str, char **endptr);
-uint64_t eembed_str_to_ulong(const char *str, char **endptr);
-uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
+#ifndef Eembed_use_diy_str_to_64
+#if (LONG_MAX <= INT64_MAX)
+#if (!(_ISOC99_SOURCE))
+#define Eembed_use_diy_str_to_64 1
+#endif
+#endif
+#endif
+
+#ifndef Eembed_use_diy_str_to_64
+#define Eembed_use_diy_str_to_64 ((!EEMBED_HOSTED) || FAUX_FREESTANDING)
+#endif
+
+#ifndef eembed_str_to_i64
+#if (Eembed_use_diy_str_to_64)
+#define eembed_str_to_i64(str, endptr, base) \
+	eembed_diy_str_to_i64(str, endptr, base)
+#elif (ULONG_MAX >= UINT64_MAX)
+#define eembed_str_to_i64(str, endptr, base) \
+	strtol(str, endptr, base)
+#else
+#define eembed_str_to_i64(str, endptr, base) \
+	strtoll(str, endptr, base)
+#endif
+#endif
+
+#ifndef eembed_str_to_u64
+#if (Eembed_use_diy_str_to_64)
+#define eembed_str_to_u64(str, endptr, base) \
+	eembed_diy_str_to_u64(str, endptr, base)
+#elif (ULONG_MAX >= UINT64_MAX)
+#define eembed_str_to_u64(str, endptr, base) \
+	strtoul(str, endptr, base)
+#else
+#define eembed_str_to_u64(str, endptr, base) \
+	strtoull(str, endptr, base)
+#endif
+#endif
+
+#define eembed_base10 10
+#define eembed_base16 16
+
+#ifndef eembed_str_to_long
+#define eembed_str_to_long(str, endptr) \
+	eembed_str_to_i64(str, endptr, eembed_base10)
+#endif
+
+#ifndef eembed_str_to_ulong
+#define eembed_str_to_ulong(str, endptr)\
+	eembed_str_to_u64(str, endptr, eembed_base10);
+#endif
+
+#ifndef eembed_hex_to_ulong
+#define eembed_hex_to_ulong(str, endptr) \
+	eembed_str_to_u64(str, endptr, eembed_base16)
+#endif
+
 extern void (*eembed_assert_crash)(void);
 
 /* a strncpy()-like function which always NULL-terminates.
@@ -644,6 +698,9 @@ size_t eembed_diy_strlen(const char *s);
 size_t eembed_diy_strnlen(const char *s, size_t maxlen);
 
 char *eembed_diy_strstr(const char *haystack, const char *needle);
+
+int64_t eembed_diy_str_to_i64(const char *str, char **endptr, int base);
+uint64_t eembed_diy_str_to_u64(const char *str, char **endptr, int pbase);
 
 int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size);
 

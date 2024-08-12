@@ -588,19 +588,6 @@ static char *eembed_ignore_const_s(const char *str)
 #pragma GCC diagnostic pop
 #endif
 
-#ifndef Eembed_use_diy_str_to_64
-#if (LONG_MAX <= INT64_MAX)
-#if (!(_ISOC99_SOURCE))
-#define Eembed_use_diy_str_to_64 1
-#endif
-#endif
-#endif
-
-#ifndef Eembed_use_diy_str_to_64
-#define Eembed_use_diy_str_to_64 (!(EEMBED_HOSTED))
-#endif
-
-#if Eembed_use_diy_str_to_64
 uint64_t eembed_diy_str_to_u64(const char *str, char **endptr, int pbase)
 {
 	uint64_t base = (uint64_t)pbase;
@@ -668,47 +655,6 @@ int64_t eembed_diy_str_to_i64(const char *str, char **endptr, int base)
 
 	val = eembed_diy_str_to_u64(str, endptr, base);
 	return negate ? -val : val;
-}
-#endif
-
-int64_t eembed_str_to_i64(const char *str, char **endptr, int base)
-{
-#if ((EEMBED_HOSTED) || (Eembed_use_diy_str_to_64))
-	return eembed_diy_str_to_i64(str, endptr, base);
-#elif (ULONG_MAX >= UINT64_MAX)
-	return strtol(str, endptr, base);
-#else
-	return strtoll(str, endptr, base);
-#endif
-}
-
-uint64_t eembed_str_to_u64(const char *str, char **endptr, int base)
-{
-#if ((EEMBED_HOSTED) || (Eembed_use_diy_str_to_64))
-	return eembed_diy_str_to_u64(str, endptr, base);
-#elif (ULONG_MAX >= UINT64_MAX)
-	return strtoul(str, endptr, base);
-#else
-	return strtoull(str, endptr, base);
-#endif
-}
-
-int64_t eembed_str_to_long(const char *str, char **endptr)
-{
-	int base10 = 10;
-	return eembed_str_to_i64(str, endptr, base10);
-}
-
-uint64_t eembed_str_to_ulong(const char *str, char **endptr)
-{
-	int base10 = 10;
-	return eembed_str_to_u64(str, endptr, base10);
-}
-
-uint64_t eembed_hex_to_ulong(const char *str, char **endptr)
-{
-	int base16 = 16;
-	return eembed_str_to_u64(str, endptr, base16);
 }
 
 void *eembed_malloc(size_t size)

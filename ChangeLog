@@ -1,5 +1,18 @@
 echeck Changelog
 
+2024-08-12  Eric Herman <eric@freesa.org>
+
+	convert string to number wrapper-functions to #defines
+
+	The following have been replaced with #define:
+
+		int64_t eembed_str_to_long(const char *str, char **endptr);
+		uint64_t eembed_str_to_ulong(const char *str, char **endptr);
+		uint64_t eembed_hex_to_ulong(const char *str, char **endptr);
+
+	* src/eembed.h: replace wrapper functions with #define
+	* src/eembed.c: remove wrapper functions
+
 2024-06-10  Eric Herman <eric@freesa.org>
 
 	Major change to replace function pointers with defines.
