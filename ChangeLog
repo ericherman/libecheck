@@ -1,5 +1,10 @@
 echeck Changelog
 
+2024-08-13  Eric Herman <eric@freesa.org>
+	reorder and add section comments to eembed.h
+
+	* src/eembed.h: reorder, comments
+
 2024-08-12  Eric Herman <eric@freesa.org>
 
 	rework eembed_ulong_to_str to avoid tmp buffer

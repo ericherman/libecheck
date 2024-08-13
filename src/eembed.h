@@ -16,14 +16,6 @@
 
 Eembed_begin_C_functions
 #undef Eembed_begin_C_functions
-#include <stddef.h>		/* for size_t */
-#include <stdint.h>		/* for uint64_t */
-#ifndef EEMBED_HOSTED
-#ifdef ARDUINO
-#define EEMBED_HOSTED 0
-#endif
-#endif
-#ifndef EEMBED_HOSTED
 /*
  __STDC_HOSTED__
  The integer constant 1 if the implementation is a hosted
@@ -48,6 +40,12 @@ Eembed_begin_C_functions
  running in a hosted environment."
  https://gcc.gnu.org/onlinedocs/gcc/Standards.html
 */
+#ifndef EEMBED_HOSTED
+#ifdef ARDUINO
+#define EEMBED_HOSTED 0
+#endif
+#endif
+#ifndef EEMBED_HOSTED
 #ifdef __STDC_HOSTED__
 #define EEMBED_HOSTED __STDC_HOSTED__
 #endif
@@ -58,6 +56,25 @@ Eembed_begin_C_functions
 #ifndef FAUX_FREESTANDING
 #define FAUX_FREESTANDING 0
 #endif
+/***************************************************************************\
+ * The headers required by freestanding environments, are mostly those that
+ * define macros and types.
+\***************************************************************************/
+#include <float.h>		/* FLT_EPSILON */
+#include <limits.h>		/* UINT_MAX */
+#if __STDC_VERSION__ >= 201112L
+#include <stdalign.h>		/* algignof, alignas */
+#endif
+#include <stdarg.h>		/* va_list, va_start, va_end */
+#include <stddef.h>		/* size_t */
+#include <stdint.h>		/* uint64_t */
+/* #include <stdbool.h> */
+/* #include <iso646.h */
+/* #include <stdnoreturn.h> */
+/***************************************************************************\
+ * With at least one toolchain, we discovered size_t was not defined,
+ * but we can work around that
+\***************************************************************************/
 /* Check if ssize_t is not defined */
 #if EEMBED_HOSTED
 #ifdef _POSIX_VERSION
@@ -69,13 +86,11 @@ Eembed_begin_C_functions
 #ifndef _SSIZE_T_DEFINED
 #ifndef _SSIZE_T_DEFINED_
 #ifndef __ssize_t_defined
-#ifdef __SSIZE_T_TYPE
-    typedef __SSIZE_T_TYPE ssize_t;
-#else
+#ifndef __SSIZE_T_TYPE
 /* Define ssize_t as intptr_t if it is not defined */
-    typedef intptr_t ssize_t;
 #define __SSIZE_T_TYPE intptr_t
 #endif
+    typedef __SSIZE_T_TYPE ssize_t;
 
 /* Define the macros to indicate ssize_t is defined */
 #define _SSIZE_T_DEFINED
@@ -86,6 +101,14 @@ Eembed_begin_C_functions
 #endif /* #ifndef _SSIZE_T_DEFINED_ */
 #endif /* #ifndef _SSIZE_T_DEFINED */
 /* End of ssize_t defined */
+
+/***************************************************************************\
+ * The biggest variation between __STDC_HOSTED__ and Freestanding platforms
+ * is the lack of FILE functions like fprintf(stderr, fmt, ...).
+ *
+ * These #defines provide a way for calling code to do simple printing in a
+ * form that will work in both environments.
+\***************************************************************************/
 
 #ifdef ARDUINO
 
@@ -534,6 +557,17 @@ char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t z);
 
 #endif /* #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING))) */
 
+char *eembed_diy_long_to_str(char *buf, size_t size, int64_t l);
+char *eembed_diy_ulong_to_str(char *buf, size_t size, uint64_t ul);
+char *eembed_diy_float_to_str(char *buf, size_t size, long double f);
+char *eembed_diy_ulong_to_hex(char *buf, size_t size, uint64_t z);
+
+/* ((two hex digits per byte) + NULL terminator) */
+#define eembed_bytes_to_hex_min_buf(num_bytes) ((2 * num_bytes) + 1)
+
+char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
+			  size_t bytes_len);
+
 #ifndef eembed_long_to_str
 #define eembed_long_to_str(buf, size, l) \
 	eembed_diy_long_to_str(buf, size, l)
@@ -553,49 +587,6 @@ char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t z);
 #define eembed_ulong_to_hex(buf, size, z) \
 	eembed_diy_ulong_to_hex(buf, size, z)
 #endif
-
-/* forward declaring */
-struct eembed_log;
-extern struct eembed_log *eembed_null_log;
-
-/* eembed_out_log and eembed_err_log may point to the same struct */
-extern struct eembed_log *eembed_out_log;
-extern struct eembed_log *eembed_err_log;
-
-struct eembed_log {
-	void *context;
-	void (*append_c)(struct eembed_log *log, char c);
-	void (*append_s)(struct eembed_log *log, const char *str);
-	void (*append_ul)(struct eembed_log *log, uint64_t ul);
-	void (*append_l)(struct eembed_log *log, int64_t l);
-	void (*append_f)(struct eembed_log *log, long double f);
-	void (*append_vp)(struct eembed_log *log, const void *ptr);
-	void (*append_eol)(struct eembed_log *log);
-};
-
-struct eembed_function_context {
-	void *data;
-	void *(*func)(void *data);
-};
-
-struct eembed_str_buf {
-	char *buf;
-	size_t size;
-};
-
-struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
-					    struct eembed_str_buf *ctx,
-					    char *buf, size_t size);
-
-char *eembed_diy_long_to_str(char *buf, size_t size, int64_t l);
-char *eembed_diy_ulong_to_str(char *buf, size_t size, uint64_t ul);
-char *eembed_diy_float_to_str(char *buf, size_t size, long double f);
-
-/* ((two hex digits per byte) + NULL terminator) */
-#define eembed_bytes_to_hex_min_buf(num_bytes) ((2 * num_bytes) + 1)
-char *eembed_diy_ulong_to_hex(char *buf, size_t size, uint64_t z);
-char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
-			  size_t bytes_len);
 
 #ifndef Eembed_use_diy_str_to_64
 #if (LONG_MAX <= INT64_MAX)
@@ -653,12 +644,13 @@ char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
 	eembed_str_to_u64(str, endptr, eembed_base16)
 #endif
 
-extern void (*eembed_assert_crash)(void);
-
-/* a strncpy()-like function which always NULL-terminates.
- * returns 0 on success or non-zero if the value was truncated. */
-int eembed_strcpy_safe(char *buf, size_t size, const char *str);
-
+/***************************************************************************\
+ * A source variation between __STDC_HOSTED__ and Freestanding platforms
+ * is the possible lack of string.h functions like strcmp and memcpy.
+ *
+ * These #defines provide a way for calling code to use the standard library
+ * and provide "eembed_diy_" versions for freestanding environments.
+\***************************************************************************/
 #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
 #include <string.h>
 
@@ -716,12 +708,11 @@ int eembed_strcpy_safe(char *buf, size_t size, const char *str);
 #define eembed_strstr strstr
 #endif
 
-int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size);
-#ifndef eembed_random_bytes
-#define eembed_random_bytes eembed_system_getrandom_bytes
-#endif
-
 #endif /* #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING))) */
+
+/* a strncpy()-like function which always NULL-terminates.
+ * returns 0 on success or non-zero if the value was truncated. */
+int eembed_strcpy_safe(char *buf, size_t size, const char *str);
 
 int eembed_diy_memcmp(const void *s1, const void *s2, size_t n);
 
@@ -746,12 +737,6 @@ char *eembed_diy_strstr(const char *haystack, const char *needle);
 
 int64_t eembed_diy_str_to_i64(const char *str, char **endptr, int base);
 uint64_t eembed_diy_str_to_u64(const char *str, char **endptr, int pbase);
-
-int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size);
-
-#ifndef eembed_random_bytes
-#define eembed_random_bytes eembed_lcg_pseudo_random_bytes
-#endif
 
 #ifndef eembed_memcmp
 #define eembed_memcmp eembed_diy_memcmp
@@ -805,10 +790,31 @@ int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size);
 #define eembed_strstr eembed_diy_strstr
 #endif
 
-struct eembed_allocator;
-/* eembed_global_allocator may be the null_allocator, if not EEMBED_HOSTED */
-extern struct eembed_allocator *eembed_global_allocator;
-extern struct eembed_allocator *eembed_null_allocator;
+/***************************************************************************\
+ * Even on __STDC_HOSTED__ systems, there is not a uniform way to get
+ * randomness. Linux has getrandom(2), POSIX has /dev/random, etc.
+ *
+ * The eembed_random_bytes define provides a uniform way for calling code to
+ * get random bytes, and provides an implementation, if needed.
+\***************************************************************************/
+int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size);
+#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
+int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size);
+#ifndef eembed_random_bytes
+#define eembed_random_bytes eembed_system_getrandom_bytes
+#endif
+#endif /* #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING))) */
+
+#ifndef eembed_random_bytes
+#define eembed_random_bytes eembed_lcg_pseudo_random_bytes
+#endif
+
+/***************************************************************************\
+ * On __STDC_HOSTED__ systems, memory allocation is taken for granted.
+ * On Freestanding systems, there may be no malloc() function.
+ *
+ * The eembed_bytes_allocator has proven useful on hosted systems.
+\***************************************************************************/
 
 /* default to "no op" versions if eembed_global_allocator is NULL */
 void *eembed_malloc(size_t size);
@@ -816,6 +822,12 @@ void *eembed_calloc(size_t nmemb, size_t size);
 void *eembed_realloc(void *ptr, size_t size);
 void *eembed_reallocarray(void *ptr, size_t nmemb, size_t size);
 void eembed_free(void *ptr);
+
+struct eembed_allocator;
+
+/* eembed_global_allocator may be the null_allocator, if not EEMBED_HOSTED */
+extern struct eembed_allocator *eembed_global_allocator;
+extern struct eembed_allocator *eembed_null_allocator;
 
 struct eembed_allocator {
 	void *context;
@@ -830,11 +842,51 @@ struct eembed_allocator {
 extern const size_t eembed_bytes_allocator_min_buf_size;
 struct eembed_allocator *eembed_bytes_allocator(unsigned char *bytes,
 						size_t len);
+/* forward declaring */
+struct eembed_log;
+
 void eembed_bytes_allocator_dump(struct eembed_log *log,
 				 struct eembed_allocator *bytes_allocator);
 void eembed_bytes_allocator_visual(struct eembed_log *log,
 				   struct eembed_allocator *bytes_allocator,
 				   int strinify_contents, size_t width);
+
+/***************************************************************************\
+ * Verifying that correct information is logged in crash situations is often
+ * tedious and challenging.
+ *
+ * The eembed_assert and eembed_log provide a mechanism by which code can
+ * be written such that it will assertion failures can be more easily tested
+\***************************************************************************/
+/* On a hosted system this is exit(EXIT_FAILURE),
+   on a freestanding system, this is something that will cause the system to
+   halt or restart, e.g.: writing to a NULL pointer. */
+extern void (*eembed_assert_crash)(void);
+
+/* eembed_out_log and eembed_err_log may point to the same struct */
+extern struct eembed_log *eembed_out_log;
+extern struct eembed_log *eembed_err_log;
+extern struct eembed_log *eembed_null_log;
+
+struct eembed_log {
+	void *context;
+	void (*append_c)(struct eembed_log *log, char c);
+	void (*append_s)(struct eembed_log *log, const char *str);
+	void (*append_ul)(struct eembed_log *log, uint64_t ul);
+	void (*append_l)(struct eembed_log *log, int64_t l);
+	void (*append_f)(struct eembed_log *log, long double f);
+	void (*append_vp)(struct eembed_log *log, const void *ptr);
+	void (*append_eol)(struct eembed_log *log);
+};
+
+struct eembed_str_buf {
+	char *buf;
+	size_t size;
+};
+
+struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
+					    struct eembed_str_buf *ctx,
+					    char *buf, size_t size);
 
 #ifndef EEMBED_NOP
 #define EEMBED_NOP() do { ((void)0); } while (0)
@@ -894,6 +946,14 @@ void eembed_bytes_allocator_visual(struct eembed_log *log,
 #define eembed_static_assert_sizes_match(a,b) \
 	eembed_static_assert_equals(sizeof(a), sizeof(b))
 
+/***************************************************************************\
+ * POSIX, Windows, and almost all currently supported platforms define
+ * CHAR_BIT to be 8. Odds are very good that your code can safely assume
+ * that bytes are 8 bits.
+ *
+ * It seems that the Texas Instruments C54x series DSPs have CHAR_BIT 16
+ * in some C compilers. It might be interesting to look at these.
+\***************************************************************************/
 #ifndef EEMBED_CHAR_BIT
 #ifdef CHAR_BIT
 #define EEMBED_CHAR_BIT CHAR_BIT
@@ -902,6 +962,12 @@ void eembed_bytes_allocator_visual(struct eembed_log *log,
 #endif
 #endif
 
+/***************************************************************************\
+ * Alignment rarely comes up, but sometimes "alignas" and "alignof" are
+ * needed for doing things like aligning a data structures for SIMD.
+ * More generally, arrays of structs which are poorly aligned can impact
+ * performance. As always, measuring is better than guessing.
+\***************************************************************************/
 #ifndef EEMBED_WORD_LEN
 #ifdef __WORDSIZE
 #if (__WORDSIZE >= EEMBED_CHAR_BIT)
@@ -911,7 +977,7 @@ void eembed_bytes_allocator_visual(struct eembed_log *log,
 #endif
 
 #ifndef EEMBED_WORD_LEN
-#define EEMBED_WORD_LEN (sizeof(size_t))
+#define EEMBED_WORD_LEN (sizeof(void *))
 #endif
 
 #define eembed_align_to(x, y) \
@@ -920,11 +986,26 @@ void eembed_bytes_allocator_visual(struct eembed_log *log,
 
 #define eembed_align(x) eembed_align_to(x, EEMBED_WORD_LEN)
 
-#ifndef FAUX_FREESTANDING
-#define FAUX_FREESTANDING 0
-#endif
+/***************************************************************************\
+ * A generic structure for easily passing a function and data together to
+ * functions which accept a single void* for context.
+ * This is used internally, and exposed as it is reused elsewhere.
+\***************************************************************************/
+struct eembed_function_context {
+	void *data;
+	void *(*func)(void *data);
+};
 
-/* TODO: should this allow a context pointer? */
+/***************************************************************************\
+ * Hosted programs typically have a main() function which exits.
+ * Firmware in freestanding environments typically is an infinite loop.
+ * Further, the "main" function may be hidden from the developer, as is the
+ * case with the default Arduino build system.
+ *
+ * EEMBED_FUNC_MAIN(name_of_main_inner) provides a way to handle both cases.
+\***************************************************************************/
+/* This function exists to allow freestanding systems to initialize
+ * printing, this can be useful in FAUX_FREESTANDING test builds. */
 void eembed_system_print_init(void);
 
 #if (EEMBED_HOSTED || FAUX_FREESTANDING)
