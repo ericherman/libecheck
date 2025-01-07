@@ -1,5 +1,11 @@
 echeck Changelog
 
+2025-01-07  Eric Herman <eric@freesa.org>
+
+	for debug builds, save the intermediate compile files
+
+	* Makefile: adjust CFLAGS for DEBUG to replace -pipe with -save-temps
+
 2024-08-13  Eric Herman <eric@freesa.org>
 	reorder and add section comments to eembed.h
 

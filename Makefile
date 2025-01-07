@@ -74,15 +74,17 @@ all-obj: $(foreach DIR,$(build_dirs),\
 # As c11 is probably "everywhere enough", most should use it,
 # however the code should still compile and run with -std=c89
 CSTD_CFLAGS=-std=c89
+# CSTD_CFLAGS=-std=gnu89
 # CSTD_CFLAGS=-std=c11
+# CSTD_CFLAGS=-std=gnu11
 
 NOISY_CFLAGS=-Wall -Wextra -pedantic -Wcast-qual -Wc++-compat
 
-COMMON_CFLAGS=$(CSTD_CFLAGS) $(NOISY_CFLAGS) -pipe
+COMMON_CFLAGS=$(CSTD_CFLAGS) $(NOISY_CFLAGS)
 
-NORMAL_CFLAGS=-g -O2 -DNDEBUG -fomit-frame-pointer -fstack-protector-all
+NORMAL_CFLAGS=-g -O2 -DNDEBUG -fomit-frame-pointer -fstack-protector-all -pipe
 
-DEBUG_CFLAGS=-g -O2 -Werror
+DEBUG_CFLAGS=-g -O2 -Werror -save-temps
 
 # -Xlinker \
 # -zmuldefs \
