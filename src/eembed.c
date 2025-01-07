@@ -849,8 +849,6 @@ char *eembed_diy_strncpy(char *dest, const char *src, size_t n)
 	return dest;
 }
 
-#if (!((_POSIX_C_SOURCE >= 200809L) && (EEMBED_HOSTED)))
-#define Eembed_use_diy_strnlen 1
 size_t eembed_diy_strnlen(const char *str, size_t buf_size)
 {
 	size_t i;
@@ -863,13 +861,10 @@ size_t eembed_diy_strnlen(const char *str, size_t buf_size)
 
 	return buf_size;
 }
-#else
-#define Eembed_use_diy_strnlen 0
-#endif
 
 size_t eembed_diy_strlen(const char *s)
 {
-	return eembed_strnlen(s, SIZE_MAX);
+	return eembed_strnlen(s, EEMBED_SSIZE_MAX);
 }
 
 char *eembed_diy_strstr(const char *haystack, const char *needle)
@@ -959,9 +954,7 @@ int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size)
 {
 	ssize_t bytes_read = 0;
 
-#ifdef SSIZE_MAX
-	eembed_assert(buf_size <= SSIZE_MAX);
-#endif
+	eembed_assert(buf_size <= EEMBED_SSIZE_MAX);
 
 	while (bytes_read < ((ssize_t)buf_size)) {
 		unsigned char *dest = buf + bytes_read;
@@ -1398,7 +1391,7 @@ void *eembed_system_reallocarray(struct eembed_allocator *ea, void *ptr,
 	size_t size;
 
 	(void)ea;
-#if (_DEFAULT_SOURCE || _GNU_SOURCE)
+#if (defined(_DEFAULT_SOURCE) || defined(_GNU_SOURCE))
 	(void)size;
 	return reallocarray(ptr, nmemb, msize);
 #else

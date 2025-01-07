@@ -27,9 +27,7 @@ unsigned test_eembed_strlen_func(size_t (*strlen_func)(const char *s),
 unsigned test_eembed_strlen(void)
 {
 	test_eembed_strlen_func(eembed_strlen, eembed_strnlen);
-#if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
 	test_eembed_strlen_func(eembed_diy_strlen, eembed_diy_strnlen);
-#endif
 	return 0;
 }
 

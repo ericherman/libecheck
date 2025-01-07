@@ -72,8 +72,8 @@ Eembed_begin_C_functions
 /* #include <iso646.h */
 /* #include <stdnoreturn.h> */
 /***************************************************************************\
- * With at least one toolchain, we discovered size_t was not defined,
- * but we can work around that
+ * With at least one toolchain, we discovered ssize_t was not defined, and
+ * thus neither was SSIZE_MAX, but we can work around that
 \***************************************************************************/
 /* Check if ssize_t is not defined */
 #if EEMBED_HOSTED
@@ -101,6 +101,16 @@ Eembed_begin_C_functions
 #endif /* #ifndef _SSIZE_T_DEFINED_ */
 #endif /* #ifndef _SSIZE_T_DEFINED */
 /* End of ssize_t defined */
+
+#ifndef EEMBED_SSIZE_MAX
+#ifdef SSIZE_MAX
+#define EEMBED_SSIZE_MAX SSIZE_MAX
+#elif defined(INTPTR_MAX) && (INTPTR_MAX < SIZE_MAX)
+#define EEMBED_SSIZE_MAX INTPTR_MAX
+#else
+#define EEMBED_SSIZE_MAX (SIZE_MAX / 2)
+#endif
+#endif
 
 /***************************************************************************\
  * The biggest variation between __STDC_HOSTED__ and Freestanding platforms
