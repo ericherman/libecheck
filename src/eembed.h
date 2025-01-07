@@ -820,6 +820,33 @@ int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size);
 #endif
 
 /***************************************************************************\
+ * Often timing is important for embedded firmware, and a desire for a
+ * simple pause() function is desired.
+ *
+ * Each platform may have its own. Arduino has delay(uint16_t milliseconds),
+ * POSIX systems have nanosleep(timespec). Others may be added.
+ *
+ * Here, we #define a delay_ms_u16(millis) macro to provide a common interface.
+ * It should be noted that the uint16_t which is provided by Arduino has
+ * a max sleep time of about 65 seconds since 65535/1000 is 65.535, thus
+ * it might be wise to use multiple calls if hoping to sleep for more than
+ * a minute.
+\***************************************************************************/
+#if defined(ARDUINO)
+
+#define delay_ms_u16(milliseconds) delay(milliseconds)
+#define uptime_ms() millis()
+
+#else
+
+void eembed_posix_delay_ms_u16(uint16_t milliseconds);
+#define delay_ms_u16(milliseconds) eembed_posix_delay_ms_u16(milliseconds)
+uint64_t eembed_posix_uptime_ms(void);
+#define uptime_ms() eembed_posix_uptime_ms()
+
+#endif /* defined(ARDUINO) */
+
+/***************************************************************************\
  * On __STDC_HOSTED__ systems, memory allocation is taken for granted.
  * On Freestanding systems, there may be no malloc() function.
  *

@@ -2,17 +2,22 @@ echeck Changelog
 
 2025-01-07  Eric Herman <eric@freesa.org>
 
+	add delay_ms_u16(ms)
 	clarify eembed_lcg_pseudo_random_bytes code
 	ensure EEMBED_SSIZE_MAX is defined and use it
 	clarify some preprocessor usages
 	always export and test eembed_diy_strnlen
 	for debug builds, save the intermediate compile files
 
-	* Makefile: adjust CFLAGS for DEBUG to replace -pipe with -save-temps
-	* src/eembed.h: define EEMBED_SSIZE_MAX
+	* Makefile: adjust CFLAGS for DEBUG to replace -pipe with -save-temps,
+			add test-eembed-delay-ms-u16
+	* src/eembed.h: define EEMBED_SSIZE_MAX, delay_ms_u16(ms)
 	* src/eembed.c: use EEMBED_SSIZE_MAX, always export eembed_diy_strnlen,
-			clarify eembed_lcg_pseudo_random_bytes and preproc
+			clarify eembed_lcg_pseudo_random_bytes and preproc,
+			add delay_ms_u16() for posix, fall back to sleep(1s)
 	* tests/test-eembed-strlen.c: always test eembed_diy_strnlen
+	* tests/test-eembed-delay-ms-u16.c: added
+
 
 2024-08-13  Eric Herman <eric@freesa.org>
 	reorder and add section comments to eembed.h

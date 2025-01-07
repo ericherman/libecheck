@@ -175,6 +175,7 @@ test_progs=\
  test-eembed-chunk-alloc \
  test-eembed-chunk-realloc \
  test-eembed-malloc-free \
+ test-eembed-delay-ms-u16 \
  test_check_status \
  test_check_byte_array \
  test_check_byte_array_m \

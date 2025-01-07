@@ -18,6 +18,7 @@
 #ifdef __linux__
 #include <sys/random.h>
 #endif
+#include <time.h>
 #endif
 
 #if EEMBED_HOSTED
@@ -1461,4 +1462,68 @@ void eembed_system_print_init(void)
 {
 }
 
+#endif
+
+#define EEMBED_HAVE_USLEEP \
+	( ((_XOPEN_SOURCE >= 500) && !(_POSIX_C_SOURCE >= 200809L)) \
+		|| _DEFAULT_SOURCE )
+
+#if EEMBED_HOSTED || FAUX_FREESTANDING
+#include <unistd.h>
+#include <time.h>
+#if (_POSIX_C_SOURCE >= 199309L)
+#include <errno.h>
+#endif
+
+void eembed_posix_delay_ms_u16(uint16_t milliseconds)
+{
+	unsigned long seconds = milliseconds / 1000;
+	unsigned long msec = (milliseconds % 1000);
+	unsigned long usec = 1000 * msec;
+#if (_POSIX_C_SOURCE >= 199309L)
+	unsigned long nsec = 1000 * usec;
+	struct timespec req, rem;
+	int res;
+
+	rem.tv_sec = seconds;
+	rem.tv_nsec = nsec;
+	do {
+		req.tv_sec = rem.tv_sec;
+		req.tv_nsec = rem.tv_nsec;
+		rem.tv_sec = 0;
+		rem.tv_nsec = 0;
+		res = nanosleep(&req, &rem);
+	} while (res && errno == EINTR);
+#else
+	if (seconds) {
+		sleep(seconds);
+	}
+	if (usec) {
+#if EEMBED_HAVE_USLEEP
+		usleep(usec);
+#else
+		/* I guess we sleep longer than planned */
+		(void)usec;
+		sleep(1);
+	}
+#endif
+#endif
+}
+
+uint64_t eembed_posix_uptime_ms(void)
+{
+#if (_POSIX_C_SOURCE >= 199309L)
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+		return 0;
+	}
+
+	return ts.tv_sec * 1000 + ts.tv_nsec / 1e6;
+#else
+	clock_t now = clock();
+	/* the units of clock_t are hard to map to milliseconds */
+	return now * 1000;
+#endif
+}
 #endif
