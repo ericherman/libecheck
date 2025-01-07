@@ -618,7 +618,7 @@ debug-coverage/tests/coverage_html/src/index.html: debug-coverage/coverage.info
 
 .PHONY: check-coverage-debug
 check-coverage-debug: debug-coverage/tests/coverage_html/src/index.html
-	if [ $$(grep -c 'headerCovTableEntryHi">100.0 %' $< ) -eq 2 ]; then \
+	if [ $$(grep -c 'headerCovTableEntryHi">100.0' $< ) -eq 2 ]; then \
 		true; \
 	else grep headerCovTableEntryHi $< && \
 		false; \
@@ -648,7 +648,7 @@ debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html: \
 .PHONY: check-coverage-faux-fs
 check-coverage-faux-fs: \
  debug-coverage-faux-fs/tests/coverage-faux-fs_html/src/index.html
-	if [ $$(grep -c 'headerCovTableEntryHi">100.0 %' $< ) -eq 2 ]; then \
+	if [ $$(grep -c 'headerCovTableEntryHi">100.0' $< ) -eq 2 ]; then \
 		true; \
 	else grep headerCovTableEntryHi $< && \
 		false; \
