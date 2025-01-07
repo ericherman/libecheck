@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* demo-eembed-static-assert.c */
-/* Copyright (C) 2022 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2022-2025 Eric Herman <eric@freesa.org> */
 
 /* compile with:
    gcc        -Isrc src/eembed.c tests/demo-eembed-static-assert.c && ./a.out

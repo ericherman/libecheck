@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* echeck_arduino_demo.ino: using EasyCheck in arduino firmware */
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
-/* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2020-2025 Eric Herman <eric@freesa.org> */
 
 #include <Arduino.h>
 #include <HardwareSerial.h>

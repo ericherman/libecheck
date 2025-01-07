@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: LGPL-3.0-or-later
 # ctidy: a wrapper for GNU indent based on lindent
-# Copyright (C) 2016-2022 Eric Herman <eric@freesa.org>
+# Copyright (C) 2016-2025 Eric Herman <eric@freesa.org>
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
 LINDENT="indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0"

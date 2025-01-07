@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* eembed.h */
 /* libeembed: "E(asy)Embed": easier writing and testing of embedded libraries */
-/* Copyright (C) 2020-2024 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2020-2025 Eric Herman <eric@freesa.org> */
 
 #ifndef EEMBED_H
 #define EEMBED_H

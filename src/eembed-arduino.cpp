@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
-/* Copyright (C) 2019, 2020 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2019-2025 Eric Herman <eric@freesa.org> */
 
 #include <Arduino.h>
 #include <HardwareSerial.h>

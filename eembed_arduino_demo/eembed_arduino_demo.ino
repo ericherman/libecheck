@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 /* eembed_alloc_arduino_demo.ino : showing eembed-alloc in arduino */
-/* Copyright (C) 2020 Eric Herman */
+/* Copyright (C) 2020-2025 Eric Herman */
 /* https://github.com/ericherman/eembed-alloc */
 /* https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt */
 

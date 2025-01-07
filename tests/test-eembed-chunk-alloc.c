@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* test-eembed-mempy.c */
-/* Copyright (C) 2017, 2020 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2017-2025 Eric Herman <eric@freesa.org> */
 
 #include "eembed.h"
 

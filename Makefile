@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 # Makefile: "E(asy)Check" boiler-plate to make simple testing easier
-# Copyright (C) 2016-2024 Eric Herman <eric@freesa.org>
+# Copyright (C) 2016-2025 Eric Herman <eric@freesa.org>
 
 # $@ : target label
 # $< : the first prerequisite after the colon

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
-/* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2020-2025 Eric Herman <eric@freesa.org> */
 
 #ifndef EEMBED_ARDUINO_H
 #define EEMBED_ARDUINO_H 1

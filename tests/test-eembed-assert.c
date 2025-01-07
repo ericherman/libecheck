@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 /* test-eembed-assert.c */
-/* Copyright (C) 2021 Eric Herman <eric@freesa.org> */
+/* Copyright (C) 2021-2025 Eric Herman <eric@freesa.org> */
 
 #include "eembed.h"
 
