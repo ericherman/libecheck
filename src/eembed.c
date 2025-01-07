@@ -5,12 +5,8 @@
 
 #include "eembed.h"
 
-#include <float.h>
-#include <limits.h>
-#include <stddef.h>
-#include <stdint.h>
-
 #if EEMBED_HOSTED
+
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
