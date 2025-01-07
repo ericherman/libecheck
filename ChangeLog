@@ -2,6 +2,7 @@ echeck Changelog
 
 2025-01-07  Eric Herman <eric@freesa.org>
 
+	clarify eembed_lcg_pseudo_random_bytes code
 	ensure EEMBED_SSIZE_MAX is defined and use it
 	clarify some preprocessor usages
 	always export and test eembed_diy_strnlen
@@ -9,7 +10,8 @@ echeck Changelog
 
 	* Makefile: adjust CFLAGS for DEBUG to replace -pipe with -save-temps
 	* src/eembed.h: define EEMBED_SSIZE_MAX
-	* src/eembed.c: use EEMBED_SSIZE_MAX, always export eembed_diy_strnlen
+	* src/eembed.c: use EEMBED_SSIZE_MAX, always export eembed_diy_strnlen,
+			clarify eembed_lcg_pseudo_random_bytes and preproc
 	* tests/test-eembed-strlen.c: always test eembed_diy_strnlen
 
 2024-08-13  Eric Herman <eric@freesa.org>

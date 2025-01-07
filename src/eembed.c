@@ -901,6 +901,11 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 	return NULL;
 }
 
+static uint32_t eembed_min_u32(uint32_t a, uint32_t b)
+{
+	return a < b ? a : b;
+}
+
 /* seed is initialized to any arbitrary number */
 #ifndef Eembed_lcg_pseudo_random_seed
 #define Eembed_lcg_pseudo_random_seed 15541
@@ -908,7 +913,7 @@ char *eembed_diy_strstr(const char *haystack, const char *needle)
 uint32_t eembed_lcg_pseudo_random_last = Eembed_lcg_pseudo_random_seed;
 
 /* https://en.wikipedia.org/wiki/Linear_congruential_generator */
-int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size)
+int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t buf_size)
 {
 	/* constants from VMS's MTH$RANDOM, old versions of glibc */
 	/* see: wiki/Linear_congruential_generator#Parameters_in_common_use */
@@ -919,16 +924,17 @@ int eembed_lcg_pseudo_random_bytes(unsigned char *buf, size_t size)
 	/* is defined, thus it should be safe to use uint32_t */
 	/* See section 6.2.5:9 (Types) in the standard: */
 	/* https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf */
+	uint32_t random = 0;
 
+	size_t max_chunk_size = sizeof(random);
+	size_t chunk_size = 0;
 	size_t i = 0;
-	size_t j = 0;
 
-	while (i < size) {
-		uint32_t x = (eembed_lcg_pseudo_random_last * a) + c;
-		for (j = 0; j < sizeof(x) && i < size; ++j) {
-			buf[i++] = (x >> (j * 8));
-		}
-		eembed_lcg_pseudo_random_last = x;
+	for (i = 0; i < buf_size; i += chunk_size) {
+		random = (eembed_lcg_pseudo_random_last * a) + c;
+		chunk_size = eembed_min_u32(buf_size - i, max_chunk_size);
+		eembed_memcpy(buf + i, &random, chunk_size);
+		eembed_lcg_pseudo_random_last = random;
 	}
 
 	return 0;
