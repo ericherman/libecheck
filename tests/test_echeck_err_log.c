@@ -55,11 +55,12 @@ unsigned test_echeck_err_log(void)
 	void *orig = NULL;
 	unsigned failures = 0;
 
-#if !EEMBED_HOSTED
-	eembed_out_log->append_s(eembed_out_log, __FILE__);
-	eembed_out_log->append_s(eembed_out_log,
-				 " WE SHOULD NOT SEE THIS OUTPUT!\n");
-#endif
+	/* in HOSTED, FAUX_FREESTANDING or ARDUINO, eembed_system_print_init()
+	 * will set up eembed_out_log to actually print, otherwise the logs
+	 * will be the eembed_null_log which does nothing, like so: */
+	eembed_null_log->append_s(eembed_null_log, __FILE__);
+	eembed_null_log->append_s(eembed_null_log,
+				  " WE SHOULD NOT SEE THIS OUTPUT!\n");
 
 #if (0)
 	eembed_system_printc('(');
