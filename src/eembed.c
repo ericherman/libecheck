@@ -1475,7 +1475,7 @@ void eembed_system_print_init(void)
 #include <errno.h>
 #endif
 
-void eembed_posix_delay_ms_u16(uint16_t milliseconds)
+void eembed_hosted_delay_ms_u16(uint16_t milliseconds)
 {
 	unsigned long seconds = milliseconds / 1000;
 	unsigned long msec = (milliseconds % 1000);
@@ -1510,7 +1510,7 @@ void eembed_posix_delay_ms_u16(uint16_t milliseconds)
 #endif
 }
 
-uint64_t eembed_posix_uptime_ms(void)
+uint64_t eembed_hosted_uptime_ms(void)
 {
 #if (_POSIX_C_SOURCE >= 199309L)
 	struct timespec ts;

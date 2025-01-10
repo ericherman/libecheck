@@ -839,10 +839,10 @@ int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size);
 
 #else
 
-void eembed_posix_delay_ms_u16(uint16_t milliseconds);
-#define delay_ms_u16(milliseconds) eembed_posix_delay_ms_u16(milliseconds)
-uint64_t eembed_posix_uptime_ms(void);
-#define uptime_ms() eembed_posix_uptime_ms()
+void eembed_hosted_delay_ms_u16(uint16_t milliseconds);
+#define delay_ms_u16(milliseconds) eembed_hosted_delay_ms_u16(milliseconds)
+uint64_t eembed_hosted_uptime_ms(void);
+#define uptime_ms() eembed_hosted_uptime_ms()
 
 #endif /* defined(ARDUINO) */
 
