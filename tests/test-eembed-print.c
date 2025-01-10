@@ -17,6 +17,8 @@ static void eembed_reset_global_logs(void);
 		eembed_crash_if_false(x); \
 	}
 
+/* in the HOSTED case, we know the underlying implementation uses fprintf and
+ * fflush; we can test all the various functions on the eembed_log struct */
 #if EEMBED_HOSTED
 #include <stdarg.h>
 #include <inttypes.h>
@@ -66,6 +68,11 @@ static int test_eembed_fflush(FILE *stream)
 }
 
 #else /* EEMBED_HOSTED */
+
+/* in the FREESTANDING case, we know nothing about the underlying
+ * implementation and so we we will swap the whole function in the string case
+ * and not bother with all of the others because but this does not have the
+ * same utility of a test as the HOSTED case. */
 
 static void (*orig_out_append_s)(struct eembed_log *log, const char *str) =
     NULL;
@@ -141,6 +148,8 @@ unsigned test_eembed_print(void)
 	eembed_setup_global_logs(buf, sizeof(buf));
 
 	eembed_out_log->append_s(eembed_out_log, "foo");
+	found = eembed_strstr(buf, "foo");
+	reset_globals_and_crash_if_false(found == buf);
 	reset_globals_and_crash_if_false(eembed_strcmp(buf, "foo") == 0);
 #if EEMBED_HOSTED
 	reset_globals_and_crash_if_false(flush_stdout_cnt == 0);
@@ -153,10 +162,10 @@ unsigned test_eembed_print(void)
 	buf[0] = '\0';
 	eembed_err_log->append_s(eembed_err_log, "bar");
 	reset_globals_and_crash_if_false(eembed_strcmp(buf, "bar") == 0);
+
 #if EEMBED_HOSTED
 	reset_globals_and_crash_if_false(flush_stdout_cnt == 1);
 	reset_globals_and_crash_if_false(expect_stream == actual_stream);
-#endif /* EEMBED_HOSTED */
 
 	eembed_err_log->append_c(eembed_err_log, 'r');
 	reset_globals_and_crash_if_false(eembed_strcmp(buf, "r") == 0);
@@ -183,21 +192,16 @@ unsigned test_eembed_print(void)
 
 	eembed_err_log->append_eol(eembed_err_log);
 	reset_globals_and_crash_if_false(eembed_strcmp(buf, "\n") == 0);
-#if EEMBED_HOSTED
 	reset_globals_and_crash_if_false(flush_stderr_cnt == 1);
-#endif /* EEMBED_HOSTED */
 
-#if EEMBED_HOSTED
 	expect_stream = stdout;
-#endif /* EEMBED_HOSTED */
 	eembed_out_log->append_c(eembed_out_log, 'c');
 	reset_globals_and_crash_if_false(eembed_strcmp(buf, "c") == 0);
-#if EEMBED_HOSTED
 	reset_globals_and_crash_if_false(expect_stream == actual_stream);
-#endif /* EEMBED_HOSTED */
 
 	eembed_out_log->append_eol(eembed_out_log);
 	reset_globals_and_crash_if_false(eembed_strcmp(buf, "\n") == 0);
+#endif /* EEMBED_HOSTED */
 
 	eembed_reset_global_logs();
 
