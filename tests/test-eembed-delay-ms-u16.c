@@ -17,6 +17,15 @@ void test_eembed_delay_interval(uint16_t ms)
 	current_uptime = uptime_ms();
 	minimum_uptime = initial_uptime + ms;
 
+	if (current_uptime < minimum_uptime) {
+		eembed_err_log->append_eol(eembed_err_log);
+		eembed_err_log->append_s(eembed_err_log, "current_uptime: ");
+		eembed_err_log->append_ul(eembed_err_log, current_uptime);
+		eembed_err_log->append_eol(eembed_err_log);
+		eembed_err_log->append_s(eembed_err_log, "minimum_uptime: ");
+		eembed_err_log->append_ul(eembed_err_log, minimum_uptime);
+		eembed_err_log->append_eol(eembed_err_log);
+	}
 	eembed_crash_if_false(current_uptime >= minimum_uptime);
 }
 
