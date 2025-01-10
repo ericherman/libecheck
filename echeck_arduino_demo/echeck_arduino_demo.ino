@@ -6,8 +6,6 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "eembed-arduino.h"
-
 #include "echeck.h"
 
 /* additional files needed by the project:

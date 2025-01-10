@@ -7,7 +7,7 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "eembed-arduino.h"
+#include "eembed.h"
 
 // Allocate the buffer used by eembed_alloc
 const size_t global_buffer_len = 512;

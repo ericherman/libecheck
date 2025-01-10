@@ -6,11 +6,16 @@
 #ifndef ECHECK_H
 #define ECHECK_H
 
+#ifndef ARDUINO
 #ifdef __cplusplus
 #define Echeck_begin_C_functions extern "C" {
 #define Echeck_end_C_functions }
-#else
+#endif
+#endif
+#ifndef Echeck_begin_C_functions
 #define Echeck_begin_C_functions
+#endif
+#ifndef Echeck_end_C_functions
 #define Echeck_end_C_functions
 #endif
 

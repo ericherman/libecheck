@@ -78,7 +78,7 @@ unsigned int test_eembed_diy_getrandom(void)
 	eembed_crash_if_false((diff13 > 0 ? 1 : 0) == 1);
 	eembed_crash_if_false((diff23 > 0 ? 1 : 0) == 1);
 
-	eembed_err_log->append_s(eembed_err_log, msg);
+	print_err_s(msg);
 
 	/* next we will test that the period is very long */
 	/* we will assert that the buf3 is at least twice the buf_len */

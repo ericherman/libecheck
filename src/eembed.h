@@ -6,11 +6,20 @@
 #ifndef EEMBED_H
 #define EEMBED_H
 
+#ifdef ARDUINO
+#include "eembed-arduino.h"
+#endif
+
+#ifndef ARDUINO
 #ifdef __cplusplus
 #define Eembed_begin_C_functions extern "C" {
 #define Eembed_end_C_functions }
-#else
+#endif
+#endif
+#ifndef Eembed_begin_C_functions
 #define Eembed_begin_C_functions
+#endif
+#ifndef Eembed_end_C_functions
 #define Eembed_end_C_functions
 #endif
 
@@ -40,11 +49,6 @@ Eembed_begin_C_functions
  running in a hosted environment."
  https://gcc.gnu.org/onlinedocs/gcc/Standards.html
 */
-#ifndef EEMBED_HOSTED
-#ifdef ARDUINO
-#define EEMBED_HOSTED 0
-#endif
-#endif
 #ifndef EEMBED_HOSTED
 #ifdef __STDC_HOSTED__
 #define EEMBED_HOSTED __STDC_HOSTED__
@@ -119,194 +123,6 @@ Eembed_begin_C_functions
  * These #defines provide a way for calling code to do simple printing in a
  * form that will work in both environments.
 \***************************************************************************/
-
-#ifdef ARDUINO
-
-#ifndef eembed_out
-#define eembed_out Serial
-#endif
-
-#ifndef eembed_err
-#define eembed_err eembed_out
-#endif
-
-#ifndef print_s
-#define print_s(s) eembed_out.print(s)
-#endif
-
-#ifndef print_err_s
-#define print_err_s(s) eembed_err.print(s)
-#endif
-
-#ifndef print_i
-#define print_i(i) eembed_out.print(i)
-#endif
-
-#ifndef print_err_i
-#define print_err_i(i) eembed_err.print(i)
-#endif
-
-#ifndef print_l
-#define print_l(l) eembed_out.print(l)
-#endif
-
-#ifndef print_err_l
-#define print_err_l(l) eembed_err.print(l)
-#endif
-
-#ifndef print_ll
-#define print_ll(ll) eembed_out.print(ll)
-#endif
-
-#ifndef print_err_ll
-#define print_err_ll(ll) eembed_err.print(ll)
-#endif
-
-#ifndef print_u
-#define print_u(u) eembed_out.print(u)
-#endif
-
-#ifndef print_err_u
-#define print_err_u(u) eembed_err.print(u)
-#endif
-
-#ifndef print_ul
-#define print_ul(ul) eembed_out.print(ul)
-#endif
-
-#ifndef print_err_ul
-#define print_err_ul(ul) eembed_err.print(ul)
-#endif
-
-#ifndef print_ull
-#define print_ull(ull) eembed_out.print(ull)
-#endif
-
-#ifndef print_err_ull
-#define print_err_ull(ull) eembed_err.print(ull)
-#endif
-
-#ifndef print_z
-#define print_z(z) eembed_out.print(z)
-#endif
-
-#ifndef print_err_z
-#define print_err_z(z) eembed_err.print(z)
-#endif
-
-#ifndef print_c
-#define print_c(c) eembed_out.print(c)
-#endif
-
-#ifndef print_err_c
-#define print_err_c(c) eembed_err.print(c)
-#endif
-
-#ifndef print_f
-#define print_f(f) eembed_out.print(f)
-#endif
-
-#ifndef print_err_f
-#define print_err_f(f) eembed_err.print(f)
-#endif
-
-#ifndef print_lf
-#define print_lf(lf) eembed_out.print(lf)
-#endif
-
-#ifndef print_err_lf
-#define print_err_lf(lf) eembed_err.print(lf)
-#endif
-
-#ifndef print_fd
-#define print_fd(f,d) eembed_out.print(f, d)
-#endif
-
-#ifndef print_err_fd
-#define print_err_fd(f,d) eembed_err.print(f, d)
-#endif
-
-#ifndef print_lfd
-#define print_lfd(lf,d) eembed_out.print(lf, d)
-#endif
-
-#ifndef print_err_lfd
-#define print_err_lfd(lf,d) eembed_err.print(lf, d)
-#endif
-
-#ifndef print_x
-#define print_x(x) eembed_out.print(x, HEX)
-#endif
-
-#ifndef print_err_x
-#define print_err_x(x) eembed_err.print(x, HEX)
-#endif
-
-#ifndef print_lx
-#define print_lx(lx) eembed_out.print(lx, HEX)
-#endif
-
-#ifndef print_err_lx
-#define print_err_lx(lx) eembed_err.print(lx, HEX)
-#endif
-
-#ifndef print_u8_bin
-#define print_u8_bin(u8) eembed_out.print(u8, BIN)
-#endif
-
-#ifndef print_err_u8_bin
-#define print_err_u8_bin(u8) eembed_err.print(u8, BIN)
-#endif
-
-#ifndef print_u16_bin
-#define print_u16_bin(u16) eembed_out.print(u16, BIN)
-#endif
-
-#ifndef print_err_u16_bin
-#define print_err_u16_bin(u16) eembed_err.print(u16, BIN)
-#endif
-
-#ifndef print_u32_bin
-#define print_u32_bin(u32) eembed_out.print(u32, BIN)
-#endif
-
-#ifndef print_err_u32_bin
-#define print_err_u32_bin(u32) eembed_err.print(u32, BIN)
-#endif
-
-#ifndef print_u64_bin
-#define print_u64_bin(u64) eembed_out.print(u64, BIN)
-#endif
-
-#ifndef print_err_u64_bin
-#define print_err_u64_bin(u64) eembed_err.print(u64, BIN)
-#endif
-
-#ifndef print_u8_hex
-#define print_u8_hex(u8) eembed_out.print(u8, HEX)
-#endif
-
-#ifndef print_err_u8_hex
-#define print_err_u8_hex(u8) eembed_err.print(u8, HEX)
-#endif
-
-#ifndef print_vp_hex
-#define print_vp_hex(p) eembed_out.print((uintptr_t)p, HEX)
-#endif
-
-#ifndef print_err_vp_hex
-#define print_err_vp_hex(p) eembed_err.print((uintptr_t)p, HEX)
-#endif
-
-#ifndef print_eol
-#define print_eol(void) eembed_out.println()
-#endif
-
-#ifndef print_err_eol
-#define print_err_eol(void) eembed_err.println()
-#endif
-
-#endif /* #ifdef ARDUINO */
 
 #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
 
@@ -832,19 +648,18 @@ int eembed_system_getrandom_bytes(unsigned char *buf, size_t buf_size);
  * it might be wise to use multiple calls if hoping to sleep for more than
  * a minute.
 \***************************************************************************/
-#if defined(ARDUINO)
 
-#define delay_ms_u16(milliseconds) delay(milliseconds)
-#define uptime_ms() millis()
-
-#else
-
+#if (EEMBED_HOSTED || FAUX_FREESTANDING)
+#ifndef delay_ms_u16
 void eembed_hosted_delay_ms_u16(uint16_t milliseconds);
 #define delay_ms_u16(milliseconds) eembed_hosted_delay_ms_u16(milliseconds)
+#endif
+
+#ifndef uptime_ms
 uint64_t eembed_hosted_uptime_ms(void);
 #define uptime_ms() eembed_hosted_uptime_ms()
-
-#endif /* defined(ARDUINO) */
+#endif
+#endif /* (EEMBED_HOSTED || FAUX_FREESTANDING) */
 
 /***************************************************************************\
  * On __STDC_HOSTED__ systems, memory allocation is taken for granted.
@@ -924,6 +739,237 @@ struct eembed_str_buf {
 struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 					    struct eembed_str_buf *ctx,
 					    char *buf, size_t size);
+
+#ifndef print_s
+#define print_s(s) eembed_out_log->append_s(eembed_out_log, s)
+#endif
+
+#ifndef print_err_s
+#define print_err_s(s) eembed_err_log->append_s(eembed_err_log, s)
+#endif
+
+#ifndef print_i
+#define print_i(i) eembed_out_log->append_l(eembed_out_log, i)
+#endif
+
+#ifndef print_err_i
+#define print_err_i(i) eembed_err_log->append_l(eembed_err_log, i)
+#endif
+
+#ifndef print_l
+#define print_l(l) eembed_out_log->append_l(eembed_out_log, l)
+#endif
+
+#ifndef print_err_l
+#define print_err_l(l) eembed_err_log->append_l(eembed_err_log, l)
+#endif
+
+#ifndef print_ll
+#define print_ll(ll) eembed_out_log->append_l(eembed_out_log, ll)
+#endif
+
+#ifndef print_err_ll
+#define print_err_ll(ll) eembed_err_log->append_l(eembed_err_log, ll)
+#endif
+
+#ifndef print_u
+#define print_u(u) eembed_out_log->append_ul(eembed_out_log, u)
+#endif
+
+#ifndef print_err_u
+#define print_err_u(u) eembed_err_log->append_ul(eembed_err_log, u)
+#endif
+
+#ifndef print_ul
+#define print_ul(ul) eembed_out_log->append_ul(eembed_out_log, ul)
+#endif
+
+#ifndef print_err_ul
+#define print_err_ul(ul) eembed_err_log->append_ul(eembed_err_log, ul)
+#endif
+
+#ifndef print_ull
+#define print_ull(ull) eembed_out_log->append_ul(eembed_out_log, ull)
+#endif
+
+#ifndef print_err_ull
+#define print_err_ull(ull) eembed_err_log->append_ul(eembed_err_log, ull)
+#endif
+
+#ifndef print_z
+#define print_z(z) eembed_out_log->append_ul(eembed_out_log, z)
+#endif
+
+#ifndef print_err_z
+#define print_err_z(z) eembed_err_log->append_ul(eembed_err_log, z)
+#endif
+
+#ifndef print_c
+#define print_c(c) eembed_out_log->append_c(eembed_out_log, c)
+#endif
+
+#ifndef print_err_c
+#define print_err_c(c) eembed_err_log->append_c(eembed_err_log, c)
+#endif
+
+#ifndef print_f
+#define print_f(f) eembed_out_log->append_f(eembed_out_log, f)
+#endif
+
+#ifndef print_err_f
+#define print_err_f(f) eembed_err_log->append_f(eembed_err_log, f)
+#endif
+
+#ifndef print_lf
+#define print_lf(lf) eembed_out_log->append_f(eembed_out_log, lf)
+#endif
+
+#ifndef print_err_lf
+#define print_err_lf(lf) eembed_err_log->append_f(eembed_err_log, lf)
+#endif
+
+#ifndef print_fd
+/* TODO: this should be easy to add to eembed_log, but has not been done */
+#define print_fd(f,d) eembed_out_log->append_f(eembed_out_log, f)
+#endif
+
+#ifndef print_err_fd
+/* TODO: this should be easy to add to eembed_log, but has not been done */
+#define print_err_fd(f,d) eembed_err_log->append_f(eembed_err_log, f)
+#endif
+
+#ifndef print_lfd
+/* TODO: this should be easy to add to eembed_log, but has not been done */
+#define print_lfd(lf,d) eembed_out_log->append_f(eembed_out_log, lf)
+#endif
+
+#ifndef print_err_lfd
+/* TODO: this should be easy to add to eembed_log, but has not been done */
+#define print_err_lfd(lf,d) eembed_out_log->append_f(eembed_out_log, lf)
+#endif
+
+#ifndef print_log_x
+#define print_log_x(log, x) \
+	do { \
+		char eembed_x_str[25] = { '\0' }; \
+		eembed_ulong_to_hex(eembed_x_str, sizeof(eembed_x_str), x); \
+		log->append_s(log, str); \
+	} while (0)
+#endif
+
+#ifndef print_x
+#define print_x(x) print_log_x(eembed_out_log, (uint64_t)x)
+#endif
+
+#ifndef print_err_x
+#define print_err_x(x) print_log_x(eembed_err_log, (uint64_t)x)
+#endif
+
+#ifndef print_lx
+#define print_lx(lx) print_log_x(eembed_out_log, (uint64_t)lx)
+#endif
+
+#ifndef print_err_lx
+#define print_err_lx(lx) print_log_x(eembed_err_log, (uint64_t)lx)
+#endif
+
+#ifndef print_log_u8_bin
+#define print_log_u8_bin(log, u8) \
+	do { \
+		uint8_t eembed_tmp_u8 = (u8); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 7)) ? '1' : '0'); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 6)) ? '1' : '0'); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 5)) ? '1' : '0'); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 4)) ? '1' : '0'); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 3)) ? '1' : '0'); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 2)) ? '1' : '0'); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 1)) ? '1' : '0'); \
+		log->append_c(log, (eembed_tmp_u8 & (1 << 0)) ? '1' : '0'); \
+	} while (0)
+#endif
+
+#ifndef print_u8_bin
+#define print_u8_bin(u8) print_log_u8_bin(eembed_out_log, u8)
+#endif
+
+#ifndef print_err_u8_bin
+#define print_err_u8_bin(u8) print_log_u8_bin(eembed_err_log, u8)
+#endif
+
+#ifndef print_log_u16_bin
+#define print_log_u16_bin(log, u16) \
+	do { \
+		uint16_t eembed_tmp_u16 = (u16); \
+		print_log_u8_bin(log, 0xFF & (eembed_tmp_u16 >> 8)); \
+		print_log_u8_bin(log, 0xFF & eembed_tmp_u16); \
+	} while (0)
+#endif
+
+#ifndef print_u16_bin
+#define print_u16_bin(u16) print_log_u16_bin(eembed_out_log, u16)
+#endif
+
+#ifndef print_err_u16_bin
+#define print_err_u16_bin(u16) print_log_u16_bin(eembed_err_log, u16)
+#endif
+
+#ifndef print_log_u32_bin
+#define print_log_u32_bin(log, u32) \
+	do { \
+		uint32_t eembed_tmp_u32 = (u32); \
+		print_log_u16_bin(log, 0xFFFF & (eembed_tmp_u32 >> 16)); \
+		print_log_u16_bin(log, 0xFFFF & eembed_tmp_u32); \
+	} while (0)
+#endif
+
+#ifndef print_u32_bin
+#define print_u32_bin(u32) print_log_u32_bin(eembed_out_log, u32)
+#endif
+
+#ifndef print_err_u32_bin
+#define print_err_u32_bin(u32) print_log_u32_bin(eembed_err_log, u32)
+#endif
+
+#ifndef print_log_u64_bin
+#define print_log_u64_bin(log, u64) \
+	do { \
+		uint64_t eembed_tmp_u64 = (u64); \
+		print_log_u32_bin(log, 0xFFFFFFFF & (eembed_tmp_u64 >> 32)); \
+		print_log_u32_bin(log, 0xFFFFFFFF & eembed_tmp_u64); \
+	} while (0)
+#endif
+
+#ifndef print_u64_bin
+#define print_u64_bin(u64) print_log_u64_bin(eembed_out_log, u64)
+#endif
+
+#ifndef print_err_u64_bin
+#define print_err_u64_bin(u64) print_log_u64_bin(eembed_err_log, u64)
+#endif
+
+#ifndef print_u8_hex
+#define print_u8_hex(u8) print_log_x(eembed_out_log, 0xFF & (u8))
+#endif
+
+#ifndef print_err_u8_hex
+#define print_err_u8_hex(u8) print_log_x(eembed_err_log, 0xFF & (u8))
+#endif
+
+#ifndef print_vp_hex
+#define print_vp_hex(p) eembed_out_log->append_vp(eembed_out_log, p)
+#endif
+
+#ifndef print_err_vp_hex
+#define print_err_vp_hex(p) eembed_err_log->append_vp(eembed_err_log, p)
+#endif
+
+#ifndef print_eol
+#define print_eol(void) eembed_out_log->append_eol(eembed_out_log)
+#endif
+
+#ifndef print_err_eol
+#define print_err_eol(void) eembed_err_log->append_eol(eembed_err_log)
+#endif
 
 #ifndef EEMBED_NOP
 #define EEMBED_NOP() do { ((void)0); } while (0)

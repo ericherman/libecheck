@@ -677,6 +677,7 @@ tidy: bin/ctidy
 		-T eembed_log \
 		-T eembed_str_buf \
 		`find src tests -name '*.h' -o -name '*.c' -o -name '*.cpp'` \
+		eembed_tests_arduino/eembed_tests_arduino.ino \
 		eembed_arduino_demo/eembed_arduino_demo.ino \
 		echeck_tests_arduino/echeck_tests_arduino.ino \
 		echeck_arduino_demo/echeck_arduino_demo.ino

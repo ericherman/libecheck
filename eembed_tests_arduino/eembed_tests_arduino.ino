@@ -6,36 +6,33 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "echeck.h"
+#include "eembed.h"
 
 /* prototypes for the test functions, are not needed in the hosted case
  * becase these are normally called by individual programs in parallel, but
  * we need these exported because this firmware will run the tests from each
  * test compilation unit */
-unsigned test_check_byte_array(void);
-unsigned test_check_byte_array_m(void);
-unsigned test_check_byte_array_m_2(void);
-unsigned test_check_char(void);
-unsigned test_check_char_m(void);
-unsigned test_check_double(void);
-unsigned test_check_int(void);
-unsigned test_check_int_m(void);
-unsigned test_check_long(void);
-unsigned test_check_long_m(void);
-unsigned test_check_ptr(void);
-unsigned test_check_ptr_m(void);
-unsigned test_check_ptr_not_null(void);
-unsigned test_check_size_t(void);
-unsigned test_check_size_t_m(void);
-unsigned test_check_status(void);
-unsigned test_check_str(void);
-unsigned test_check_str_m(void);
-unsigned test_check_str_null_ptr(void);
-unsigned test_check_unsigned_int(void);
-unsigned test_check_unsigned_int_m(void);
-unsigned test_check_unsigned_long(void);
-unsigned test_check_unsigned_long_m(void);
-
+unsigned test_eembed_log(void);
+unsigned test_eembed_assert(void);
+unsigned test_eembed_print(void);
+unsigned test_eembed_delay_ms_u16(void);
+unsigned test_eembed_long_to_str(void);
+unsigned test_eembed_ulong_to_str(void);
+unsigned test_eembed_ulong_to_hex(void);
+unsigned test_eembed_float_to_str(void);
+unsigned test_eembed_str_to_num(void);
+unsigned test_eembed_memcmp(void);
+unsigned test_eembed_memcpy(void);
+unsigned test_eembed_memmove(void);
+unsigned test_eembed_memset(void);
+unsigned test_eembed_strcat(void);
+unsigned test_eembed_strcpy(void);
+unsigned test_eembed_strlen(void);
+unsigned test_eembed_strstr(void);
+unsigned test_eembed_malloc_free(void);
+unsigned test_eembed_chunk_alloc(void);
+unsigned test_eembed_chunk_realloc(void);
+unsigned test_eembed_random_bytes(void);
 void setup(void)
 {
 	eembed_arduino_serial_log_init();
@@ -87,29 +84,27 @@ void loop(void)
 
 	unsigned failures = 0;
 
-	failures += Run_test(test_check_byte_array);
-	failures += Run_test(test_check_byte_array_m);
-	failures += Run_test(test_check_byte_array_m_2);
-	failures += Run_test(test_check_char);
-	failures += Run_test(test_check_char_m);
-	failures += Run_test(test_check_double);
-	failures += Run_test(test_check_int);
-	failures += Run_test(test_check_int_m);
-	failures += Run_test(test_check_long);
-	failures += Run_test(test_check_long_m);
-	failures += Run_test(test_check_ptr);
-	failures += Run_test(test_check_ptr_m);
-	failures += Run_test(test_check_ptr_not_null);
-	failures += Run_test(test_check_size_t);
-	failures += Run_test(test_check_size_t_m);
-	failures += Run_test(test_check_status);
-	failures += Run_test(test_check_str);
-	failures += Run_test(test_check_str_m);
-	failures += Run_test(test_check_str_null_ptr);
-	failures += Run_test(test_check_unsigned_int);
-	failures += Run_test(test_check_unsigned_int_m);
-	failures += Run_test(test_check_unsigned_long);
-	failures += Run_test(test_check_unsigned_long_m);
+	failures += Run_test(test_eembed_log);
+	failures += Run_test(test_eembed_assert);
+	failures += Run_test(test_eembed_print);
+	failures += Run_test(test_eembed_delay_ms_u16);
+	failures += Run_test(test_eembed_long_to_str);
+	failures += Run_test(test_eembed_ulong_to_str);
+	failures += Run_test(test_eembed_ulong_to_hex);
+	failures += Run_test(test_eembed_float_to_str);
+	failures += Run_test(test_eembed_str_to_num);
+	failures += Run_test(test_eembed_memcmp);
+	failures += Run_test(test_eembed_memcpy);
+	failures += Run_test(test_eembed_memmove);
+	failures += Run_test(test_eembed_memset);
+	failures += Run_test(test_eembed_strcat);
+	failures += Run_test(test_eembed_strcpy);
+	failures += Run_test(test_eembed_strlen);
+	failures += Run_test(test_eembed_strstr);
+	failures += Run_test(test_eembed_malloc_free);
+	failures += Run_test(test_eembed_chunk_alloc);
+	failures += Run_test(test_eembed_chunk_realloc);
+	failures += Run_test(test_eembed_random_bytes);
 
 	Serial.println("==================================================");
 	Serial.println("Ending test run");
@@ -141,5 +136,18 @@ void loop(void)
 		}
 		delay(delay_ms);
 	}
+
 	Serial.println();
+	Serial.println();
+	Serial.println("TESTING eembed_assert(false), EXPECT A CRASH!");
+	for (size_t i = 5; i; --i) {
+		Serial.println(i);
+		delay(1000);
+	}
+	eembed_assert(1 == 0);
+
+	Serial.println("Wait ... how did we get here?");
+	Serial.println("The 'eembed_assert(1 == 0)' failed to crash?");
+	Serial.println("THIS IS BAD!");
+	delay(10 * 1000);
 }

@@ -2,10 +2,7 @@
 /* libecheck: "E(asy)Check" boiler-plate to make simple testing easier */
 /* Copyright (C) 2019-2025 Eric Herman <eric@freesa.org> */
 
-#include <Arduino.h>
-#include <HardwareSerial.h>
-
-#include "eembed-arduino.h"
+#include "eembed.h"
 
 unsigned long eembed_die_delay = 5 * 1000;
 
