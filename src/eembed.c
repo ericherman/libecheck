@@ -64,6 +64,13 @@ void eembed_no_op_append_f(struct eembed_log *log, long double f)
 	(void)f;
 }
 
+void eembed_no_op_append_fd(struct eembed_log *log, long double f, uint8_t d)
+{
+	(void)log;
+	(void)f;
+	(void)d;
+}
+
 void eembed_no_op_append_vp(struct eembed_log *log, const void *ptr)
 {
 	(void)log;
@@ -82,6 +89,7 @@ struct eembed_log eembed_no_op_log = {
 	eembed_no_op_append_ul,
 	eembed_no_op_append_l,
 	eembed_no_op_append_f,
+	eembed_no_op_append_fd,
 	eembed_no_op_append_vp,
 	eembed_no_op_append_eol,
 };
@@ -140,6 +148,13 @@ void eembed_log_str_append_f(struct eembed_log *log, long double f)
 	log->append_s(log, str);
 }
 
+void eembed_log_str_append_fd(struct eembed_log *log, long double f, uint8_t d)
+{
+	char str[25] = { '\0' };
+	eembed_float_fraction_to_str(str, sizeof(str), f, d);
+	log->append_s(log, str);
+}
+
 void eembed_log_str_append_vp(struct eembed_log *log, const void *ptr)
 {
 	char str[25] = { '\0' };
@@ -167,6 +182,7 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 	log->append_ul = eembed_log_str_append_ul;
 	log->append_l = eembed_log_str_append_l;
 	log->append_f = eembed_log_str_append_f;
+	log->append_fd = eembed_log_str_append_fd;
 	log->append_vp = eembed_log_str_append_vp;
 	log->append_eol = eembed_log_str_append_eol;
 
@@ -276,6 +292,14 @@ void eembed_fprintf_append_f(struct eembed_log *log, long double f)
 	eembed_fprintf(stream, "%Lg", f);
 }
 
+void eembed_fprintf_append_fd(struct eembed_log *log, long double f, uint8_t d)
+{
+	FILE *stream = eembed_log_get_stream_from_context(log);
+	char format[20];
+	sprintf(format, "%%.%" PRIu8 "Lf", d);
+	eembed_fprintf(stream, format, f);
+}
+
 void eembed_fprintf_append_vp(struct eembed_log *log, const void *ptr)
 {
 	FILE *stream = eembed_log_get_stream_from_context(log);
@@ -299,6 +323,7 @@ struct eembed_log eembed_stderr_log = {
 	eembed_fprintf_append_ul,
 	eembed_fprintf_append_l,
 	eembed_fprintf_append_f,
+	eembed_fprintf_append_fd,
 	eembed_fprintf_append_vp,
 	eembed_fprintf_append_eol
 };
@@ -312,6 +337,7 @@ struct eembed_log eembed_stdout_log = {
 	eembed_fprintf_append_ul,
 	eembed_fprintf_append_l,
 	eembed_fprintf_append_f,
+	eembed_fprintf_append_fd,
 	eembed_fprintf_append_vp,
 	eembed_fprintf_append_eol
 };
@@ -320,30 +346,41 @@ struct eembed_log *eembed_out_log = &eembed_stdout_log;
 
 char *eembed_sprintf_long_to_str(char *buf, size_t size, int64_t l)
 {
-	char str[25];
-	sprintf(str, "%" PRId64, l);
-	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
+	int written = buf ? snprintf(buf, size, "%" PRId64, l) : -1;
+	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
 }
 
 char *eembed_sprintf_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
-	char str[25];
-	sprintf(str, "%" PRIu64, ul);
-	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
+	int written = buf ? snprintf(buf, size, "%" PRIu64, ul) : -1;
+	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
 }
 
 char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t ul)
 {
-	char str[25];
-	sprintf(str, "%02" PRIX64, ul);
-	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
+	int written = buf ? snprintf(buf, size, "%02" PRIX64, ul) : -1;
+	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
 }
 
 char *eembed_sprintf_float_to_str(char *buf, size_t size, long double f)
 {
-	char str[25];
-	sprintf(str, "%Lg", f);
-	return eembed_strcpy_safe(buf, size, str) ? NULL : buf;
+	int written = buf ? snprintf(buf, size, "%Lg", f) : -1;
+	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
+}
+
+char *eembed_sprintf_float_fraction_to_str(char *buf, size_t size,
+					   long double f, uint8_t d)
+{
+	char format[20];
+	int written = 0;
+	if (!buf) {
+		return NULL;
+	}
+
+	written = snprintf(format, sizeof(format), "%%.%" PRIu8 "Lf", d);
+	eembed_assert(((unsigned)written) < sizeof(format));
+	written = snprintf(buf, size, format, f);
+	return ((unsigned)written) >= size ? NULL : buf;
 }
 
 #else /* #if EEMBED_HOSTED */
@@ -439,20 +476,39 @@ char *eembed_diy_ulong_to_hex(char *buf, size_t size, uint64_t z)
 	return eembed_bytes_to_hex(buf, size, ul_bytes, ul_bytes_size);
 }
 
-char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
+char *eembed_bogus_float_fraction_to_str(char *buf, size_t size, long double f,
+					 uint8_t digits)
 {
+	long double adds_for_roundings[] = {
+		0.5,
+		0.05,
+		0.005,
+		0.0005,
+		0.00005,
+		0.000005,
+		0.0000005,
+		0.00000005,
+		0.000000005,
+		0.0000000005,
+		0.00000000005
+	};
+	size_t max_digits =
+	    sizeof(adds_for_roundings) / sizeof(adds_for_roundings[0]) - 1;
 	size_t pos = 0;
 	size_t avail = 0;
 	size_t i = 0;
-	size_t max_digits = 6;
-	long double min_to_print = 0.000001;
-	long double add_for_rounding = (min_to_print / 2.0);
-	char c[2];
+	char c[2] = { '\0', '\0' };
 	unsigned long ul = 0;
+	long double add_for_rounding = 0.0;
 
-	eembed_memset(c, 0x00, sizeof(c));
 	if (buf && size) {
 		eembed_memset(buf, 0x00, size);
+	}
+
+	if (digits > max_digits) {
+		add_for_rounding = adds_for_roundings[max_digits];
+	} else {
+		add_for_rounding = adds_for_roundings[digits];
 	}
 
 	if (!buf || size < 2) {
@@ -462,8 +518,20 @@ char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 
 	if (f != f) {
 		return (avail < 3) ? NULL : eembed_strncat(buf, "nan", 4);
-	} else if (f == 0.0) {
-		return (avail < 3) ? NULL : eembed_strncat(buf, "0.0", 4);
+	}
+	if (f == 0.0) {
+		eembed_strcat(buf, "0");
+		--avail;
+		if (!digits || avail < 2) {
+			return buf;
+		}
+		eembed_strcat(buf, ".0");
+		avail -= 2;
+		for (i = 1; avail && i < digits && i < max_digits; ++i) {
+			eembed_strcat(buf, "0");
+			--avail;
+		}
+		return buf;
 	}
 
 	if (f < 0.0) {
@@ -487,44 +555,58 @@ char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
 
 	if ((f - (long double)ULONG_MAX) >= 1.0) {
 		return (avail < 3) ? NULL : eembed_strncat(buf, "big", 4);
-	} else if (f < min_to_print) {
+	} else if (f < add_for_rounding) {
 		return (avail < 3) ? NULL : eembed_strncat(buf, "wee", 4);
 	}
 
 	ul = (unsigned long)f;
+	f = f - (long double)ul;
 	pos = eembed_strnlen(buf, size);
 	avail = (pos > size) ? 0 : size - pos;
 	eembed_ulong_to_str(buf + pos, avail, ul);
-	f = f - (long double)ul;
-	if (eembed_strnlen(buf, size) < (size - 1)) {
-		eembed_strncat(buf, ".", 2);
-	} else {
-		return f > min_to_print ? NULL : buf;
-	}
 	pos = eembed_strnlen(buf, size);
 	avail = (pos > (size - 1)) ? 0 : (size - 1) - pos;
-	if (!avail) {
-		return f > min_to_print ? NULL : buf;
+	if (avail >= 2) {
+		eembed_strncat(buf, ".", 2);
+		--avail;
+	} else {
+		return f > add_for_rounding ? NULL : buf;
 	}
-
 	if (max_digits > avail) {
 		max_digits = avail;
 	}
+	if (max_digits < digits) {
+		digits = max_digits;
+		add_for_rounding = adds_for_roundings[digits];
+	}
 	f += add_for_rounding;
-	for (i = 0; (i < max_digits) && (i == 0 || f >= min_to_print); ++i) {
+	for (i = 0;
+	     (i < max_digits) && (i == 0 || f >= add_for_rounding || digits);
+	     --digits, ++i) {
 		f = f * 10;
 		ul = (unsigned long)f;
 		c[0] = '0' + (ul % 10);
 		eembed_strncat(buf, c, 2);
 		f = f - ul;
-		min_to_print = min_to_print * 10;
+		add_for_rounding = add_for_rounding * 10;
 	}
 	return buf;
+}
+
+char *eembed_bogus_float_to_str(char *buf, size_t size, long double f)
+{
+	return eembed_bogus_float_fraction_to_str(buf, size, f, 6);
 }
 
 char *eembed_diy_float_to_str(char *buf, size_t size, long double f)
 {
 	return eembed_bogus_float_to_str(buf, size, f);
+}
+
+char *eembed_diy_float_fraction_to_str(char *buf, size_t size, long double f,
+				       uint8_t d)
+{
+	return eembed_bogus_float_fraction_to_str(buf, size, f, d);
 }
 
 static char eembed_nibble_to_hex(unsigned char nibble)
@@ -1446,6 +1528,7 @@ struct eembed_log eembed_faux_freestanding_log = {
 	eembed_log_str_append_ul,
 	eembed_log_str_append_l,
 	eembed_log_str_append_f,
+	eembed_log_str_append_fd,
 	eembed_log_str_append_vp,
 	eembed_log_str_append_eol,
 };
@@ -1515,11 +1598,8 @@ uint64_t eembed_hosted_uptime_ms(void)
 #if (_POSIX_C_SOURCE >= 199309L)
 	struct timespec ts;
 
-	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-		return 0;
-	}
-
-	return ts.tv_sec * 1000 + ts.tv_nsec / 1e6;
+	return (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+	    ? 0 : (ts.tv_sec * 1000 + ts.tv_nsec / 1e6);
 #else
 	clock_t now = clock();
 	/* the units of clock_t are hard to map to milliseconds */

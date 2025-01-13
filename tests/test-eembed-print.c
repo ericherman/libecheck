@@ -180,6 +180,32 @@ unsigned test_eembed_print(void)
 	found = eembed_strstr(buf, "1.5");
 	reset_globals_and_crash_if_false(found == buf);
 
+	eembed_err_log->append_fd(eembed_err_log, 20.0 / 3.0, 3);
+	found = eembed_strstr(buf, "6.667");
+	if (!found) {
+		found = eembed_strstr(buf, "6.666");
+	}
+	if (found != buf) {
+		print_err_eol();
+		print_err_s(__FILE__);
+		print_err_s(" +");
+		print_err_i(__LINE__);
+		print_err_s(" :   buf '");
+		print_err_s(buf);
+		print_err_s("'");
+		print_err_eol();
+		print_err_s(__FILE__);
+		print_err_s(" +");
+		print_err_i(__LINE__);
+		print_err_s(" : found '");
+		print_err_s(found);
+		print_err_s("'");
+		print_err_eol();
+	}
+
+	reset_globals_and_crash_if_false(found == buf);
+	reset_globals_and_crash_if_false(eembed_strlen(found) == 5);
+
 	eembed_err_log->append_vp(eembed_err_log, NULL);
 	found = eembed_strstr(buf, "00");
 	if (!found) {

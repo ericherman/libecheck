@@ -72,9 +72,10 @@ all-obj: $(foreach DIR,$(build_dirs),\
 
 
 # As c11 is probably "everywhere enough", most should use it,
-# however the code should still compile and run with -std=c89
-CSTD_CFLAGS=-std=c89
-# CSTD_CFLAGS=-std=gnu89
+# however the code should still compile and run with C89,
+# provided there is a snprintf in the HOSTED case, e.g.: -std=gnu89
+# CSTD_CFLAGS=-std=c89
+CSTD_CFLAGS=-std=gnu89
 # CSTD_CFLAGS=-std=c11
 # CSTD_CFLAGS=-std=gnu11
 
@@ -160,6 +161,7 @@ test_progs=\
  test-eembed-ulong-to-str \
  test-eembed-ulong-to-hex \
  test-eembed-float-to-str \
+ test-eembed-float-fraction-to-str \
  test-eembed-memcmp \
  test-eembed-memcpy \
  test-eembed-memmove \

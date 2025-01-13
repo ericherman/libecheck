@@ -371,6 +371,11 @@ Eembed_begin_C_functions
 	eembed_sprintf_float_to_str(buf, size, f)
 #endif
 
+#ifndef eembed_float_fraction_to_str
+#define eembed_float_fraction_to_str(buf, size, f, d) \
+	eembed_sprintf_float_fraction_to_str(buf, size, f, d)
+#endif
+
 #ifndef eembed_ulong_to_hex
 #define eembed_ulong_to_hex(buf, size, z) \
 	eembed_sprintf_ulong_to_hex(buf, size, z)
@@ -379,6 +384,8 @@ Eembed_begin_C_functions
 char *eembed_sprintf_long_to_str(char *buf, size_t size, int64_t l);
 char *eembed_sprintf_ulong_to_str(char *buf, size_t size, uint64_t ul);
 char *eembed_sprintf_float_to_str(char *buf, size_t size, long double f);
+char *eembed_sprintf_float_fraction_to_str(char *buf, size_t size,
+					   long double f, uint8_t d);
 char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t z);
 
 #endif /* #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING))) */
@@ -386,6 +393,8 @@ char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t z);
 char *eembed_diy_long_to_str(char *buf, size_t size, int64_t l);
 char *eembed_diy_ulong_to_str(char *buf, size_t size, uint64_t ul);
 char *eembed_diy_float_to_str(char *buf, size_t size, long double f);
+char *eembed_diy_float_fraction_to_str(char *buf, size_t size, long double f,
+				       uint8_t d);
 char *eembed_diy_ulong_to_hex(char *buf, size_t size, uint64_t z);
 
 /* ((two hex digits per byte) + NULL terminator) */
@@ -407,6 +416,11 @@ char *eembed_bytes_to_hex(char *buf, size_t buf_size, unsigned char *bytes,
 #ifndef eembed_float_to_str
 #define eembed_float_to_str(buf, size, f) \
 	eembed_diy_float_to_str(buf, size, f)
+#endif
+
+#ifndef eembed_float_fraction_to_str
+#define eembed_float_fraction_to_str(buf, size, f, d) \
+	eembed_diy_float_fraction_to_str(buf, size, f, d)
 #endif
 
 #ifndef eembed_ulong_to_hex
@@ -727,6 +741,7 @@ struct eembed_log {
 	void (*append_ul)(struct eembed_log *log, uint64_t ul);
 	void (*append_l)(struct eembed_log *log, int64_t l);
 	void (*append_f)(struct eembed_log *log, long double f);
+	void (*append_fd)(struct eembed_log *log, long double f, uint8_t d);
 	void (*append_vp)(struct eembed_log *log, const void *ptr);
 	void (*append_eol)(struct eembed_log *log);
 };
@@ -829,23 +844,19 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 #endif
 
 #ifndef print_fd
-/* TODO: this should be easy to add to eembed_log, but has not been done */
-#define print_fd(f,d) eembed_out_log->append_f(eembed_out_log, f)
+#define print_fd(f,d) eembed_out_log->append_fd(eembed_out_log, f, d)
 #endif
 
 #ifndef print_err_fd
-/* TODO: this should be easy to add to eembed_log, but has not been done */
-#define print_err_fd(f,d) eembed_err_log->append_f(eembed_err_log, f)
+#define print_err_fd(f,d) eembed_err_log->append_fd(eembed_err_log, f, d)
 #endif
 
 #ifndef print_lfd
-/* TODO: this should be easy to add to eembed_log, but has not been done */
-#define print_lfd(lf,d) eembed_out_log->append_f(eembed_out_log, lf)
+#define print_lfd(lf,d) eembed_out_log->append_fd(eembed_out_log, lf, d)
 #endif
 
 #ifndef print_err_lfd
-/* TODO: this should be easy to add to eembed_log, but has not been done */
-#define print_err_lfd(lf,d) eembed_out_log->append_f(eembed_out_log, lf)
+#define print_err_lfd(lf,d) eembed_out_log->append_f(eembed_out_log, lf, d)
 #endif
 
 #ifndef print_log_x

@@ -53,15 +53,15 @@ unsigned int test_eembed_log(void)
 
 	diff = eembed_strncmp(expected, buf, buf_len);
 	if (diff) {
-		eembed_err_log->append_s(eembed_err_log, "Expedcted '");
-		eembed_err_log->append_s(eembed_err_log, expected);
-		eembed_err_log->append_s(eembed_err_log, "' but was '");
-		eembed_err_log->append_s(eembed_err_log, buf);
-		eembed_err_log->append_s(eembed_err_log, "'");
-		eembed_err_log->append_eol(eembed_err_log);
-		eembed_err_log->append_s(eembed_err_log, "\tdiff of ");
-		eembed_err_log->append_l(eembed_err_log, diff);
-		eembed_err_log->append_eol(eembed_err_log);
+		print_err_s("Expedcted '");
+		print_err_s(expected);
+		print_err_s("' but was '");
+		print_err_s(buf);
+		print_err_s("'");
+		print_err_eol();
+		print_err_s("\tdiff of ");
+		print_err_i(diff);
+		print_err_eol();
 		++failures;
 	}
 
@@ -69,11 +69,35 @@ unsigned int test_eembed_log(void)
 	log->append_f(log, -2.5);
 	found = eembed_strstr(buf, "-2.5");
 	if (!found) {
-		eembed_err_log->append_s(eembed_err_log, "Did not find");
-		eembed_err_log->append_s(eembed_err_log, " -2.5 in '");
-		eembed_err_log->append_s(eembed_err_log, buf);
-		eembed_err_log->append_s(eembed_err_log, "'");
-		eembed_err_log->append_eol(eembed_err_log);
+		print_err_s("Did not find");
+		print_err_s(" -2.5 in '");
+		print_err_s(buf);
+		print_err_s("'");
+		print_err_eol();
+		++failures;
+	}
+
+	eembed_memset(buf, 0x00, buf_len);
+	log->append_fd(log, -3.5, 3);
+	found = eembed_strstr(buf, "-3.500");
+	if (!found) {
+		print_err_s("Did not find");
+		print_err_s(" -3.500 in '");
+		print_err_s(buf);
+		print_err_s("'");
+		print_err_eol();
+		++failures;
+	}
+
+	eembed_memset(buf, 0x00, buf_len);
+	log->append_fd(log, 20.0 / 3.0, 3);
+	found = eembed_strstr(buf, "6.667");
+	if (!found) {
+		print_err_s("Did not find");
+		print_err_s(" 6.667 in '");
+		print_err_s(buf);
+		print_err_s("'");
+		print_err_eol();
 		++failures;
 	}
 
@@ -87,11 +111,11 @@ unsigned int test_eembed_log(void)
 		found = eembed_strstr(buf, "nil");
 	}
 	if (!found) {
-		eembed_err_log->append_s(eembed_err_log, "Did not find");
-		eembed_err_log->append_s(eembed_err_log, " (nil) in '");
-		eembed_err_log->append_s(eembed_err_log, buf);
-		eembed_err_log->append_s(eembed_err_log, "'");
-		eembed_err_log->append_eol(eembed_err_log);
+		print_err_s("Did not find");
+		print_err_s(" (nil) in '");
+		print_err_s(buf);
+		print_err_s("'");
+		print_err_eol();
 		++failures;
 	}
 
@@ -104,6 +128,7 @@ unsigned int test_eembed_log(void)
 	eembed_null_log->append_ul(eembed_null_log, 4);
 	eembed_null_log->append_l(eembed_null_log, -2);
 	eembed_null_log->append_f(eembed_null_log, 4.0);
+	eembed_null_log->append_fd(eembed_null_log, 20.0 / 3.0, 2);
 	eembed_null_log->append_vp(eembed_null_log, NULL);
 	eembed_null_log->append_eol(eembed_null_log);
 
