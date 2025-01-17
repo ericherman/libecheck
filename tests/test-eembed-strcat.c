@@ -6,9 +6,9 @@
 
 unsigned test_eembed_strcat_func(char *(*strcat_func)(char *dst,
 						      const char *src),
-				 char * (*strncat_func)(char *dst,
-							const char *src,
-							size_t sz)
+				 char *(*strncat_func)(char *dst,
+						       const char *src,
+						       size_t sz)
     )
 {
 	char actual[80];

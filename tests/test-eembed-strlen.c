@@ -5,8 +5,8 @@
 #include "eembed.h"
 
 unsigned test_eembed_strlen_func(size_t (*strlen_func)(const char *s),
-				 size_t(*strnlen_func)(const char *s,
-						       size_t max)
+				 size_t (*strnlen_func)(const char *s,
+							size_t max)
     )
 {
 	eembed_crash_if_false(strlen_func("") == 0);

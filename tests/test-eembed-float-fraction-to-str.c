@@ -36,8 +36,8 @@ void test_float_fraction_to_str_nothing_explodes(void)
 	eembed_float_fraction_to_str(buf, 30, 0.00000000001, 0);
 	eembed_float_fraction_to_str(buf, 30, ((double)UINT64_MAX), d);
 	eembed_float_fraction_to_str(buf, 30, ((double)UINT64_MAX), 0);
-	eembed_float_fraction_to_str(buf, 30, ((double)UINT64_MAX)+0.9, d);
-	eembed_float_fraction_to_str(buf, 30, ((double)UINT64_MAX)+0.9, 0);
+	eembed_float_fraction_to_str(buf, 30, ((double)UINT64_MAX) + 0.9, d);
+	eembed_float_fraction_to_str(buf, 30, ((double)UINT64_MAX) + 0.9, 0);
 
 #if (EEMBED_HOSTED && (!(FAUX_FREESTANDING)))
 	eembed_diy_float_fraction_to_str(NULL, 30, f, d);
@@ -64,8 +64,10 @@ void test_float_fraction_to_str_nothing_explodes(void)
 	eembed_diy_float_fraction_to_str(buf, 30, 0.00000000001, 0);
 	eembed_diy_float_fraction_to_str(buf, 30, ((double)UINT64_MAX), d);
 	eembed_diy_float_fraction_to_str(buf, 30, ((double)UINT64_MAX), 0);
-	eembed_diy_float_fraction_to_str(buf, 30, ((double)UINT64_MAX)+0.9, d);
-	eembed_diy_float_fraction_to_str(buf, 30, ((double)UINT64_MAX)+0.9, 0);
+	eembed_diy_float_fraction_to_str(buf, 30, ((double)UINT64_MAX) + 0.9,
+					 d);
+	eembed_diy_float_fraction_to_str(buf, 30, ((double)UINT64_MAX) + 0.9,
+					 0);
 #endif
 }
 
@@ -141,7 +143,6 @@ void assert_float_fraction_to_str(int line, double f, uint8_t d, const char *in,
 
 #define Assert_float_fraction_to_str(f, d, in, expect) \
 	assert_float_fraction_to_str(__LINE__, f, d, in, expect, NULL)
-
 
 void assert_float_fraction_to_str_if_not_enough_space(void)
 {
