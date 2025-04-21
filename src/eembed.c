@@ -347,25 +347,25 @@ struct eembed_log *eembed_out_log = &eembed_stdout_log;
 char *eembed_sprintf_long_to_str(char *buf, size_t size, int64_t l)
 {
 	int written = buf ? snprintf(buf, size, "%" PRId64, l) : -1;
-	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
+	return ((written < 0) || ((unsigned)written) >= size) ? NULL : buf;
 }
 
 char *eembed_sprintf_ulong_to_str(char *buf, size_t size, uint64_t ul)
 {
 	int written = buf ? snprintf(buf, size, "%" PRIu64, ul) : -1;
-	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
+	return ((written < 0) || ((unsigned)written) >= size) ? NULL : buf;
 }
 
 char *eembed_sprintf_ulong_to_hex(char *buf, size_t size, uint64_t ul)
 {
 	int written = buf ? snprintf(buf, size, "%02" PRIX64, ul) : -1;
-	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
+	return ((written < 0) || ((unsigned)written) >= size) ? NULL : buf;
 }
 
 char *eembed_sprintf_float_to_str(char *buf, size_t size, long double f)
 {
 	int written = buf ? snprintf(buf, size, "%Lg", f) : -1;
-	return ((written >= 0) && ((unsigned)written) >= size) ? NULL : buf;
+	return ((written < 0) || ((unsigned)written) >= size) ? NULL : buf;
 }
 
 char *eembed_sprintf_float_fraction_to_str(char *buf, size_t size,
@@ -378,9 +378,10 @@ char *eembed_sprintf_float_fraction_to_str(char *buf, size_t size,
 	}
 
 	written = snprintf(format, sizeof(format), "%%.%" PRIu8 "Lf", d);
+	eembed_assert(written > 0);
 	eembed_assert(((unsigned)written) < sizeof(format));
 	written = snprintf(buf, size, format, f);
-	return ((unsigned)written) >= size ? NULL : buf;
+	return ((written < 0) || ((unsigned)written) >= size) ? NULL : buf;
 }
 
 #else /* #if EEMBED_HOSTED */
