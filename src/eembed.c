@@ -521,22 +521,22 @@ char *eembed_bogus_float_fraction_to_str(char *buf, size_t size, long double f,
 		return (avail < 3) ? NULL : eembed_strncat(buf, "nan", 4);
 	}
 	if (f == 0.0) {
-		eembed_strcat(buf, "0");
+		eembed_strncat(buf, "0", 2);
 		--avail;
 		if (!digits || avail < 2) {
 			return buf;
 		}
-		eembed_strcat(buf, ".0");
+		eembed_strncat(buf, ".0", 3);
 		avail -= 2;
 		for (i = 1; avail && i < digits && i < max_digits; ++i) {
-			eembed_strcat(buf, "0");
+			eembed_strncat(buf, "0", 2);
 			--avail;
 		}
 		return buf;
 	}
 
 	if (f < 0.0) {
-		eembed_strcat(buf, "-");
+		eembed_strncat(buf, "-", 2);
 		f = -f;
 		--avail;
 		if (!avail) {
