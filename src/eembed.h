@@ -10,21 +10,35 @@
 #include "eembed-arduino.h"
 #endif
 
+/* see: bug #65165: extern "C" mishandled in header files */
+/* https://savannah.gnu.org/bugs/?65165 */
 #ifndef ARDUINO
 #ifdef __cplusplus
-#define Eembed_begin_C_functions extern "C" {
-#define Eembed_end_C_functions }
-#endif
-#endif
-#ifndef Eembed_begin_C_functions
-#define Eembed_begin_C_functions
-#endif
-#ifndef Eembed_end_C_functions
-#define Eembed_end_C_functions
+
+#define Eembed_begin_C_declarations \
+extern "C" { \
+struct eembed_allow_semicolon
+
+#define Eembed_end_C_declarations \
+} \
+struct eembed_cpp_allow_semicolon
+
+#endif /* ifdef __cplusplus */
+#endif /* ifndef ARDUINO */
+
+#ifndef Eembed_begin_C_declarations
+#define Eembed_begin_C_declarations \
+struct eembed_allow_semicolon
 #endif
 
-Eembed_begin_C_functions
-#undef Eembed_begin_C_functions
+#ifndef Eembed_end_C_declarations
+#define Eembed_end_C_declarations \
+struct eembed_allow_semicolon
+#endif
+
+Eembed_begin_C_declarations;
+#undef Eembed_begin_C_declarations
+
 /*
  __STDC_HOSTED__
  The integer constant 1 if the implementation is a hosted
@@ -94,7 +108,7 @@ Eembed_begin_C_functions
 /* Define ssize_t as intptr_t if it is not defined */
 #define __SSIZE_T_TYPE intptr_t
 #endif
-    typedef __SSIZE_T_TYPE ssize_t;
+typedef __SSIZE_T_TYPE ssize_t;
 
 /* Define the macros to indicate ssize_t is defined */
 #define _SSIZE_T_DEFINED
@@ -1119,6 +1133,6 @@ int main(void) \
 #define EEMBED_FUNC_MAIN(pfunc)	/* skip */
 #endif
 
-Eembed_end_C_functions
-#undef Eembed_end_C_functions
+Eembed_end_C_declarations;
+#undef Eembed_end_C_declarations
 #endif /* EEMBED_H */

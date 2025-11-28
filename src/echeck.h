@@ -6,17 +6,30 @@
 #ifndef ECHECK_H
 #define ECHECK_H
 
+/* see: bug #65165: extern "C" mishandled in header files */
+/* https://savannah.gnu.org/bugs/?65165 */
 #ifndef ARDUINO
 #ifdef __cplusplus
-#define Echeck_begin_C_functions extern "C" {
-#define Echeck_end_C_functions }
+
+#define Echeck_begin_C_declarations \
+extern "C" { \
+struct echeck_allow_semicolon
+
+#define Echeck_end_C_declarations \
+} \
+struct echeck_cpp_allow_semicolon
+
+#endif /* ifdef __cplusplus */
+#endif /* ifndef ARDUINO */
+
+#ifndef Echeck_begin_C_declarations
+#define Echeck_begin_C_declarations \
+struct echeck_allow_semicolon
 #endif
-#endif
-#ifndef Echeck_begin_C_functions
-#define Echeck_begin_C_functions
-#endif
-#ifndef Echeck_end_C_functions
-#define Echeck_end_C_functions
+
+#ifndef Echeck_end_C_declarations
+#define Echeck_end_C_declarations \
+struct echeck_allow_semicolon
 #endif
 
 #ifndef ECHECK_FUNC
@@ -27,8 +40,8 @@
 #endif
 #endif
 
-Echeck_begin_C_functions
-#undef Echeck_begin_C_functions
+Echeck_begin_C_declarations;
+#undef Echeck_begin_C_declarations
 #include <stddef.h>		/* for size_t */
 #include <float.h>		/* for DBL_EPSILON */
 #include "eembed.h"		/* struct eembed_log, struct eembed_allocator */
@@ -421,6 +434,6 @@ int main(int argc, char **argv) \
 #define ECHECK_TEST_MAIN_V(pfunc)	/* skip */
 #endif
 
-Echeck_end_C_functions
-#undef Echeck_end_C_functions
+Echeck_end_C_declarations;
+#undef Echeck_end_C_declarations
 #endif /* ECHECK_H */
