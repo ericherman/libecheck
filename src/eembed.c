@@ -203,6 +203,10 @@ struct eembed_log *eembed_char_buf_log_init(struct eembed_log *log,
 
 int eembed_strcpy_safe(char *buf, size_t size, const char *str)
 {
+	if (buf) {
+		eembed_memset(buf, 0x00, size);
+	}
+
 	if (!buf || !size || !str) {
 		return (str && str[0]) ? 1 : 0;
 	}
